@@ -281,6 +281,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .skincard.on{border-color:var(--sun);background:#fff6d6}
 .skincard img{width:72px;height:72px}
 .shoph{margin:6px 0 2px;font-size:14px}
+.ulk summary{cursor:pointer;font-weight:bold;padding:6px 0}
+.ulk .irow{margin-top:6px}
 .rare.legend{background:linear-gradient(90deg,#ffd23f,#ff4fa8,#c27cff,#3fa9f5);box-shadow:0 0 8px rgba(255,210,63,.8)}
 .skincard .ab{font-size:11px;line-height:1.35;opacity:.85;margin-top:2px}
 .rare{display:inline-block;font-family:var(--f-pix);font-size:11px;color:#fff;background:linear-gradient(90deg,#ff4fd8,#8a4fe0,#3fa9f5);border-radius:6px;padding:1px 6px}
@@ -524,7 +526,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
         
         <div class="tg"><span>1日に あそべる時間<br><span class="note" id="pPlayed"></span></span><div class="seg" data-set="limit" data-num="1"><button data-v="0">なし</button><button data-v="30">30分</button><button data-v="45">45分</button><button data-v="60">60分</button><button data-v="90">90分</button><button data-v="120">120分</button></div></div>
         <div class="tg"><span>ゾンビが出る</span><div class="seg" data-set="zmode" data-num="1"><button data-v="0">出ない</button><button data-v="1">よるだけ</button><button data-v="2">いつでも</button></div></div>
-        <div class="tg"><span>ゾンビのつよさ</span><div class="seg" data-set="hard"><button data-v="0">やさしい</button><button data-v="1">ふつう</button></div></div>
+        <div class="tg"><span>ゾンビのつよさ</span><div class="seg" data-set="hard" data-num="1"><button data-v="0">やさしい</button><button data-v="1">ふつう</button><button data-v="2">つよい</button></div></div>
         <div class="tg"><span>ゾンビの 出る数</span><div class="seg" data-set="zombieDen" data-num="1"><button data-v="0.5">すくない</button><button data-v="1">ふつう</button><button data-v="2">おおい</button><button data-v="3">すごく</button></div></div>
         <div class="tg"><span>のらの動物の 数<br><span class="note">まわりに 出てくる 動物（なかよくなれる）</span></span><div class="seg" data-set="animalDen" data-num="1"><button data-v="0">なし</button><button data-v="1">すくない</button><button data-v="2">ふつう</button><button data-v="3">おおい</button></div></div>
         <div class="tg"><span>ボスの 同時に 出る数</span><div class="seg" data-set="bossMax" data-num="1"><button data-v="1">1たい</button><button data-v="2">2たい</button><button data-v="3">3たい</button><button data-v="5">5たい</button></div></div>
@@ -695,16 +697,22 @@ const T_BOT =[0,2,2,3,4,6,7,8,9,10,11,12,13,14,15,16,18,20,21,22,23,24,25,27,2,2
 const TRANSP=new Uint8Array(64); TRANSP[AIR]=TRANSP[LEAVES]=TRANSP[WATER]=TRANSP[GLASS]=TRANSP[45]=TRANSP[57]=1;
 const NT=64;
 const SW_W=100,SW_S=101,SW_I=102,SW_STAR=103,SW_EX=104,SW_HEART=105,W_SHIELD=137,APPLE=110,CAKE=111,SADDLE=120,IRON=121,TREAT=122,BED=123,CAPE=124,SHARD=125,
-  W_FIRE=130,W_WATER=131,W_WIND=132,W_THUNDER=133,W_HEAL=134,W_ICE=135,W_BLAZE=136,SEED_H=140,V_CAR=150,V_BOAT=151,V_PLANE=152,SK_GOLD=160,SK_PRIN=161,SK_NEKO=162,SK_BLUE=163,SK_LEG=164,SK_KING=165,BUD_V=180,BUD_B=181,G_BOW=170,G_BEAM=171,G_STAR=172;
+  W_FIRE=130,W_WATER=131,W_WIND=132,W_THUNDER=133,W_HEAL=134,W_ICE=135,W_BLAZE=136,SEED_H=140,V_CAR=150,V_BOAT=151,V_PLANE=152,SK_GOLD=160,SK_PRIN=161,SK_NEKO=162,SK_BLUE=163,SK_LEG=164,SK_KING=165,SK_VAL=166,SK_DARK=167,EQ_DSW=190,EQ_DHELM=191,EQ_DARM=192,EQ_DWING=193,EQ_DEMB=194,EQ_DEGG=195,EQ_VSW=196,EQ_VCRN=197,EQ_VARM=198,EQ_VWING=199,EQ_VHORN=200,EQ_VEGG=201,PET_DARK=202,PET_GOLD=203,PET_PHX=204,PET_WOLF=205,PET_PINK=206,PET_PURP=207,PET_UNI=208,PET_CAT=209,BUD_V=180,BUD_B=181,G_BOW=170,G_BEAM=171,G_STAR=172;
 const ITEMS={[SW_W]:{n:'木の剣',dmg:3},[SW_S]:{n:'石の剣',dmg:4},[SW_I]:{n:'てつの剣',dmg:6},[SW_STAR]:{n:'ほしの剣',dmg:10},[SW_EX]:{n:'エクスカリバー',dmg:15,ex:1},[SW_HEART]:{n:'ラブリーハートロッド',dmg:15,ex:1,hrod:1},[W_SHIELD]:{n:'バリアのつえ',mp:5,magic:'shield'},
   [APPLE]:{n:'りんご',heal:4},[CAKE]:{n:'ケーキ',heal:20},[SADDLE]:{n:'くら'},[IRON]:{n:'てつ'},[TREAT]:{n:'ドラゴンのおやつ'},[BED]:{n:'ベッド'},
   [CAPE]:{n:'つばさのマント'},[SHARD]:{n:'まほうのかけら'},[SEED_H]:{n:'おうちのタネ'},
-  [V_CAR]:{n:'くるま',veh:'car'},[SK_LEG]:{n:'レジェンド：ハートプリンセス',skin:8},[SK_KING]:{n:'レジェンド：ドラゴンキング',skin:9},[BUD_V]:{n:'なかま：ほのおドラゴン ボルカ',buddy:'volca'},[BUD_B]:{n:'なかま：らいじゅう ビリー',buddy:'billy'},[G_BOW]:{n:'ゆみ',gun:'arrow',cd:.45},[G_BEAM]:{n:'ビームガン',gun:'beam',cd:.2},[G_STAR]:{n:'スターバズーカ',gun:'star',cd:1.1},[SK_GOLD]:{n:'レアキャラ：ゴールドナイト',skin:4},[SK_PRIN]:{n:'レアキャラ：クリスタルプリンセス',skin:5},[SK_NEKO]:{n:'レアキャラ：ネコミミアイドル',skin:6},[SK_BLUE]:{n:'レアキャラ：ブルーサイバー',skin:7},[V_BOAT]:{n:'ボート',veh:'boat'},[V_PLANE]:{n:'ひこうき',veh:'plane'},
+  [V_CAR]:{n:'くるま',veh:'car'},[SK_LEG]:{n:'レジェンド：ハートプリンセス',skin:8},[SK_KING]:{n:'レジェンド：ドラゴンキング',skin:9},[SK_VAL]:{n:'レジェンド：エンジェルヴァルキリー',skin:10},
+  [EQ_DSW]:{n:'雷撃の魔剣',msw:11,dmg:25,ic:{k:'sword',c:['#3a5fd0','#c27cff','#5a2a9a']}},[EQ_DHELM]:{n:'覇王の角兜',eq:{skin:11,def:.8},ic:{k:'helm',c:['#24202e','#5a3a8a']}},[EQ_DARM]:{n:'金剛の竜鎧',eq:{skin:11,def:.8},ic:{k:'armor',c:['#24202e','#5ff2ff','#ff3fae']}},
+  [EQ_DWING]:{n:'竜神の剛翼',eq:{skin:11,sp:1.1,fly:1},ic:{k:'wing',c:['#24202e','#ffcf3a','#5fc8ff','#ff9cf0']}},[EQ_DEMB]:{n:'電光の紋章',eq:{skin:11,atk:1.3},ic:{k:'emblem',c:['#3a7fe0']}},[EQ_DEGG]:{n:'暗黒竜の卵',eq:{skin:11},ic:{k:'egg',c:['#3a2a5a','#ff3b5c']}},
+  [EQ_VSW]:{n:'天雷の魔剣',msw:10,dmg:25,ic:{k:'sword',c:['#a050e0','#ff8ff0','#ff3f9a']}},[EQ_VCRN]:{n:'星の王冠',eq:{skin:10,def:.8},ic:{k:'crown',c:['#ff3fd0']}},[EQ_VARM]:{n:'煌星の鎧',eq:{skin:10,def:.8},ic:{k:'armor',c:['#8a4fe0','#ff4fa8','#5ff2ff']}},
+  [EQ_VWING]:{n:'レインボーウイング',eq:{skin:10,sp:1.1,fly:1},ic:{k:'wing',c:['#ff7a7a','#ffd23f','#7fe36f','#5fc8ff','#c27cff']}},[EQ_VHORN]:{n:'虹光のユニコーンの角',eq:{skin:10,atk:1.3},ic:{k:'horn',c:[]}},[EQ_VEGG]:{n:'子竜の卵',eq:{skin:10},ic:{k:'egg',c:['#c86fe0','#8a3fc0']}},
+  [PET_DARK]:{n:'ペット：暗黒幼竜',buddy:'darkling'},[PET_GOLD]:{n:'ペット：金角の幼竜',buddy:'goldhorn'},[PET_PHX]:{n:'ペット：雷光のフェニックス',buddy:'phoenix'},[PET_WOLF]:{n:'ペット：闇夜の鎧狼',buddy:'wolf'},
+  [PET_PINK]:{n:'ペット：チビ桃竜',buddy:'pinkling'},[PET_PURP]:{n:'ペット：チビ紫竜',buddy:'purpling'},[PET_UNI]:{n:'ペット：虹光のユニコーン',buddy:'unicorn'},[PET_CAT]:{n:'ペット：夜空の星猫',buddy:'starcat'},[SK_DARK]:{n:'レジェンド：ダークエンジェルキング',skin:11},[BUD_V]:{n:'なかま：ほのおドラゴン ボルカ',buddy:'volca'},[BUD_B]:{n:'なかま：らいじゅう ビリー',buddy:'billy'},[G_BOW]:{n:'ゆみ',gun:'arrow',cd:.45},[G_BEAM]:{n:'ビームガン',gun:'beam',cd:.2},[G_STAR]:{n:'スターバズーカ',gun:'star',cd:1.1},[SK_GOLD]:{n:'レアキャラ：ゴールドナイト',skin:4},[SK_PRIN]:{n:'レアキャラ：クリスタルプリンセス',skin:5},[SK_NEKO]:{n:'レアキャラ：ネコミミアイドル',skin:6},[SK_BLUE]:{n:'レアキャラ：ブルーサイバー',skin:7},[V_BOAT]:{n:'ボート',veh:'boat'},[V_PLANE]:{n:'ひこうき',veh:'plane'},
   [W_FIRE]:{n:'ほのおのつえ',mp:2,magic:'fire'},[W_WATER]:{n:'みずのつえ',mp:2,magic:'water'},[W_WIND]:{n:'かぜのつえ',mp:2,magic:'wind'},
   [W_THUNDER]:{n:'かみなりのつえ',mp:4,magic:'thunder'},[W_HEAL]:{n:'かいふくのつえ',mp:3,magic:'heal'},
   [W_ICE]:{n:'こおりのつえ',mp:3,magic:'ice'},[W_BLAZE]:{n:'ほのおのたつまき',mp:5,magic:'blaze'}};
 const iname=id=>id===0?'こわす':id<100?NAMES[id]:ITEMS[id].n;
-const ORDER=[SW_HEART,SW_EX,W_SHIELD,SK_KING,SK_LEG,BUD_V,BUD_B,SK_GOLD,SK_PRIN,SK_NEKO,SK_BLUE,V_PLANE,V_CAR,V_BOAT,G_STAR,G_BEAM,G_BOW,SW_STAR,SW_I,SW_S,SW_W,W_FIRE,W_WATER,W_WIND,W_THUNDER,W_HEAL,W_ICE,W_BLAZE,APPLE,CAKE,TREAT,SEED_H,BED,CAPE,SADDLE,SHARD,IRON,
+const ORDER=[EQ_DSW,EQ_VSW,SK_DARK,SK_VAL,EQ_DHELM,EQ_DARM,EQ_DWING,EQ_DEMB,EQ_DEGG,EQ_VCRN,EQ_VARM,EQ_VWING,EQ_VHORN,EQ_VEGG,SW_HEART,SW_EX,W_SHIELD,SK_KING,SK_LEG,BUD_V,BUD_B,SK_GOLD,SK_PRIN,SK_NEKO,SK_BLUE,V_PLANE,V_CAR,V_BOAT,G_STAR,G_BEAM,G_BOW,SW_STAR,SW_I,SW_S,SW_W,W_FIRE,W_WATER,W_WIND,W_THUNDER,W_HEAL,W_ICE,W_BLAZE,APPLE,CAKE,TREAT,SEED_H,BED,CAPE,SADDLE,SHARD,IRON,
   GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,BOUNCE,WARP,ORE,CRYSTAL,MAGICB,DARKB,MUSHR,CLOUDB,CURSED,DOORC];
 const BLOCKS=[DOORC,CRYSTAL,MAGICB,DARKB,MUSHR,CLOUDB,CURSED,GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,BOUNCE,WARP];
 const DEX_BLOCKS=[DOORC,CRYSTAL,MAGICB,DARKB,MUSHR,CLOUDB,CURSED,GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,ORE,BOUNCE,WARP];
@@ -717,7 +725,7 @@ function dayStr(off){ const d=new Date(); d.setDate(d.getDate()+(off||0)); retur
 
 /* ================= save ================= */
 const SAVE_KEY='doubutsu-blockland-v1';
-const DEF={edits:{},hearts:[],allDone:false,inv:null,gems:5,hp:20,mp:10,time:.04,creative:false,zombies:true,hard:false,dragon:{hearts:0,friend:false},
+const DEF={edits:{},hearts:[],allDone:false,inv:null,gems:5,hp:20,mp:10,time:.04,creative:false,zombies:true,hard:1,dragon:{hearts:0,friend:false},
   pets:{},babies:[],dex:{a:{},b:{}},badges:{},stats:{zombies:0,chests:0,placed:0,crafted:0},warps:[],chest:null,nights:0,
   tasks:[{t:'しゅくだい',g:10},{t:'おてつだい',g:5},{t:'はみがき',g:3}],taskLog:[],limit:0,play:{date:'',sec:0,extra:0},login:{last:'',streak:0},v3:false};
 let save=JSON.parse(JSON.stringify(DEF));
@@ -737,6 +745,7 @@ if(save.worldV===3){ if(!isNewPlayer) worldNotice4=true; const sh2=k=>{ const q=
 if(save.worldV===4){ if(!isNewPlayer) worldNotice5=true; save.worldV=5; }
 if(save.zmode===undefined) save.zmode=save.zombies===false?0:2;
 if(save.bosses===undefined) save.bosses=true;
+if(typeof save.hard!=='number') save.hard=save.hard?2:1; if(!save.qc) save.qc={boss:0,zombie:0,maou:0,daimaou:0,pboss:0}; if(save.qc.siege==null) save.qc.siege=0;
 if(save.zombieDen===undefined) save.zombieDen=1; if(save.bossMax===undefined) save.bossMax=2; if(save.animalDen===undefined) save.animalDen=2; if(save.bossFreq===undefined) save.bossFreq=1;
 if(save.tspeed===undefined) save.tspeed=2;
 let saveTimer=0, saveLock=false, lastSaved=0;
@@ -1444,6 +1453,7 @@ function icon(id){
   if(iconCache[id]) return iconCache[id];
   if(ITEMS[id]&&ITEMS[id].skin){ const t=THUMBS['skin'+ITEMS[id].skin]; if(t) return iconCache[id]=t; }
   if(ITEMS[id]&&ITEMS[id].buddy){ const t=THUMBS[ITEMS[id].buddy]; if(t) return iconCache[id]=t; }
+  if(ITEMS[id]&&ITEMS[id].ic){ const c=document.createElement('canvas'); c.width=c.height=32; eqIcon(c.getContext('2d'),id); return iconCache[id]=c.toDataURL(); }
   const c=document.createElement('canvas'); c.width=c.height=32; const x=c.getContext('2d'); x.imageSmoothingEnabled=false;
   const px=(X,Y,col)=>{ x.fillStyle=col; x.fillRect(X*2,Y*2,2,2); };
   const sword=(bl,ed,gd)=>{ for(let i=0;i<9;i++){ px(13-i,2+i,bl); px(13-i,3+i,ed); px(14-i,2+i,ed); } px(14,1,ed);
@@ -1530,19 +1540,19 @@ function nextBadge(){ const b=badgeQ.shift(); if(!b){ badgeShowing=false; return
 function dexMark(k,lv){ if((save.dex.a[k]||0)<lv){ save.dex.a[k]=lv; persist(); } }
 
 let selId=0;
-function slotList(){ const l=[0]; for(const id of ORDER){ if(ITEMS[id]&&(ITEMS[id].skin||ITEMS[id].buddy)) continue; if(have(id)>0||(save.creative&&BLOCKS.includes(id))) l.push(id); } return l; }
+function slotList(){ const l=[0]; for(const id of ORDER){ if(ITEMS[id]&&(ITEMS[id].skin||ITEMS[id].buddy||ITEMS[id].eq)) continue; if(have(id)>0||(save.creative&&BLOCKS.includes(id))) l.push(id); } return l; }
 function refreshHotbar(){
   const l=slotList(); if(!l.includes(selId)) selId=0; const sl=hotbar.scrollLeft; hotbar.innerHTML='';
   l.forEach(id=>{ const b=document.createElement('button'); b.className='slot'+(id===selId?' on':''); b.dataset.id=id;
     b.setAttribute('aria-label',iname(id)); const im=document.createElement('img'); im.alt=''; im.src=icon(id); b.appendChild(im);
     if(id&&!(save.creative&&BLOCKS.includes(id))){ const n=document.createElement('b'); n.textContent=have(id); b.appendChild(n); }
     hotbar.appendChild(b); });
-  hotbar.scrollLeft=sl; updateHeld(); $('flyBtn').hidden=!(have(CAPE)>0)||!!riding;
+  hotbar.scrollLeft=sl; updateHeld(); $('flyBtn').hidden=!canFly()||!!riding;
 }
 hotbar.addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(b) select(+b.dataset.id); });
 function select(id){ selId=id; hotbar.querySelectorAll('.slot').forEach(b=>b.classList.toggle('on',+b.dataset.id===id));
   const it=ITEMS[id];
-  bname.textContent=id===0?'こわす':id<100?NAMES[id]+'を置く':it.heal?it.n+'（タップで食べる）':it.gun?it.n+'（タップした ほうへ うつ）':it.hrod?it.n+'（ハートプリンセス せんよう！ まわりの てきに ハートの はどう）':it.ex?it.n+'（タップで まわり10ブロックを いっきに こうげき！）':it.dmg?it.n+'（こうげき '+it.dmg+'）':it.magic?it.n+'（★'+it.mp+'）':it.veh?it.n+'（タップで よびだして のる）':id===SEED_H?'タップした場所に 家がたつ':it.n;
+  bname.textContent=id===0?'こわす':id<100?NAMES[id]+'を置く':it.heal?it.n+'（タップで食べる）':it.gun?it.n+'（タップした ほうへ うつ）':it.msw?it.n+`（${skinName(it.msw)} せんよう！ まわり13ブロック＋れんさ かみなり）`:it.hrod?it.n+'（ハートプリンセス せんよう！ まわりの てきに ハートの はどう）':it.ex?it.n+'（タップで まわり10ブロックを いっきに こうげき！）':it.dmg?it.n+'（こうげき '+it.dmg+'）':it.magic?it.n+'（★'+it.mp+'）':it.veh?it.n+'（タップで よびだして のる）':id===SEED_H?'タップした場所に 家がたつ':it.n;
   bname.classList.add('show'); clearTimeout(bnameT); bnameT=setTimeout(()=>bname.classList.remove('show'),1500);
   const el=hotbar.querySelector(`[data-id="${id}"]`); if(el) el.scrollIntoView({block:'nearest',inline:'nearest'}); updateHeld(); }
 function updateHeld(){ if(selId===0||camMode!==0){ heldEl.hidden=true; return; } heldEl.src=icon(selId); heldEl.hidden=false; }
@@ -1566,8 +1576,9 @@ function moveY(amt){ const old=pl.y; pl.y+=amt; if(!collides()) return;
     pl.onGround=true; } else pl.y=old;
   pl.vy=0; }
 function flyingNow(){ return riding===dragon||(riding&&RIDE[riding.type]&&RIDE[riding.type].fly)||(pl.flying&&!riding); }
+const eHP=()=>[.6,1,1.5][save.hard|0]*(1+.015*((save.plv||1)-1)), ePow=()=>[.6,1.3,1.8][save.hard|0]*(1+.006*((save.plv||1)-1));
 function damage(n,sx,sz){
-  if(dead) return; if(pl.shieldT>0){ spawnBits(pl.x,pl.y+1.2,pl.z,[127,232,255],8,1.2); return; } n=Math.max(1,Math.round(n*(abil().def||1)*(fortGuns.barrier&&inFort(pl.x,pl.z)?.5:1))); save.hp=Math.max(0,save.hp-n); pl.hurtT=0; pl.regenT=0;
+  if(dead) return; n=n*ePow(); if(pl.shieldT>0){ spawnBits(pl.x,pl.y+1.2,pl.z,[127,232,255],8,1.2); return; } n=Math.max(1,Math.round(n*(abil().def||1)*(fortGuns.barrier&&inFort(pl.x,pl.z)?.5:1))); save.hp=Math.max(0,save.hp-n); pl.hurtT=0; pl.regenT=0;
   const dx=pl.x-sx,dz=pl.z-sz,L=Math.hypot(dx,dz)||1; pl.kx=dx/L*7; pl.kz=dz/L*7; if(!flyingNow()) pl.vy=Math.max(pl.vy,4.5);
   const h=$('hurt'); h.classList.add('on'); setTimeout(()=>h.classList.remove('on'),60); updateHearts(); persist();
   if(save.hp<=0){ dead=true; dismount(); setFly(false); openOv('dead'); }
@@ -1807,7 +1818,9 @@ const RARE=[null,null,null,null,
   {n:'ネコミミアイドル',c:'#ff9cf0',hair:['#ff7ad8','#b46ff0'],eye:'#9b4fe0',style:'long',ears:1,crown:'#d9dde4',float:1,dress:1,armor:'#6a35b8',armor2:'#4a2490',wing:['#f3d9ff','#c08cff','#8a4fe0','#ff9cf0'],blade:'#8a3fd0',edge:'#ff9cf0',gem:'#ff4fd8',pet:'cat',petC:['#6a3fa8','#ff9cf0','#ffb43d']},
   {n:'ブルーサイバー',c:'#6fb8ff',hair:['#3f6fe0','#2a4fb8'],eye:'#2f6fd6',style:'spiky',visor:1,crown:'#d9dde4',float:1,armor:'#4b2a8a',armor2:'#2e1a5c',wing:['#d8f8ff','#6fb8ff','#4f6fe0','#2b2b40'],shield:1,blade:'#5b2ea6',edge:'#5ff2ff',gem:'#5ff2ff',pet:'dragon',petC:['#22203a','#ffcf3a','#5ff2ff']},
   {n:'ハートプリンセス',c:'#ff4fa8',legend:1,hair:['#ff8fd0','#ff5fb0'],eye:'#c03fa0',style:'long',crown:'#ffcf3a',float:0,dress:1,gown:1,scepter:1,armor:'#e0408f',armor2:'#a8226a',wing:['#ffe6ff','#e2b8ff','#b8ecff','#ffe0a8'],blade:'#ff8fd0',edge:'#ffd23f',gem:'#ff3f7a',pet:'pony',petC:['#ffffff','#ff8fd0','#ffcf3a']},
-  {n:'ドラゴンキング',c:'#8a5cff',legend:1,knight:1,hair:['#7a4a2a','#5a3420'],eye:'#2f8fff',style:'spiky',crown:'#ffcf3a',float:0,armor:'#4a5fb0',armor2:'#3a2a6a',wing:['#e8f8ff','#b8e8ff','#e0b8ff','#ffb8e8'],shield:0,blade:'#7a4fd0',edge:'#7fe8ff',gem:'#c27cff',pet:'dragon',petC:['#3a2a6a','#ffcf3a','#c27cff']}];
+  {n:'ドラゴンキング',c:'#8a5cff',legend:1,knight:1,hair:['#7a4a2a','#5a3420'],eye:'#2f8fff',style:'spiky',crown:'#ffcf3a',float:0,armor:'#4a5fb0',armor2:'#3a2a6a',wing:['#e8f8ff','#b8e8ff','#e0b8ff','#ffb8e8'],shield:0,blade:'#7a4fd0',edge:'#7fe8ff',gem:'#c27cff',pet:'dragon',petC:['#3a2a6a','#ffcf3a','#c27cff']},
+  {n:'エンジェルヴァルキリー',c:'#c27cff',legend:1,halo:1,bigsword:1,hair:['#c88cff','#ff8fd8'],eye:'#b04fe0',style:'long',crown:'#ffcf3a',float:0,dress:1,armor:'#7a3fc8',armor2:'#5a2a9a',wing:['#ff9cf0','#ffe066','#8ff0c0','#8fc8ff'],blade:'#7a2fd0',edge:'#ff6fe0',gem:'#ff3f9a',pet:'dragon',petC:['#ff8fc8','#ffcf3a','#ffffff']},
+  {n:'ダークエンジェルキング',c:'#3a2a5a',legend:1,knight:1,halo:1,helmC:'#24202e',hornC:'#3a2a5a',capeC:'#b0263a',paulC:'#24202e',crownGem:'#ff2a4a',hair:['#24202e','#24202e'],eye:'#c27cff',style:'spiky',crown:'#ffcf3a',float:0,armor:'#2a2436',armor2:'#1c1826',wing:['#ffffff','#9fe8ff','#e0b8ff','#ffe08a'],shield:0,blade:'#3a5fd0',edge:'#c27cff',gem:'#5ff2ff',pet:'dragon',petC:['#1c1826','#ffcf3a','#7fe86f']}];
 const skinColor=i=>(RARE[i]?RARE[i].c:(HERO_PAL[i]||HERO_PAL[0]).c);
 const skinName=i=>(RARE[i]?RARE[i].n:(HERO_PAL[i]||HERO_PAL[0]).n);
 function buildRare(g,i){ const C=RARE[i], skin='#ffe1d0', gold='#ffcf3a', A=C.armor, A2=C.armor2, cy=MB('#5ff2ff'), gm=MB(C.gem), h0=C.hair[0], h1=C.hair[1];
@@ -1843,12 +1856,14 @@ function buildRare(g,i){ const C=RARE[i], skin='#ffe1d0', gold='#ffcf3a', A=C.ar
   bx(sw,.06,.22,.06,gold,0,0,0); bx(sw,.08,.08,.08,gm,0,-.13,0); bx(sw,.38,.07,.1,gold,0,.12,0); bx(sw,.08,.08,.04,gm,0,.12,.06);
   bx(sw,.13,.96,.04,MB(C.blade),0,.63,0); bx(sw,.03,.9,.05,MB(C.edge),-.07,.62,0); bx(sw,.03,.9,.05,MB(C.edge),.07,.62,0); bx(sw,.06,.12,.05,MB('#ffffff'),0,1.15,0);
   if(C.shield){ const sh=new THREE.Group(); sh.position.set(.14,-.36,.04); arms[1].add(sh); bx(sh,.05,.62,.48,gold,0,0,0); bx(sh,.06,.54,.4,A,.01,0,0); bx(sh,.07,.14,.12,gm,.02,.04,0); [-1,1].forEach(s=>bx(sh,.07,.05,.05,cy,.02,s*.18,0)); }
-  if(C.knight){ const hm='#5b6fb8', gd=gold;
+  if(C.halo){ const hl=new THREE.Mesh(new THREE.TorusGeometry(.34,.035,6,24),MB('#ffe66b')); hl.rotation.x=Math.PI/2; hl.position.y=1.05; head.add(hl); }
+  if(C.bigsword) sw.scale.setScalar(1.5);
+  if(C.knight){ const hm=C.helmC||'#5b6fb8', gd=gold;
     bx(head,.56,.2,.56,hm,0,.55,0); bx(head,.56,.5,.08,hm,0,.3,-.26); [-1,1].forEach(s=>{ bx(head,.06,.5,.56,hm,s*.28,.3,0); bx(head,.06,.08,.3,gd,s*.29,.3,.1); });
     bx(head,.5,.06,.04,gd,0,.42,.26); bx(head,.04,.16,.04,gd,0,.5,.27);
-    [-1,1].forEach(s=>{ const h1=bx(cr,.1,.32,.1,gd,s*.3,.18,0); h1.rotation.z=-s*.6; const h2=bx(cr,.08,.26,.08,gd,s*.42,.4,0); h2.rotation.z=s*.25; }); bx(cr,.14,.22,.04,MB('#c27cff'),0,.16,.27);
-    [-1,1].forEach(s=>{ const dg=new THREE.Group(); dg.position.set(s*.42,1.58,0); g.add(dg); bx(dg,.26,.22,.36,'#3a2a6a',0,0,.06); bx(dg,.2,.12,.18,'#3a2a6a',0,-.04,.28); bx(dg,.05,.04,.02,MB('#ff5fe0'),s*-.06,.04,.24); bx(dg,.04,.14,.04,gd,s*.08,.16,-.04).rotation.z=-s*.4; });
-    bx(g,.6,1.1,.06,'#5a2a9a',0,.95,-.2); bx(g,.62,.06,.08,gd,0,1.48,-.2); bx(g,.22,.22,.04,MB('#7fe8ff'),0,1.15,.17);
+    [-1,1].forEach(s=>{ const h1=bx(cr,.1,.32,.1,C.hornC||gd,s*.3,.18,0); h1.rotation.z=-s*.6; const h2=bx(cr,.08,.26,.08,C.hornC||gd,s*.42,.4,0); h2.rotation.z=s*.25; }); bx(cr,.14,.22,.04,MB(C.crownGem||'#c27cff'),0,.16,.27);
+    [-1,1].forEach(s=>{ const dg=new THREE.Group(); dg.position.set(s*.42,1.58,0); g.add(dg); bx(dg,.26,.22,.36,C.paulC||'#3a2a6a',0,0,.06); bx(dg,.2,.12,.18,C.paulC||'#3a2a6a',0,-.04,.28); bx(dg,.05,.04,.02,MB('#ff5fe0'),s*-.06,.04,.24); bx(dg,.04,.14,.04,gd,s*.08,.16,-.04).rotation.z=-s*.4; });
+    bx(g,.6,1.1,.06,C.capeC||'#5a2a9a',0,.95,-.2); bx(g,.62,.06,.08,gd,0,1.48,-.2); bx(g,.22,.22,.04,MB('#7fe8ff'),0,1.15,.17);
     sw.scale.setScalar(1.55); bx(sw,.2,.2,.08,MB('#c27cff'),0,.12,.07); }
   return {legs,arms,head,tails,wings,sword:sw,crown:cr,floatCrown:!!C.float}; }
 function buildMiniDragon(g,C){ const body=C[0], gold=C[1], glow=MB(C[2]);
@@ -1920,7 +1935,7 @@ const zombies=[]; let zSpawnT=0, kingSpawned=false, fullMoon=false;
 function makeZombie(x,y,z,king){
   const g=new THREE.Group(), mats=[]; const mk=c=>{ const m=new THREE.MeshLambertMaterial({color:c}); mats.push(m); return m; };
   const skin=mk(king?'#a48fc4':'#b9a7cf'), hood=mk(king?'#b0263a':'#e07b39'), pants=mk('#4b3a5a'), mouth=mk('#3a2a40'), eye=new THREE.MeshBasicMaterial({color:king?'#ff5a5a':'#fff36b'}); mats.push(eye);
-  const zb={x,y,z,vy:0,rot:Math.random()*6.28,trot:0,hp:king?60:10,max:king?60:10,king:!!king,cool:1,hitT:0,frozen:0,kx:0,kz:0,onGround:false,state:'idle',timer:0,g,mats,legs:[],arms:[],phase:Math.random()*6};
+  const zhp=Math.round((king?80:16)*eHP()), zb={x,y,z,vy:0,rot:Math.random()*6.28,trot:0,hp:zhp,max:zhp,king:!!king,cool:1,hitT:0,frozen:0,kx:0,kz:0,onGround:false,state:'idle',timer:0,g,mats,legs:[],arms:[],phase:Math.random()*6};
   const parts=zombieModel(g,king,{skin,hood,pants,mouth,eye,mk}); zb.legs=parts.legs; zb.arms=parts.arms; if(king) g.scale.setScalar(1.7);
   g.traverse(o=>{ o.userData.zombie=zb; }); scene.add(g); zombies.push(zb); return zb;
 }
@@ -1938,7 +1953,7 @@ function zombieSpot(minD,maxD){ for(let t=0;t<14;t++){ const a=Math.random()*6.2
 function updateZombies(dt,time,active,night){
   const zOn=save.zmode===2||(save.zmode===1&&night);
   if(active&&zOn){ zSpawnT-=dt;
-    if(zSpawnT<=0){ const zd=save.zombieDen||1; zSpawnT=(night?3.5:6)/zd; if(zombies.filter(z=>!z.king&&!z.boss).length<Math.max(1,Math.round((night?(save.hard?6:3):(save.hard?3:2))*zd))){ const s=zombieSpot(14,22); if(s) makeZombie(s[0],s[1],s[2],false); } }
+    if(zSpawnT<=0){ const zd=save.zombieDen||1; zSpawnT=(night?3.5:6)/zd; if(zombies.filter(z=>!z.king&&!z.boss).length<Math.max(1,Math.round((night?(save.hard>=2?6:4):(save.hard>=2?3:2))*zd))){ const s=zombieSpot(14,22); if(s) makeZombie(s[0],s[1],s[2],false); } }
     if(night&&fullMoon&&!kingSpawned){ const s=zombieSpot(13,18); if(s){ kingSpawned=true; makeZombie(s[0],s[1],s[2],true); dexMark('king',1); toast('まんげつの よる… ゾンビキングが あらわれた！<br>なかまと いっしょに たたかおう',4200); } } }
   for(let i=zombies.length-1;i>=0;i--){ const zb=zombies[i];
     if(zb.boss){ updateBoss(zb,dt,time,active); continue; }
@@ -1946,7 +1961,7 @@ function updateZombies(dt,time,active,night){
     if(dp>42&&!zb.king&&!zb.siege){ removeZombie(zb,false); continue; }
     if(!active){ zb.g.position.set(zb.x,zb.y,zb.z); continue; }
     zb.cool-=dt; zb.hitT-=dt; zb.timer-=dt; zb.frozen=Math.max(0,zb.frozen-dt);
-    let moving=false, sp=zb.king?1.4:(save.hard?2.3:1.55);
+    let moving=false, sp=zb.king?1.6:[1.4,1.9,2.4][save.hard|0];
     if(zb.frozen<=0){
       if(dp<(zb.king?30:18)&&!dead){ zb.trot=Math.atan2(dx,dz); moving=dp>(zb.king?1.6:1.0); }
       else if(zb.siege){ if(zb.timer<=0){ zb.trot=Math.atan2(FCX-zb.x,FCZ-zb.z)+(Math.random()-.5)*1.2; zb.timer=1+Math.random()*2; } moving=true; }
@@ -1958,7 +1973,7 @@ function updateZombies(dt,time,active,night){
     if(canWalk(zb,nx,nz)&&!(inFort(nx,nz)&&!inFort(zb.x,zb.z))){ zb.x=nx; zb.z=nz; } else if(zb.onGround&&moving&&dp>=18) zb.trot=zb.rot+Math.PI*(.5+Math.random());
     zb.vy-=22*dt; zb.y+=zb.vy*dt; const g=groundAt(zb.x,zb.z,zb.y); if(zb.y<=g){ zb.y=g; zb.vy=0; zb.onGround=true; } else zb.onGround=false;
     const reach=zb.king?2.1:1.3;
-    if(zb.frozen<=0&&dp<reach&&Math.abs(pl.y-zb.y)<(zb.king?3:1.7)&&zb.cool<=0&&!dead){ zb.cool=zb.king?1.6:1.3; damage(zb.king?(save.hard?4:2):(save.hard?2:1),zb.x,zb.z); zb.arms.forEach(a=>a.rotation.x=-.9); }
+    if(zb.frozen<=0&&dp<reach&&Math.abs(pl.y-zb.y)<(zb.king?3:1.7)&&zb.cool<=0&&!dead){ zb.cool=zb.king?1.6:1.3; damage(zb.king?3:1.5,zb.x,zb.z); zb.arms.forEach(a=>a.rotation.x=-.9); }
     const s=zb.frozen>0?0:Math.sin(time*7+zb.phase)*.6*(moving?1:0); zb.legs[0].rotation.x=s; zb.legs[1].rotation.x=-s;
     zb.arms.forEach((a,j)=>{ a.rotation.x+=((zb.frozen>0?0:Math.sin(time*4+j)*.12)-a.rotation.x)*Math.min(1,dt*6); });
     zb.mats.forEach(m=>{ if(m.emissive){ if(zb.hitT>0) m.emissive.setRGB(.85,0,0); else if(zb.frozen>0) m.emissive.setRGB(.1,.35,.6); else m.emissive.setRGB(0,0,0); } });
@@ -1968,10 +1983,10 @@ function damageZombie(zb,dmg,o){ if(zombies.indexOf(zb)<0) return; zb.hp-=dmg; z
   zb.kx=(o.kx||0)*kr; zb.kz=(o.kz||0)*kr; if(o.up&&zb.onGround) zb.vy=o.up*(zb.king?.4:1); if(o.freeze) zb.frozen=zb.king?o.freeze*.4:o.freeze;
   spawnBits(zb.x,zb.y+1.4,zb.z,[255,230,90],4); if(zb.hp<=0) killZombie(zb); }
 function hitZombie(zb){ const dmg=((ITEMS[selId]&&ITEMS[selId].dmg)||1)*(abil().atk||1); swing(); const dx=zb.x-pl.x,dz=zb.z-pl.z,L=Math.hypot(dx,dz)||1; damageZombie(zb,dmg,{kx:dx/L*8,kz:dz/L*8,up:4.5}); }
-function killZombie(zb){ removeZombie(zb,true); if(zb.boss){ bossDefeated(zb); return; } save.stats.zombies++; addPXP(zb.king?25:5); if(save.stats.zombies===30) setTimeout(checkUnlocks,600); award('zombie1'); if(save.stats.zombies>=10) award('zombie10'); dexMark(zb.king?'king':'zombie',2);
+function killZombie(zb){ removeZombie(zb,true); if(zb.boss){ bossDefeated(zb); return; } save.stats.zombies++; save.qc.zombie++; qkAdd('zombie'); if(qk(10)&&[150,300].includes(qk(save.heroColor|0)?qk(save.heroColor|0).zombie:0)) setTimeout(checkUnlocks,600); addPXP(zb.king?25:5); if(save.qc.zombie===50) setTimeout(checkUnlocks,600); award('zombie1'); if(save.stats.zombies>=10) award('zombie10'); dexMark(zb.king?'king':'zombie',2);
   if(zb.king){ save.gems+=15; addItem(SHARD,5); addItem(CAKE,1); award('king'); spawnBits(zb.x,zb.y+2,zb.z,[255,204,51],24);
     notice({title:'ゾンビキングを たおした！',lead:'すごい！ 島の へいわを まもったね。',items:[{gem:15,text:'ジェム ×15'},{icon:SHARD,text:'まほうのかけら ×5'},{icon:CAKE,text:'ケーキ ×1'}]}); }
-  else { const g=save.hard?2:1; save.gems+=g; let extra=''; if(Math.random()<.4){ addItem(SHARD,1); extra='<br>まほうのかけら +1'; } toast(`ゾンビを たおした！ <span class="gem">◆</span>+${g}${extra}`); }
+  else { const g=[1,2,3][save.hard|0]; save.gems+=g; let extra=''; if(Math.random()<.4){ addItem(SHARD,1); extra='<br>まほうのかけら +1'; } toast(`ゾンビを たおした！ <span class="gem">◆</span>+${g}${extra}`); }
   updateGems(); persist(); }
 
 
@@ -2146,7 +2161,7 @@ function spawnBoss(type,forced,at){ if(bossCount()>=bossMax()){ if(forced) toast
   if(at) spot=at;
   if(!spot){ if(forced) toast('ボスが こられる 場所が ないみたい'); return; }
   const g=new THREE.Group(), mats=[]; const mk=c=>{ const m=new THREE.MeshLambertMaterial({color:c}); mats.push(m); return m; }; const parts=T.build(g,mk);
-  const b=Object.assign({boss:type,x:spot[0],y:spot[1],z:spot[2],vy:0,rot:0,trot:0,hp:T.hp,max:T.hp,r:T.r,cy:T.cy,cool:2,hitT:0,frozen:0,kx:0,kz:0,onGround:true,t2:4,charge:0,ang:Math.random()*6,ph:0,g,mats,legs:parts.legs||[],arms:parts.arms||[]},parts);
+  const bhp=Math.round(T.hp*1.5*eHP()), b=Object.assign({boss:type,x:spot[0],y:spot[1],z:spot[2],vy:0,rot:0,trot:0,hp:bhp,max:bhp,r:T.r,cy:T.cy,cool:2,hitT:0,frozen:0,kx:0,kz:0,onGround:true,t2:4,charge:0,ang:Math.random()*6,ph:0,g,mats,legs:parts.legs||[],arms:parts.arms||[]},parts);
   g.traverse(o=>{ o.userData.zombie=b; }); scene.add(g); zombies.push(b); dexMark(type,1);
   b.uid=++bossUid; if(type==='maou'||type==='daimaou'){ b.vel=new THREE.Vector3(); b.dive=0; }
   if(b.segs){ b.vel=new THREE.Vector3(); b.dive=0; b.trail=[]; const ox=Math.cos(Math.random()*6.28), oz=Math.sqrt(1-ox*ox);
@@ -2185,7 +2200,7 @@ function updateBoss(b,dt,time,active){ const T=BOSS[b.boss], dx=pl.x-b.x, dz=pl.
   b.slam=Math.max(0,(b.slam||0)-dt); b.arms.forEach((a,i)=>a.rotation.x=b.slam>0?-2.2+(.4-b.slam)*5:(moving?(i?-sw:sw)*.6:0));
   const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red,fr?.25:0,fr?.5:0); });
   b.g.position.set(b.x,b.y+(T.fly?Math.sin(time*3)*.2:0),b.z); b.g.rotation.y=b.rot; }
-function bossDefeated(b){ setTimeout(checkUnlocks,1500); addPXP(Math.max(25,Math.round(BOSS[b.boss].hp/4))); const T=BOSS[b.boss]; save.gems+=T.gems; addItem(SHARD,T.shard); addItem(CAKE,1); if(b.boss==='kaiju') addItem(V_PLANE,have(V_PLANE)?0:1);
+function bossDefeated(b){ const Q=save.qc; Q.boss++; if(b.boss==='maou') Q.maou++; if(b.boss==='daimaou') Q.daimaou++; if((save.heroColor|0)===8) Q.pboss++; qkAdd('boss'); if(['maou','daimaou','ryu'].includes(b.boss)) qkAdd(b.boss); setTimeout(checkUnlocks,1500); addPXP(Math.max(25,Math.round(BOSS[b.boss].hp/4))); const T=BOSS[b.boss]; save.gems+=T.gems; addItem(SHARD,T.shard); addItem(CAKE,1); if(b.boss==='kaiju') addItem(V_PLANE,have(V_PLANE)?0:1);
   save.stats.bossKinds=Object.assign({},save.stats.bossKinds,{[b.boss]:1}); dexMark(b.boss,2); award('boss1'); if(b.boss==='kaiju') award('kaiju'); if(b.boss==='ryu') award('ryu'); if(b.boss==='maou'){ award('maou'); addItem(CAKE,2); maouCool=240; } if(b.boss==='daimaou'){ award('daimaou'); addItem(CAKE,3); maouCool=300; } if(b.boss==='usa') award('usa'); if(Object.keys(save.stats.bossKinds).length>=4) award('bossAll');
   spawnBits(b.x,b.y+T.cy,b.z,[255,204,51],30,2); shake(.5,.8); updateGems(); persist(); bossT=240+Math.random()*180;
   const items=[{gem:T.gems,text:'ジェム ×'+T.gems},{icon:SHARD,text:'まほうのかけら ×'+T.shard},{icon:CAKE,text:'ケーキ ×1'}]; if(b.boss==='kaiju'&&have(V_PLANE)===1) items.push({icon:V_PLANE,text:'ひこうき（もっていなかったら）'});
@@ -2360,7 +2375,7 @@ function mount(a){ if(riding) dismount(); setFly(false); riding=a; pl.x=a.x; pl.
   toast(a===dragon?`${esc(a.name)}の背中に のった！<br>「うえ」「した」で とぶ。てぶらで タップすると 火をふくよ`:RIDE[a.type].fly?`${esc(a.name)}に のった！<br>「うえ」「した」で 空を とべるよ`:`${esc(a.name)}に のった！<br>「おりる」で おりられるよ`,3400); }
 function dismount(){ if(trackRide){ rideEnd(false); return; } if(!riding) return; const a=riding; riding=null; a.rmove=false; a.timer=1; if(a!==dragon) a.vy=0;
   if(a.type==='plane'){ a.y=surface(a.x,a.z); } if(a.type==='boat'){ pl.y=a.y+.6; }
-  $('dismount').hidden=true; $('flyBtn').hidden=!(have(CAPE)>0); syncFlyButtons(); }
+  $('dismount').hidden=true; $('flyBtn').hidden=!canFly(); syncFlyButtons(); }
 
 
 /* ================= vehicles (original designs) ================= */
@@ -2460,7 +2475,7 @@ function rideStart(key){ if(trackRide) return; if(riding) dismount(); setFly(fal
   if(key==='wheel'){ let best=0,bd=9; for(let i=0;i<WHEEL.n;i++){ const a=((wheelAng+i/WHEEL.n*Math.PI*2+Math.PI/2)%(Math.PI*2)+Math.PI*2)%(Math.PI*2), d=Math.min(a,Math.PI*2-a); if(d<bd){ bd=d; best=i; } } trackRide.k=best; trackRide.a0=wheelAng; pl.yaw=Math.PI/2; }
   if(key==='carousel') pl.yaw=carAng;
   pl.pitch=0; $('dismount').hidden=false; $('flyBtn').hidden=true; toast(R.hello,2600); award('park1'); }
-function rideEnd(done){ const tr=trackRide, R=RIDES[tr.key]; trackRide=null; $('dismount').hidden=true; $('flyBtn').hidden=!(have(CAPE)>0);
+function rideEnd(done){ const tr=trackRide, R=RIDES[tr.key]; trackRide=null; $('dismount').hidden=true; $('flyBtn').hidden=!canFly();
   if(R.splash){ const e=R.curve.getPointAt(1); pl.x=e.x; pl.z=e.z; pl.y=G0+.2; spawnBits(pl.x,TH,pl.z,[120,200,255],26,2); spawnBits(pl.x,TH,pl.z,[255,255,255],12,1.6); }
   else { pl.x=R.exit[0]; pl.y=R.exit[1]; pl.z=R.exit[2]; }
   pl.vy=0; pl.kx=pl.kz=0; camY=pl.y+EYE;
@@ -2561,7 +2576,7 @@ function updateSiege(dt){ const el=$('siegebar'); if(!siege.on){ el.hidden=true;
   const alive=zombies.filter(z=>z.siege).length; el.hidden=false; el.textContent=`ぼうえいせん ${siege.wave}/3 ・ のこり ${alive+siege.q}`;
   if(siege.q<=0&&alive===0){ if(siege.wave>=3) endSiege(true); else nextWave(); } }
 function endSiege(win){ siege.on=false; $('siegebar').hidden=true; zombies.filter(z=>z.siege).forEach(z=>removeZombie(z,true));
-  if(win){ addPXP(60); save.gems+=20; addItem(SHARD,6); addItem(CAKE,1); award('siege'); updateGems(); persist(); spawnBits(FCX,TH+12,FCZ,[255,204,51],30,2);
+  if(win){ save.qc.siege++; qkAdd('siege'); setTimeout(checkUnlocks,2500); addPXP(60); save.gems+=20; addItem(SHARD,6); addItem(CAKE,1); award('siege'); updateGems(); persist(); spawnBits(FCX,TH+12,FCZ,[255,204,51],30,2);
     notice({title:'とりでを まもりきった！',lead:'すごい！ マイとりでは ぶじだよ。',items:[{gem:20,text:'ジェム ×20'},{icon:SHARD,text:'まほうのかけら ×6'},{icon:CAKE,text:'ケーキ ×1'}]}); }
   else toast('ぼうえいせんは ちゅうし になったよ'); }
 /* ================= fortress armory upgrades ================= */
@@ -2639,8 +2654,10 @@ function seiryuTap(){ const s=seiryu; dexMark('seiryu',1);
 const ABIL=[null,null,null,null,
   {t:'こうげき 1.5ばい',atk:1.5},{t:'まほうの★が 2ばいの はやさで たまる',mp:2},{t:'はしる はやさ＋25%・ジャンプ たかい',sp:1.25,jump:1.2},{t:'うける ダメージ はんぶん',def:.5},
   {t:'ぜんぶ つよい！ こうげき1.5ばい・ダメージはんぶん・★2ばい・ハートが どんどん かいふく・空や とおくの てきを タップで ハートビーム',atk:1.5,def:.5,mp:2,sp:1.15,jump:1.15,regen:1,beam:1},
-  {t:'こうげき 2ばい・ダメージ はんぶん・はやい・エクスカリバーの はんいが 15ブロックに！',atk:2,def:.5,sp:1.2,jump:1.1,exr:15}];
-const abil=()=>{ const A=ABIL[save.heroColor|0]||{}, S=save.st||{}; return {t:A.t,beam:A.beam,regen:A.regen,exr:A.exr,rec:S.rec|0,atk:(A.atk||1)*(1+.06*(S.atk|0)),def:(A.def||1)*Math.max(.4,1-.025*(S.def|0)),sp:(A.sp||1)*(1+.02*(S.spd|0)),jump:(A.jump||1)*(1+.015*(S.jmp|0)),mp:(A.mp||1)*(1+.06*(S.mag|0))}; };
+  {t:'こうげき 2ばい・ダメージ はんぶん・はやい・エクスカリバーの はんいが 15ブロックに！',atk:2,def:.5,sp:1.2,jump:1.1,exr:15},
+  {t:'こうげき 2.2ばい・ダメージ はんぶん・★2ばい・はやい・ハートが どんどん かいふく・エクスカリバー 15ブロック＋せんよう そうびで もっと つよく',atk:2.2,def:.5,mp:2,sp:1.2,jump:1.15,regen:1,exr:15},
+  {t:'こうげき 2.2ばい・ダメージ はんぶん・★2ばい・はやい・ハートが どんどん かいふく・エクスカリバー 15ブロック＋せんよう そうびで もっと つよく',atk:2.2,def:.5,mp:2,sp:1.2,jump:1.15,regen:1,exr:15}];
+const abil=()=>{ const A=ABIL[save.heroColor|0]||{}, S=save.st||{}, E=EQUIP_BONUS(); return {t:A.t,beam:A.beam,regen:A.regen,exr:A.exr,rec:S.rec|0,atk:(A.atk||1)*E.atk*(1+.06*(S.atk|0)),def:(A.def||1)*E.def*Math.max(.4,1-.025*(S.def|0)),sp:(A.sp||1)*E.sp*(1+.02*(S.spd|0)),jump:(A.jump||1)*(1+.015*(S.jmp|0)),mp:(A.mp||1)*(1+.06*(S.mag|0))}; };
 function fireHeart(dir){ const now=performance.now()/1000; if(now<(fireHeart.t||0)) return; fireHeart.t=now+.35; swing();
   const from=camera.position.clone().addScaledVector(dir,camMode?camDist+.4:.7); const p=shoot('heart',from,dir,null); p.mine=true; spawnBits(from.x,from.y,from.z,[255,120,200],4,.6); }
 /* ================= buddies: fire dragon "Volca" & thunder beast "Billy" (original) ================= */
@@ -2654,55 +2671,142 @@ function buildRaiju(g){ const f='#5b6b9a', dk='#3c4870', w='#f4f6ff', gl=MB('#7f
   const tg=new THREE.Group(); tg.position.set(0,.5,-.3); tg.rotation.x=.9; g.add(tg); for(let k=0;k<4;k++) bx(tg,.24-k*.02,.24-k*.02,.16,k%2?f:dk,0,0,-.08-k*.15); bx(tg,.12,.12,.1,gl,0,0,-.7);
   const cl=new THREE.Group(); cl.position.set(0,1.3,-.1); g.add(cl); [[-.18,0,0,.3],[0,.06,0,.36],[.18,0,0,.3]].forEach(q=>bx(cl,q[3],q[3]*.7,q[3]*.8,'#ffffff',q[0],q[1],q[2]));
   return {legs:[leg(g,.12,.22,dk,-.13,.22,.2),leg(g,.12,.22,dk,.13,.22,-.2),leg(g,.12,.22,dk,.13,.22,.2),leg(g,.12,.22,dk,-.13,.22,-.2)],cloud:cl,tail:tg}; }
-function makeBuddy(key){ if(buddies[key]) return buddies[key]; const g=new THREE.Group(); let b;
-  if(key==='volca'){ const parts=buildDragon(g,{mi:'#ff8a3d',cr:'#ffe9c7',go:'#ffd23f',wg:'#ffc95e',dk:'#c8551e'}); b={key,type:'volca',name:'ボルカ',fly:true,legs:parts.legs,wings:parts.wings}; g.scale.setScalar(1.05); }
-  else { const parts=buildRaiju(g); b={key,type:'billy',name:'ビリー',fly:false,legs:parts.legs,cloud:parts.cloud,tail:parts.tail}; g.scale.setScalar(1.15); }
+function buildPhoenix(g){ const b='#3fa9ff', dk='#2a6fd0', gd='#ffcf3a', rb=['#ff5f5f','#ffb34a','#ffe14d','#7fe36f','#5fc8ff','#b46fff'];
+  bx(g,.5,.5,.8,b,0,.9,0); bx(g,.36,.36,.36,b,0,1.25,.42); bx(g,.12,.1,.2,gd,0,1.2,.68); [-1,1].forEach(s=>{ bx(g,.06,.08,.02,MB('#ffffff'),s*.12,1.3,.6); bx(g,.03,.04,.02,MB('#1b2433'),s*.12,1.3,.61); });
+  for(let k=0;k<4;k++){ const c=bx(g,.06,.3,.06,rb[k],-.09+k*.06,1.55,.32-k*.04); c.rotation.x=-.5; }
+  for(let k=0;k<6;k++){ const t=bx(g,.1,.06,.9+k*.08,rb[k],(k-2.5)*.06,.8-k*.02,-.75-k*.06); t.rotation.x=.25; }
+  const wings=[-1,1].map(s=>{ const p=new THREE.Group(); p.position.set(s*.22,1.05,0); g.add(p); bx(p,.9,.06,.5,b,s*.45,0,0); bx(p,.6,.06,.42,'#7fd0ff',s*1.05,.02,-.04); for(let k=0;k<4;k++) bx(p,.18,.05,.3,rb[k+1],s*(1.25+k*.1),.03,-.25+k*.02); return p; });
+  return {wings,legs:[leg(g,.06,.3,gd,-.12,.62,0),leg(g,.06,.3,gd,.12,.62,0)]}; }
+function buildWolf(g){ const f='#1e1a26', ar='#ffcf3a', pu='#5a2a9a', gm=MB('#c27cff'), ey=MB('#d08cff');
+  bx(g,.55,.5,1.2,f,0,.75,0); bx(g,.6,.2,.7,ar,0,1.02,-.05); bx(g,.62,.12,.4,pu,0,1.12,-.05); bx(g,.12,.12,.04,gm,0,1.04,.31);
+  bx(g,.5,.48,.5,f,0,1.05,.72); bx(g,.3,.22,.36,f,0,.95,1.08); bx(g,.1,.08,.05,'#000000',0,1.0,1.27); [-1,1].forEach(s=>{ bx(g,.1,.05,.02,ey,s*.13,1.15,.98); const e=bx(g,.12,.24,.08,f,s*.15,1.38,.6); e.rotation.z=-s*.2; bx(g,.04,.2,.04,ar,s*.15,1.42,.65); bx(g,.14,.2,.3,ar,s*.3,.95,.45); });
+  for(let k=0;k<4;k++){ const sp=bx(g,.08,.22,.08,ar,0,1.25,-.4+k*.22); sp.rotation.x=-.3; } const t=bx(g,.16,.16,.7,f,0,.9,-.85); t.rotation.x=.5; bx(g,.17,.06,.2,ar,0,.98,-.8);
+  return {legs:[leg(g,.16,.5,f,-.18,.5,.42),leg(g,.16,.5,f,.18,.5,-.42),leg(g,.16,.5,f,.18,.5,.42),leg(g,.16,.5,f,-.18,.5,-.42)]}; }
+function buildUnicorn(g){ const legs=TYPES.pegasus.build(g); const rb=['#ff5f5f','#ffb34a','#ffe14d','#7fe36f','#5fc8ff','#b46fff'];
+  for(let k=0;k<5;k++) bx(g,.08-k*.012,.1,.08-k*.012,rb[k],0,2.0+k*.09,.98+k*.04).rotation.x=.5;
+  for(let k=0;k<6;k++) bx(g,.12,.12,.14,rb[k],0,1.95-k*.12,.55-k*.06); for(let k=0;k<6;k++) bx(g,.1,.1,.1,rb[k],0,.95-k*.08,-.72-k*.03);
+  legs.forEach((l,i)=>bx(l,.17,.12,.17,rb[i+1],0,-.5,0)); return {legs,wings:legs.wings}; }
+function buildStarCat(g){ const p='#9a6fe0', pk='#ffb3e0', gd=MB('#ffd23f');
+  bx(g,.44,.32,.7,p,0,.42,0); bx(g,.44,.4,.4,p,0,.68,.44); [-1,1].forEach(s=>{ bx(g,.12,.14,.08,p,s*.13,.94,.42); bx(g,.06,.08,.02,pk,s*.13,.92,.465); bx(g,.08,.1,.02,MB('#ff6fd0'),s*.1,.71,.645); bx(g,.03,.03,.02,MB('#ffffff'),s*.09,.74,.655); });
+  bx(g,.1,.08,.02,gd,0,.86,.645); bx(g,.06,.04,.02,pk,0,.62,.645); bx(g,.2,.1,.05,MB('#ff5fb0'),0,.5,.65);
+  const t=bx(g,.08,.08,.5,p,0,.62,-.56); t.rotation.x=.7; bx(g,.22,.22,.06,gd,0,.92,-.78);
+  const wings=[-1,1].map(s=>{ const w=new THREE.Group(); w.position.set(s*.22,.6,.05); g.add(w); const m=new THREE.Mesh(G(.5,.04,.26),MBT('#ffffff',.9)); m.position.x=s*.25; w.add(m); return w; });
+  return {legs:[leg(g,.12,.27,p,-.15,.27,.26),leg(g,.12,.27,p,.15,.27,-.26),leg(g,.12,.27,p,.15,.27,.26),leg(g,.12,.27,p,-.15,.27,-.26)],wings}; }
+const dragonPal=P=>g=>buildDragon(g,P);
+const BUD_DEFS={
+  volca:{top:2.6,n:'ボルカ',lab:'ほのおドラゴン',fly:1,ride:1,atk:'fire',dmg:7,scale:1.05,col:'#ffb35a',build:dragonPal({mi:'#ff8a3d',cr:'#ffe9c7',go:'#ffd23f',wg:'#ffc95e',dk:'#c8551e'})},
+  billy:{top:1.45,n:'ビリー',lab:'らいじゅう',fly:0,atk:'bolt',dmg:6,scale:1.15,col:'#7fe8ff',build:buildRaiju},
+  darkling:{top:2.6,n:'ヤミドラ',lab:'暗黒幼竜',fly:1,atk:'fire',dmg:13,scale:.62,col:'#c27cff',build:dragonPal({mi:'#3a2a5a',cr:'#c8b0ff',go:'#c27cff',wg:'#8a4fe0',dk:'#24182e'})},
+  goldhorn:{top:2.6,n:'キンカク',lab:'金角の幼竜',fly:1,atk:'fire',dmg:13,scale:.62,col:'#ffcf3a',build:dragonPal({mi:'#24202e',cr:'#ffcf3a',go:'#ffd23f',wg:'#c9971c',dk:'#14121a'})},
+  phoenix:{top:1.8,n:'ライコウ',lab:'雷光のフェニックス',fly:1,atk:'bolt',dmg:15,scale:1.1,col:'#7fd0ff',build:buildPhoenix},
+  wolf:{top:1.6,n:'ヨルガ',lab:'闇夜の鎧狼',fly:0,atk:'bite',dmg:18,scale:1.2,col:'#c27cff',build:buildWolf},
+  pinkling:{top:2.6,n:'モモ',lab:'チビ桃竜',fly:1,atk:'heart',dmg:13,scale:.58,col:'#ff8fc8',build:dragonPal({mi:'#ff8fc8',cr:'#ffe6f2',go:'#ffcf3a',wg:'#ff6fb0',dk:'#d0558f'})},
+  purpling:{top:2.6,n:'スミレ',lab:'チビ紫竜',fly:1,atk:'fire',dmg:13,scale:.58,col:'#b48cff',build:dragonPal({mi:'#a06fe0',cr:'#ecdcff',go:'#ffcf3a',wg:'#c08cff',dk:'#6a3fb0'})},
+  unicorn:{top:2.3,n:'ニジカ',lab:'虹光のユニコーン',fly:0,ride:1,atk:'beam',dmg:15,scale:1,col:'#ff9cf0',build:buildUnicorn},
+  starcat:{top:1.15,n:'ホシ',lab:'夜空の星猫',fly:0,atk:'star',dmg:13,scale:1.25,col:'#b48cff',build:buildStarCat}};
+RIDE.unicorn={h:1.3,sp:11,jump:10,fly:1};
+function makeBuddy(key){ if(buddies[key]) return buddies[key]; const D=BUD_DEFS[key]; if(!D) return null; const g=new THREE.Group(), parts=D.build(g)||{};
+  const b={key,type:key,name:D.n,fly:!!D.fly,legs:parts.legs||[],wings:parts.wings||[],cloud:parts.cloud,tail:parts.tail,sc:D.scale}; g.scale.setScalar(D.scale);
   Object.assign(b,{g,x:pl.x+2,y:pl.y+(b.fly?4:0),z:pl.z+2,vy:0,rot:0,trot:0,cool:1,rmove:false,friend:true,ph:0});
-  const lab=plainLabel(b.name,b.key==='volca'?'#ffb35a':'#7fe8ff'); lab.position.y=b.fly?2.9:1.55; g.add(lab);
+  const lab=plainLabel(b.name,D.col); lab.position.y=D.top+.35/D.scale; lab.scale.multiplyScalar(1/D.scale); g.add(lab);
   g.traverse(o=>{ if(o.isMesh){ o.userData.buddy=b; buddyMeshes.push(o); } }); scene.add(g); buddies[key]=b; return b; }
-Object.keys(save.buddies).forEach(k=>{ if(save.buddies[k]) makeBuddy(k); });
-function volcaHead(v){ return new THREE.Vector3(v.x+Math.sin(v.rot)*1.9,v.y+1.9,v.z+Math.cos(v.rot)*1.9); }
-function nearestFoe(x,z,r){ let best=null,bd=r; for(const zb of zombies){ const d=Math.hypot(zb.x-x,zb.z-z); if(d<bd&&Math.hypot(zb.x-pl.x,zb.z-pl.z)<22){ bd=d; best=zb; } } return best; }
-function updateBuddies(dt,time,active){ for(const k in buddies){ const b=buddies[k]; b.cool-=dt; b.ph+=dt;
-  if(riding===b){ let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); b.rot+=d*Math.min(1,dt*10); b.g.position.set(b.x,b.y,b.z); b.g.rotation.y=b.rot; const f=Math.sin(time*10)*.6; b.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*f); continue; }
+function volcaHead(v){ const s=v.sc||1; return new THREE.Vector3(v.x+Math.sin(v.rot)*1.9*s,v.y+1.9*s,v.z+Math.cos(v.rot)*1.9*s); }
+function buddyAttack(b,foe){ const D=BUD_DEFS[b.key], dmg=D.dmg+(foe.boss?2:0)+Math.floor(lvOf(b)/2), from=b.fly?volcaHead(b):new THREE.Vector3(b.x,b.y+1.2*(b.sc||1),b.z), dir=new THREE.Vector3(foe.x-from.x,foe.y+(foe.cy||1)-from.y,foe.z-from.z).normalize();
+  const later=(fn,ms)=>setTimeout(()=>{ if(zombies.includes(foe)) fn(); },ms);
+  if(D.atk==='fire'||D.atk==='heart'||D.atk==='beam'){ shoot(D.atk==='fire'?'dfire':D.atk,from,dir,null).fx=true; later(()=>{ if(D.atk==='heart') spawnHeart(foe.x,foe.y+1.5,foe.z); spawnBits(foe.x,foe.y+1,foe.z,D.atk==='fire'?[255,122,46]:[255,140,220],10,1.2); damageZombie(foe,dmg,{kx:dir.x*6,kz:dir.z*6,up:3}); },220); b.cool=1.2; }
+  else if(D.atk==='bolt'){ spawnBits(from.x,from.y,from.z,[127,232,255],6,.8); bolt(foe.x,foe.y,foe.z); damageZombie(foe,dmg,{kx:dir.x*4,kz:dir.z*4,up:3}); b.cool=1.5; }
+  else if(D.atk==='star'){ shoot('star',from,dir,null).fx=true; later(()=>starBoom(new THREE.Vector3(foe.x,foe.y+1,foe.z)),300); b.cool=2; }
+  else if(D.atk==='bite'){ if(Math.hypot(foe.x-b.x,foe.z-b.z)>2.2+(foe.r||0)) return; spawnBits(foe.x,foe.y+1,foe.z,[200,140,255],10,1.2); damageZombie(foe,dmg,{kx:dir.x*8,kz:dir.z*8,up:4}); b.cool=1; b.vy=5; }
+  gainXp(b,1); }
+function updateBuddies(dt,time,active){ for(const k in buddies){ const b=buddies[k], D=BUD_DEFS[k]; b.cool-=dt; b.ph+=dt;
+  if(riding===b){ let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); b.rot+=d*Math.min(1,dt*10); b.g.position.set(b.x,b.y,b.z); b.g.rotation.y=b.rot; const f=Math.sin(time*10)*.6; b.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*f); const s2=b.rmove?Math.sin(time*12)*.6:0; b.legs.forEach((l,i)=>l.rotation.x=i%2?s2:-s2); continue; }
   const sy=Math.sin(pl.yaw), cy=Math.cos(pl.yaw), dp=Math.hypot(pl.x-b.x,pl.z-b.z);
   const bst=isStay(b), bp=pd(b), hx=bst?(bp.sx??b.x):pl.x, hz=bst?(bp.sz??b.z):pl.z;
   if(!bst&&dp>40&&active){ b.x=pl.x+cy*2.5; b.z=pl.z-sy*2.5; b.y=b.fly?pl.y+4:groundAt(b.x,b.z,pl.y+1); }
-  const foe=active?(bst?(()=>{ let best=null,bd=14; for(const zb of zombies){ const d2=Math.hypot(zb.x-b.x,zb.z-b.z); if(d2<bd){ bd=d2; best=zb; } } return best; })():nearestFoe(b.x,b.z,b.fly?18:13)):null;
-  if(b.fly){ const tx=foe?foe.x+Math.cos(time*.8)*7:bst?hx+Math.cos(time*.3)*4:pl.x+cy*3+sy*2, tz=foe?foe.z+Math.sin(time*.8)*7:bst?hz+Math.sin(time*.3)*4:pl.z-sy*3+cy*2, ty=(foe?foe.y+6:bst?surface(hx,hz)+4:pl.y+3.5)+Math.sin(time*2)*.4;
+  const foe=active?(bst?(()=>{ let best=null,bd=14; for(const zb of zombies){ const d2=Math.hypot(zb.x-b.x,zb.z-b.z); if(d2<bd){ bd=d2; best=zb; } } return best; })():nearestFoe(b.x,b.z,b.fly?18:14)):null;
+  if(b.fly){ const off=(Object.keys(buddies).indexOf(k)%4)*1.4, tx=foe?foe.x+Math.cos(time*.8+off)*7:bst?hx+Math.cos(time*.3+off)*4:pl.x+cy*(3+off)+sy*2, tz=foe?foe.z+Math.sin(time*.8+off)*7:bst?hz+Math.sin(time*.3+off)*4:pl.z-sy*(3+off)+cy*2, ty=(foe?foe.y+6:bst?surface(hx,hz)+4:pl.y+3.5+off*.4)+Math.sin(time*2+off)*.4;
     const k2=Math.min(1,dt*(foe?1.5:2.2)); b.x+=(tx-b.x)*k2; b.y+=(ty-b.y)*k2; b.z+=(tz-b.z)*k2; b.trot=foe?Math.atan2(foe.x-b.x,foe.z-b.z):Math.atan2(tx-b.x+1e-3,tz-b.z);
     const f=Math.sin(time*7+b.ph)*.5; b.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*f);
-    if(foe&&b.cool<=0){ b.cool=1.2; const from=volcaHead(b), dir=new THREE.Vector3(foe.x-from.x,foe.y+(foe.cy||1)-from.y,foe.z-from.z).normalize(); shoot('dfire',from,dir,null).fx=true; setTimeout(()=>{ if(zombies.includes(foe)){ spawnBits(foe.x,foe.y+1,foe.z,[255,122,46],10,1.2); damageZombie(foe,(foe.boss?8:7)+Math.floor(lvOf(b)/2),{kx:dir.x*6,kz:dir.z*6,up:3}); gainXp(b,1); } },260); } }
-  else { let moving=false; if(foe){ b.trot=Math.atan2(foe.x-b.x,foe.z-b.z); moving=Math.hypot(foe.x-b.x,foe.z-b.z)>6; }
+    if(foe&&b.cool<=0) buddyAttack(b,foe); }
+  else { let moving=false, fast=D.atk==='bite'&&foe; if(foe){ b.trot=Math.atan2(foe.x-b.x,foe.z-b.z); moving=Math.hypot(foe.x-b.x,foe.z-b.z)>(D.atk==='bite'?1.8:6); }
     else if(bst){ if(Math.hypot(hx-b.x,hz-b.z)>3){ b.trot=Math.atan2(hx-b.x,hz-b.z); moving=true; } }
-    else if(dp>2.6){ b.trot=Math.atan2(pl.x-b.x,pl.z-b.z); moving=true; }
-    if(moving){ const sp=dp>8?6:4, nx=b.x+Math.sin(b.trot)*sp*dt, nz=b.z+Math.cos(b.trot)*sp*dt; if(canWalk(b,nx,nz)){ b.x=nx; b.z=nz; } else if(b.vy===0) b.vy=7; }
+    else if(dp>2.6+(Object.keys(buddies).indexOf(k)%3)){ b.trot=Math.atan2(pl.x-b.x,pl.z-b.z); moving=true; }
+    if(moving){ const sp=fast?8:dp>8?6:4, nx=b.x+Math.sin(b.trot)*sp*dt, nz=b.z+Math.cos(b.trot)*sp*dt; if(canWalk(b,nx,nz)){ b.x=nx; b.z=nz; } else if(b.vy===0) b.vy=7; }
     b.vy-=22*dt; b.y+=b.vy*dt; const g=groundAt(b.x,b.z,b.y); if(b.y<=g){ b.y=g; b.vy=0; }
-    const s=moving?Math.sin(time*14)*.7:0; b.legs.forEach((l,i)=>l.rotation.x=i<2?s:-s); b.cloud.position.y=1.3+Math.sin(time*2.5)*.08; b.tail.rotation.y=Math.sin(time*3)*.3;
-    if(foe&&b.cool<=0&&Math.hypot(foe.x-b.x,foe.z-b.z)<13){ b.cool=1.6; const from=new THREE.Vector3(b.x,b.y+1.3,b.z), dir=new THREE.Vector3(foe.x-from.x,foe.y+(foe.cy||1)-from.y,foe.z-from.z).normalize(); spawnBits(b.x,b.y+1.3,b.z,[127,232,255],6,.8); bolt(foe.x,foe.y,foe.z); damageZombie(foe,(foe.boss?7:6)+Math.floor(lvOf(b)/2),{kx:dir.x*4,kz:dir.z*4,up:3}); gainXp(b,1); } }
+    const s=moving?Math.sin(time*14)*.7:0, half=b.legs.length/2; b.legs.forEach((l,i)=>l.rotation.x=i<half?s:-s); if(b.cloud) b.cloud.position.y=1.3+Math.sin(time*2.5)*.08; if(b.tail) b.tail.rotation.y=Math.sin(time*3)*.3;
+    b.wings.forEach((w,i)=>w.rotation.z=(i?1:-1)*(.4+Math.sin(time*3+b.ph)*.15));
+    if(foe&&b.cool<=0&&Math.hypot(foe.x-b.x,foe.z-b.z)<14) buddyAttack(b,foe); }
   let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); b.rot+=d*Math.min(1,dt*6); b.g.position.set(b.x,b.y,b.z); b.g.rotation.y=b.rot; } }
-function buddyTap(b){ if(b.key==='volca'){ if(riding!==b) mount(b); return; }
-  b.vy=6; spawnBits(b.x,b.y+1,b.z,[127,232,255],14,1.2); bolt(b.x+Math.sin(b.rot)*1.5,b.y,b.z+Math.cos(b.rot)*1.5); toast('ビリー「ビリビリ〜！」 うれしそう！'); for(let i=0;i<3;i++) setTimeout(()=>spawnHeart(b.x,b.y+1.2,b.z),i*120); }
+function buddyTap(b){ const D=BUD_DEFS[b.key]; if(D.ride){ if(riding!==b) mount(b); return; }
+  b.vy=6; spawnBits(b.x,b.y+1,b.z,[255,200,240],12,1.2); if(b.key==='billy') bolt(b.x+Math.sin(b.rot)*1.5,b.y,b.z+Math.cos(b.rot)*1.5); toast(`${D.n}（${D.lab}）は うれしそう！`); for(let i=0;i<3;i++) setTimeout(()=>spawnHeart(b.x,b.y+1.2,b.z),i*120); }
+Object.keys(save.buddies).forEach(k=>{ if(save.buddies[k]) makeBuddy(k); });
+function nearestFoe(x,z,r){ let best=null,bd=r; for(const zb of zombies){ const d=Math.hypot(zb.x-x,zb.z-z); if(d<bd&&Math.hypot(zb.x-pl.x,zb.z-pl.z)<22){ bd=d; best=zb; } } return best; }
 function adoptBuddy(key){ save.buddies[key]=true; persist(); const b=makeBuddy(key); b.x=pl.x+2; b.z=pl.z+2; b.y=b.fly?pl.y+4:groundAt(b.x,b.z,pl.y+1); dexMark(key,2); award('buddy'); }
+/* ================= legendary exclusive equipment & quests ================= */
+if(!save.qk) save.qk={}; [10,11].forEach(k=>{ if(!save.qk[k]) save.qk[k]={boss:0,zombie:0,siege:0,daimaou:0,maou:0,ryu:0}; });
+function qk(k){ return save.qk&&save.qk[k]; }
+function qkAdd(f,n){ const s=save.heroColor|0; if(s===10||s===11){ qk(s)[f]=(qk(s)[f]||0)+(n||1); } }
+function EQUIP_BONUS(){ const s=save.heroColor|0, o={atk:1,def:1,sp:1}; for(const id in ITEMS){ const it=ITEMS[id]; if(!it.eq||it.eq.skin!==s||!have(+id)) continue; const e=it.eq; if(e.atk) o.atk*=e.atk; if(e.def) o.def*=e.def; if(e.sp) o.sp*=e.sp; } return o; }
+function canFly(){ return have(CAPE)>0||((save.heroColor|0)===11&&have(EQ_DWING)>0)||((save.heroColor|0)===10&&have(EQ_VWING)>0); }
+let mswNext=0;
+function magicSword(dir,it){ if((save.heroColor|0)!==it.msw){ toast(`${it.n}は ${skinName(it.msw)} せんようだよ！`,2600); return; }
+  const now=performance.now()/1000; if(now<mswNext) return; mswNext=now+.8; swing(); const R=13, col=it.msw===10?[255,120,230]:[170,120,255]; let hit=0;
+  for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>8) continue; hit++; damageZombie(zb,25*(abil().atk||1),{kx:dx/d*14,kz:dz/d*14,up:6}); }
+  const L=zombies.filter(z=>Math.hypot(z.x-pl.x,z.z-pl.z)<24).sort((a,b)=>Math.hypot(a.x-pl.x,a.z-pl.z)-Math.hypot(b.x-pl.x,b.z-pl.z)).slice(0,6);
+  L.forEach((z,i)=>setTimeout(()=>{ if(zombies.includes(z)){ bolt(z.x,z.y,z.z); damageZombie(z,15*(abil().atk||1),{up:3}); } },80*i));
+  const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:it.msw===10?0xff7ae6:0xa878ff,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false})); g.rotation.x=-Math.PI/2; g.position.set(pl.x,pl.y+1.1,pl.z); scene.add(g); fx_.push({o:g,grow:R/1.2,life:.4,max:.4});
+  flash(); if(hit||L.length) shake(.2,.2); for(let k=0;k<16;k++){ const a=k/16*Math.PI*2; spawnBits(pl.x+Math.cos(a)*5,pl.y+1.2,pl.z+Math.sin(a)*5,col,2,.7); } }
+function eqIcon(x,id){ const it=ITEMS[id], t=it.ic, c=t.c;
+  const P=(pts,col)=>{ x.fillStyle=col; x.beginPath(); pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1])); x.closePath(); x.fill(); };
+  if(t.k==='wing'){ [-1,1].forEach(s=>{ for(let k=0;k<5;k++){ x.fillStyle=c[k%c.length]; x.save(); x.translate(16+s*3,18); x.rotate(s*(-.4-k*.22)); x.fillRect(s>0?0:-13,-2,13,4); x.restore(); } }); x.fillStyle='#ffcf3a'; x.fillRect(14,16,4,5); }
+  else if(t.k==='sword'){ x.save(); x.translate(16,16); x.rotate(-Math.PI/4); x.fillStyle=c[0]; x.fillRect(-3,-15,6,22); x.fillStyle=c[1]; x.fillRect(-1,-14,2,20); x.fillStyle='#ffcf3a'; x.fillRect(-7,6,14,3); x.fillStyle=c[2]; x.fillRect(-2,9,4,6); x.fillStyle='#ffffff'; for(let k=0;k<4;k++) x.fillRect(-1,-11+k*4,2,1); x.restore(); x.strokeStyle=c[1]; x.lineWidth=1; x.beginPath(); x.moveTo(25,3); x.lineTo(29,9); x.lineTo(24,12); x.stroke(); }
+  else if(t.k==='helm'){ P([[6,28],[6,12],[16,6],[26,12],[26,28]],c[0]); x.fillStyle='#ffcf3a'; x.fillRect(6,11,20,4); x.fillStyle='#1b1b2a'; x.fillRect(10,17,12,4); P([[6,12],[1,2],[9,9]],c[1]); P([[26,12],[31,2],[23,9]],c[1]); x.fillStyle='#ff2a4a'; x.fillRect(14,9,4,5); }
+  else if(t.k==='crown'){ P([[4,26],[4,12],[10,18],[16,8],[22,18],[28,12],[28,26]],'#ffcf3a'); x.fillStyle=c[0]; x.fillRect(14,17,4,5); x.fillRect(7,21,3,3); x.fillRect(22,21,3,3); x.strokeStyle='#ffe66b'; x.lineWidth=1.5; x.beginPath(); x.ellipse(16,6,11,3,0,0,7); x.stroke(); }
+  else if(t.k==='armor'){ P([[8,6],[24,6],[29,12],[26,28],[6,28],[3,12]],c[0]); x.fillStyle='#ffcf3a'; x.fillRect(8,6,16,3); x.fillRect(15,9,2,18); x.fillStyle=c[1]; x.beginPath(); x.arc(16,16,4,0,7); x.fill(); x.fillStyle=c[2]||'#5ff2ff'; x.fillRect(4,10,4,4); x.fillRect(24,10,4,4); }
+  else if(t.k==='egg'){ x.fillStyle=c[0]; x.beginPath(); x.ellipse(16,17,10,13,0,0,7); x.fill(); x.fillStyle=c[1]; [[11,11,3],[19,14,2.5],[13,21,3],[21,23,2]].forEach(q=>{ x.beginPath(); x.arc(q[0],q[1],q[2],0,7); x.fill(); }); x.fillStyle='#ffffff'; x.fillRect(10,8,2,3); }
+  else if(t.k==='emblem'){ P([[16,4],[26,9],[24,24],[16,30],[8,24],[6,9]],'#ffcf3a'); P([[16,8],[22,11],[21,22],[16,26],[11,22],[10,11]],c[0]); P([[17,10],[13,18],[16,18],[14,25],[20,15],[17,15]],'#ffffff'); }
+  else if(t.k==='horn'){ for(let k=0;k<6;k++){ x.fillStyle=['#ff5f5f','#ffb34a','#ffe14d','#7fe36f','#5fc8ff','#b46fff'][k]; x.save(); x.translate(8+k*3.2,26-k*3.6); x.rotate(-.8); x.fillRect(-4+k*.5,-3,8-k,6); x.restore(); } x.fillStyle='#ffffff'; x.fillRect(26,4,2,2); } }
+
 /* ================= party (なかま) list: levels, call / wait ================= */
 seiryu.key='s';
 const isStay=a=>!!pd(a).stay;
 function setStay(a,v){ const p=pd(a); p.stay=!!v; if(v){ p.sx=a.x; p.sz=a.z; } persist(); }
 function allyList(){ return animals.filter(a=>a.friend).concat(dragon.friend?[dragon]:[],seiryu.friend?[seiryu]:[],Object.values(buddies)); }
-const allyLabel=a=>a===dragon?'ドラゴン':a===seiryu?'りゅう':a.type==='volca'?'ほのおドラゴン':a.type==='billy'?'らいじゅう':TYPES[a.type].label;
+const allyLabel=a=>a===dragon?'ドラゴン':a===seiryu?'りゅう':BUD_DEFS[a.type]?BUD_DEFS[a.type].lab:TYPES[a.type].label;
 function callAlly(a){ if(a===riding) return; setStay(a,false); const nx=clamp(pl.x-Math.sin(pl.yaw)*2.5+(Math.random()-.5)*2,1,W-1), nz=clamp(pl.z-Math.cos(pl.yaw)*2.5+(Math.random()-.5)*2,1,D-1);
   a.x=nx; a.z=nz; a.y=(a===dragon)?surface(nx,nz):(a===seiryu||(a.fly&&a.type==='volca'))?pl.y+3:groundAt(nx,nz,pl.y+1); a.look=2; spawnHeart(a.x,a.y+1,a.z);
   if(a===seiryu){ seiryu.trail.length=0; for(let j=60;j>=0;j--) seiryu.trail.push(new THREE.Vector3(a.x+j*.1,a.y,a.z)); } }
 const UNLOCKS=[
-  {k:'hrod',n:'ラブリーハートロッド（ハートプリンセス せんよう）',icon:()=>SW_HEART,cond:'ハートプリンセスを 手に入れる',p:()=>[have(SK_LEG)>0?1:0,1],own:()=>have(SW_HEART)>0,give:()=>{ addItem(SW_HEART,1); return {title:'ハートプリンセス せんよう ぶき！',lead:'「ラブリーハートロッド」を 手に入れた！ ハートプリンセスで タップすると、まわり12ブロックの てきに ハートの はどう。あてた ぶん ハートも かいふく！'}; }},
-  {k:'king',n:'レジェンド：ドラゴンキング',icon:()=>SK_KING,cond:'キャラの レベルを 50に する',p:()=>[save.plv|0,50],own:()=>have(SK_KING)>0,give:()=>{ addItem(SK_KING,1); return {title:'レジェンドキャラ かいほう！',lead:'レベル50の あなたに「ドラゴンキング」が とどいたよ！ メニューの「きせかえ」で なれるよ。エクスカリバーの はんいが 15ブロックに なる！'}; }},
-  {k:'excal',n:'でんせつの 剣 エクスカリバー',icon:()=>SW_EX,cond:'ボスを 5しゅるい たおす',p:()=>[Object.keys(save.stats.bossKinds||{}).length,5],own:()=>have(SW_EX)>0,give:()=>{ addItem(SW_EX,1); return {title:'エクスカリバーを 手に入れた！',lead:'でんせつの 剣！ タップすると まわり 10ブロックの てきを いっきに こうげきするよ。'}; }},
-  {k:'legend',n:'レジェンド：ハートプリンセス',icon:()=>SK_LEG,cond:'だいまおう イグニスを たおす',p:()=>[(save.stats.bossKinds||{}).daimaou?1:0,1],own:()=>have(SK_LEG)>0,give:()=>{ addItem(SK_LEG,1); return {title:'レジェンドキャラ かいほう！',lead:'だいまおうを たおした あなたに「ハートプリンセス」が とどいたよ！ メニューの「きせかえ」で なれるよ。'}; }},
-  {k:'volca',n:'ほのおドラゴン ボルカ',icon:()=>BUD_V,cond:'ボスを 3しゅるい たおす',p:()=>[Object.keys(save.stats.bossKinds||{}).length,3],own:()=>!!save.buddies.volca,give:()=>{ adoptBuddy('volca'); return {title:'ボルカが なかまに なった！',lead:'つよい ボスを たおした あなたを みとめて、ほのおドラゴンの ボルカが きたよ。タップで せなかに のれる（てぶらで タップすると 火をはく）。'}; }},
-  {k:'billy',n:'らいじゅう ビリー',icon:()=>BUD_B,cond:'ゾンビを 30たい たおす',p:()=>[save.stats.zombies|0,30],own:()=>!!save.buddies.billy,give:()=>{ adoptBuddy('billy'); return {title:'ビリーが なかまに なった！',lead:'ゾンビを たくさん たおした あなたに、らいじゅうの ビリーが ついてきたよ。かみなりで たすけてくれる！'}; }}];
-UNLOCKS.push(UNLOCKS.shift());
+  {k:'legend',n:'レジェンド：ハートプリンセス',icon:()=>SK_LEG,cond:()=>'だいまおう イグニスを たおす',p:()=>[Math.min(save.qc.daimaou,1),1],own:()=>have(SK_LEG)>0,give:()=>{ addItem(SK_LEG,1); return {title:'レジェンドキャラ かいほう！',lead:'だいまおうを たおした あなたに「ハートプリンセス」が とどいたよ！ メニューの「きせかえ」で なれるよ。'}; }},
+  {k:'hrod',n:'ラブリーハートロッド（ハートプリンセス せんよう）',icon:()=>SW_HEART,cond:()=>`ハートプリンセスで ボスを 5たい たおす（${Math.min(save.qc.pboss,5)}/5）`,p:()=>[Math.min(save.qc.pboss,5),5],own:()=>have(SW_HEART)>0,give:()=>{ addItem(SW_HEART,1); return {title:'ハートプリンセス せんよう ぶき！',lead:'「ラブリーハートロッド」を 手に入れた！ ハートプリンセスで タップすると、まわり12ブロックの てきに ハートの はどう。あてた ぶん ハートも かいふく！'}; }},
+  {k:'volca',n:'ほのおドラゴン ボルカ',icon:()=>BUD_V,cond:()=>`ボスを 5たい たおす（${Math.min(save.qc.boss,5)}/5）`,p:()=>[Math.min(save.qc.boss,5),5],own:()=>!!save.buddies.volca,give:()=>{ adoptBuddy('volca'); return {title:'ボルカが なかまに なった！',lead:'つよい ボスを たおした あなたを みとめて、ほのおドラゴンの ボルカが きたよ。タップで せなかに のれる（てぶらで タップすると 火をはく）。'}; }},
+  {k:'billy',n:'らいじゅう ビリー',icon:()=>BUD_B,cond:()=>`ゾンビを 50たい たおす（${Math.min(save.qc.zombie,50)}/50）`,p:()=>[Math.min(save.qc.zombie,50),50],own:()=>!!save.buddies.billy,give:()=>{ adoptBuddy('billy'); return {title:'ビリーが なかまに なった！',lead:'ゾンビを たくさん たおした あなたに、らいじゅうの ビリーが ついてきたよ。かみなりで たすけてくれる！'}; }},
+  {k:'excal',n:'でんせつの 剣 エクスカリバー',icon:()=>SW_EX,cond:()=>`ボスを 12たい たおす（${Math.min(save.qc.boss,12)}/12）`,p:()=>[Math.min(save.qc.boss,12),12],own:()=>have(SW_EX)>0,give:()=>{ addItem(SW_EX,1); return {title:'エクスカリバーを 手に入れた！',lead:'でんせつの 剣！ タップすると まわり 10ブロックの てきを いっきに こうげきするよ。'}; }},
+  {k:'king',n:'レジェンド：ドラゴンキング',icon:()=>SK_KING,cond:()=>`キャラ Lv50（いま Lv${save.plv}）で、まおうを 3かい たおす（${Math.min(save.qc.maou,3)}/3）`,p:()=>[(save.plv>=50?1:0)+Math.min(save.qc.maou,3),4],own:()=>have(SK_KING)>0,give:()=>{ addItem(SK_KING,1); return {title:'レジェンドキャラ かいほう！',lead:'「ドラゴンキング」が とどいたよ！ メニューの「きせかえ」で なれるよ。エクスカリバーの はんいが 15ブロックに なる！'}; }}];
+UNLOCKS.push({k:'val',n:'レジェンド：エンジェルヴァルキリー',icon:()=>SK_VAL,cond:()=>`キャラ Lv70（いま Lv${save.plv}）で、マイとりでの ぼうえいせんを 5かい クリア（${Math.min(save.qc.siege,5)}/5）`,p:()=>[(save.plv>=70?1:0)+Math.min(save.qc.siege,5),6],own:()=>have(SK_VAL)>0,give:()=>{ addItem(SK_VAL,1); return {title:'でんせつの キャラ かいほう！',lead:'とりでを まもりぬいた あなたに「エンジェルヴァルキリー」が とどいたよ！ 天使の わと にじいろの つばさ！ メニューの「きせかえ」で なれるよ。'}; }},
+  {k:'dark',n:'レジェンド：ダークエンジェルキング',icon:()=>SK_DARK,cond:()=>`キャラ Lv70（いま Lv${save.plv}）で、だいまおうを 3かい たおす（${Math.min(save.qc.daimaou,3)}/3）`,p:()=>[(save.plv>=70?1:0)+Math.min(save.qc.daimaou,3),4],own:()=>have(SK_DARK)>0,give:()=>{ addItem(SK_DARK,1); return {title:'さいきょうの キャラ かいほう！',lead:'「ダークエンジェルキング」が とどいたよ！ こうげき 2.5ばいの さいきょうキャラ。メニューの「きせかえ」で なれるよ。'}; }});
+const EQUESTS=[
+  {eq:1,sk:11,k:'EQ_DSW',n:()=>iname(EQ_DSW),icon:()=>EQ_DSW,cond:()=>`【${skinName(11)}で】ボスを 15たい たおす（${Math.min((qk(11).boss||0),15)}/15）`,p:()=>[Math.min((qk(11).boss||0),15)-((true)?0:((qk(11).boss||0)>=15?1:0)),15],own:()=>have(EQ_DSW)>0,give:()=>{ addItem(EQ_DSW,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_DSW)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:11,k:'EQ_DHELM',n:()=>iname(EQ_DHELM),icon:()=>EQ_DHELM,cond:()=>`【${skinName(11)}で】ゾンビを 150たい たおす（${Math.min((qk(11).zombie||0),150)}/150）`,p:()=>[Math.min((qk(11).zombie||0),150)-((true)?0:((qk(11).zombie||0)>=150?1:0)),150],own:()=>have(EQ_DHELM)>0,give:()=>{ addItem(EQ_DHELM,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_DHELM)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:11,k:'EQ_DARM',n:()=>iname(EQ_DARM),icon:()=>EQ_DARM,cond:()=>`【${skinName(11)}で】ぼうえいせんを 5かい クリア（${Math.min((qk(11).siege||0),5)}/5）`,p:()=>[Math.min((qk(11).siege||0),5)-((true)?0:((qk(11).siege||0)>=5?1:0)),5],own:()=>have(EQ_DARM)>0,give:()=>{ addItem(EQ_DARM,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_DARM)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:11,k:'EQ_DWING',n:()=>iname(EQ_DWING),icon:()=>EQ_DWING,cond:()=>`【${skinName(11)}で】だいまおうを 2かい たおす（${Math.min((qk(11).daimaou||0),2)}/2）`,p:()=>[Math.min((qk(11).daimaou||0),2)-((true)?0:((qk(11).daimaou||0)>=2?1:0)),2],own:()=>have(EQ_DWING)>0,give:()=>{ addItem(EQ_DWING,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_DWING)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:11,k:'EQ_DEMB',n:()=>iname(EQ_DEMB),icon:()=>EQ_DEMB,cond:()=>`【${skinName(11)}で】てんくうりゅうを 5かい たおす（${Math.min((qk(11).ryu||0),5)}/5）`,p:()=>[Math.min((qk(11).ryu||0),5)-((true)?0:((qk(11).ryu||0)>=5?1:0)),5],own:()=>have(EQ_DEMB)>0,give:()=>{ addItem(EQ_DEMB,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_DEMB)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:11,k:'EQ_DEGG',n:()=>iname(EQ_DEGG),icon:()=>EQ_DEGG,cond:()=>`【${skinName(11)}で】まおうを 5かい たおす（${Math.min((qk(11).maou||0),5)}/5）`,p:()=>[Math.min((qk(11).maou||0),5)-((true)?0:((qk(11).maou||0)>=5?1:0)),5],own:()=>have(EQ_DEGG)>0,give:()=>{ adoptBuddy('darkling'); addItem(EQ_DEGG,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_DEGG)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:11,k:'PET_GOLD',n:()=>iname(PET_GOLD),icon:()=>PET_GOLD,cond:()=>`【${skinName(11)}で】ボスを 30たい たおす（${Math.min((qk(11).boss||0),30)}/30）`,p:()=>[Math.min((qk(11).boss||0),30)-((true)?0:((qk(11).boss||0)>=30?1:0)),30],own:()=>!!save.buddies['goldhorn'],give:()=>{ adoptBuddy('goldhorn'); return {title:'でんせつの そうび ゲット！',lead:`「${iname(PET_GOLD)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:11,k:'PET_PHX',n:()=>iname(PET_PHX),icon:()=>PET_PHX,cond:()=>`【${skinName(11)}で】電光の紋章を もって てんくうりゅうを 10かい たおす（${Math.min((qk(11).ryu||0),10)}/10）`,p:()=>[Math.min((qk(11).ryu||0),10)-((true&&have(EQ_DEMB)>0)?0:((qk(11).ryu||0)>=10?1:0)),10],own:()=>!!save.buddies['phoenix'],give:()=>{ adoptBuddy('phoenix'); return {title:'でんせつの そうび ゲット！',lead:`「${iname(PET_PHX)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:11,k:'PET_WOLF',n:()=>iname(PET_WOLF),icon:()=>PET_WOLF,cond:()=>`【${skinName(11)}で】ゾンビを 300たい たおす（${Math.min((qk(11).zombie||0),300)}/300）`,p:()=>[Math.min((qk(11).zombie||0),300)-((true)?0:((qk(11).zombie||0)>=300?1:0)),300],own:()=>!!save.buddies['wolf'],give:()=>{ adoptBuddy('wolf'); return {title:'でんせつの そうび ゲット！',lead:`「${iname(PET_WOLF)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:10,k:'EQ_VSW',n:()=>iname(EQ_VSW),icon:()=>EQ_VSW,cond:()=>`【${skinName(10)}で】ボスを 15たい たおす（${Math.min((qk(10).boss||0),15)}/15）`,p:()=>[Math.min((qk(10).boss||0),15)-((true)?0:((qk(10).boss||0)>=15?1:0)),15],own:()=>have(EQ_VSW)>0,give:()=>{ addItem(EQ_VSW,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_VSW)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:10,k:'EQ_VCRN',n:()=>iname(EQ_VCRN),icon:()=>EQ_VCRN,cond:()=>`【${skinName(10)}で】ゾンビを 150たい たおす（${Math.min((qk(10).zombie||0),150)}/150）`,p:()=>[Math.min((qk(10).zombie||0),150)-((true)?0:((qk(10).zombie||0)>=150?1:0)),150],own:()=>have(EQ_VCRN)>0,give:()=>{ addItem(EQ_VCRN,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_VCRN)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:10,k:'EQ_VARM',n:()=>iname(EQ_VARM),icon:()=>EQ_VARM,cond:()=>`【${skinName(10)}で】ぼうえいせんを 5かい クリア（${Math.min((qk(10).siege||0),5)}/5）`,p:()=>[Math.min((qk(10).siege||0),5)-((true)?0:((qk(10).siege||0)>=5?1:0)),5],own:()=>have(EQ_VARM)>0,give:()=>{ addItem(EQ_VARM,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_VARM)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:10,k:'EQ_VWING',n:()=>iname(EQ_VWING),icon:()=>EQ_VWING,cond:()=>`【${skinName(10)}で】だいまおうを 2かい たおす（${Math.min((qk(10).daimaou||0),2)}/2）`,p:()=>[Math.min((qk(10).daimaou||0),2)-((true)?0:((qk(10).daimaou||0)>=2?1:0)),2],own:()=>have(EQ_VWING)>0,give:()=>{ addItem(EQ_VWING,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_VWING)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:10,k:'EQ_VHORN',n:()=>iname(EQ_VHORN),icon:()=>EQ_VHORN,cond:()=>`【${skinName(10)}で】キャラ Lv85 になる（${Math.min(save.plv,85)}/85）`,p:()=>[Math.min(save.plv,85)-((true)?0:(save.plv>=85?1:0)),85],own:()=>have(EQ_VHORN)>0,give:()=>{ addItem(EQ_VHORN,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_VHORN)}」を 手に入れた！（そうびすると つよくなる）`}; }},
+  {eq:1,sk:10,k:'EQ_VEGG',n:()=>iname(EQ_VEGG),icon:()=>EQ_VEGG,cond:()=>`【${skinName(10)}で】まおうを 5かい たおす（${Math.min((qk(10).maou||0),5)}/5）`,p:()=>[Math.min((qk(10).maou||0),5)-((true)?0:((qk(10).maou||0)>=5?1:0)),5],own:()=>have(EQ_VEGG)>0,give:()=>{ adoptBuddy('pinkling'); addItem(EQ_VEGG,1); return {title:'でんせつの そうび ゲット！',lead:`「${iname(EQ_VEGG)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:10,k:'PET_PURP',n:()=>iname(PET_PURP),icon:()=>PET_PURP,cond:()=>`【${skinName(10)}で】ボスを 30たい たおす（${Math.min((qk(10).boss||0),30)}/30）`,p:()=>[Math.min((qk(10).boss||0),30)-((true)?0:((qk(10).boss||0)>=30?1:0)),30],own:()=>!!save.buddies['purpling'],give:()=>{ adoptBuddy('purpling'); return {title:'でんせつの そうび ゲット！',lead:`「${iname(PET_PURP)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:10,k:'PET_UNI',n:()=>iname(PET_UNI),icon:()=>PET_UNI,cond:()=>`【${skinName(10)}で】ユニコーンの角を もって だいまおうを 4かい たおす（${Math.min((qk(10).daimaou||0),4)}/4）`,p:()=>[Math.min((qk(10).daimaou||0),4)-((true&&have(EQ_VHORN)>0)?0:((qk(10).daimaou||0)>=4?1:0)),4],own:()=>!!save.buddies['unicorn'],give:()=>{ adoptBuddy('unicorn'); return {title:'でんせつの そうび ゲット！',lead:`「${iname(PET_UNI)}」を 手に入れた！（なかまに なったよ）`}; }},
+  {eq:1,sk:10,k:'PET_CAT',n:()=>iname(PET_CAT),icon:()=>PET_CAT,cond:()=>`【${skinName(10)}で】ゾンビを 300たい たおす（${Math.min((qk(10).zombie||0),300)}/300）`,p:()=>[Math.min((qk(10).zombie||0),300)-((true)?0:((qk(10).zombie||0)>=300?1:0)),300],own:()=>!!save.buddies['starcat'],give:()=>{ adoptBuddy('starcat'); return {title:'でんせつの そうび ゲット！',lead:`「${iname(PET_CAT)}」を 手に入れた！（なかまに なったよ）`}; }},];
+EQUESTS.forEach(q=>{ q.n=q.n(); UNLOCKS.push(q); });
 function checkUnlocks(){ for(const u of UNLOCKS){ if(u.own()) continue; const [a,b]=u.p(); if(a>=b){ const n=u.give(); persist(); notice(Object.assign({items:[{icon:u.icon(),text:u.n}],ok:'やったー！'},n)); } } }
-function unlockRows(){ return UNLOCKS.map(u=>{ const [a,b]=u.p(), own=u.own(); return `<div class="irow"><img src="${icon(u.icon())}" alt=""><div><div class="nm">${u.n} ${own?'<span class="gifted">なかま／もっている</span>':''}</div><div class="ds">じょうけん：${u.cond}</div>${own?'':`<div class="xp"><i style="width:${Math.min(100,Math.round(a/b*100))}%"></i></div><div class="ds">${Math.min(a,b)} / ${b}</div>`}</div><span></span></div>`; }).join(''); }
+function unlockRows(){ const s=save.heroColor|0; return UNLOCKS.filter(u=>!u.eq||u.sk===s||have(SKIN_ITEM[u.sk])>0).map(u=>{ const [a,b]=u.p(), own=u.own(); return `<div class="irow"><img src="${icon(u.icon())}" alt=""><div><div class="nm">${u.n} ${own?'<span class="gifted">なかま／もっている</span>':''}</div><div class="ds">じょうけん：${u.cond()}</div>${own?'':`<div class="xp"><i style="width:${Math.min(100,Math.round(a/b*100))}%"></i></div><div class="ds">${Math.min(a,b)} / ${b}</div>`}</div><span></span></div>`; }).join(''); }
 function renderParty(){ const L=$('petList'); const list=allyList(); const nf=list.filter(a=>!isStay(a)).length;
   $('partySum').innerHTML=`なかま <b>${list.length}</b> ・ ついてくる <b>${nf}</b> ・ まっている <b>${list.length-nf}</b>`;
   L.innerHTML=list.length?'':'<p class="note">まだ なかまが いないよ。動物を 5回 なでてみよう！</p>';
@@ -2735,7 +2839,7 @@ function renderStat(){ $('stLv').innerHTML=`<b>${skinName(save.heroColor|0)}</b>
   $('stPts').innerHTML=`ステータスポイント：<b>${save.spt}</b>（レベルが 上がると 1 もらえる）・ジェム <span class="gem">◆</span>${save.gems}`; drawHex();
   const L=$('stList'); L.innerHTML=''; STATS.forEach(s=>{ const v=save.st[s[0]], r=document.createElement('div'); r.className='irow'; r.style.gridTemplateColumns='1fr auto';
     r.innerHTML=`<div><div class="nm">${s[1]} <b>${v}</b> / ${ST_MAX}</div><div class="ds">1ポイントで ${s[2]}</div><div class="xp"><i style="width:${Math.round(v/ST_MAX*100)}%"></i></div></div><div class="pbtns">${v>=ST_MAX?'<button class="sbtn" disabled>MAX</button>':save.spt>0?`<button class="sbtn" data-st="${s[0]}" data-m="p">+1</button>`:`<button class="sbtn" data-st="${s[0]}" data-m="g" ${save.gems>=stCost(v)?'':'disabled'}>◆${stCost(v)}</button>`}</div>`; L.appendChild(r); });
-  const ab=ABIL[save.heroColor|0]; $('stAbil').textContent='キャラの のうりょく：'+(ab?ab.t:'ふつう'); }
+  const ab=ABIL[save.heroColor|0]; const eqs=Object.keys(ITEMS).filter(id=>ITEMS[id].eq&&ITEMS[id].eq.skin===(save.heroColor|0)&&have(+id)).map(id=>ITEMS[id].n); $('stAbil').textContent='キャラの のうりょく：'+(ab?ab.t:'ふつう')+(eqs.length?'　そうび：'+eqs.join('・'):''); }
 /* ================= Excalibur: wide sweep (10 blocks) ================= */
 let exNext=0;
 function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.65; swing(); const A=ABIL[save.heroColor|0]||{}, R=A.exr||10, L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L; let hit=0;
@@ -2784,6 +2888,8 @@ function doAction(cx,cy){
   if(u&&u.seiryu&&ent.distance<14){ seiryuTap(); return; }
   if(riding&&riding.type==='volca'&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.55; shoot('dfire',volcaHead(riding),dir,null).mine=true; } return; }
   if(u&&u.buddy&&ent.distance<12){ buddyTap(u.buddy); return; }
+  if(riding&&riding.type==='unicorn'&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.5; shoot('beam',new THREE.Vector3(pl.x,pl.y+2,pl.z).addScaledVector(dir,1.5),dir,null).mine=true; } return; }
+  if(it&&it.msw&&!(u&&(u.animal||u.dragon||u.vehicle))){ magicSword(dir,it); return; }
   if(selId===SW_EX&&!(u&&(u.animal||u.dragon||u.vehicle))){ excalibur(dir); return; }
   if(selId===SW_HEART&&!(u&&(u.animal||u.dragon||u.vehicle))){ heartWave(dir); return; }
   if(u&&u.vehicle&&u.vehicle!==riding&&ent.distance<10){ mount(u.vehicle); return; }
@@ -2939,7 +3045,7 @@ const SHOP=[
   {id:WHITE,q:32,p:3,d:'お城の しろいかべ'},{id:ROOFB,q:32,p:3,d:'とんがり屋根に ぴったり'},{id:ROOFR,q:32,p:3},{id:GOLD,q:8,p:5,d:'キラキラの かざり'},{id:LAMP,q:4,p:3,d:'よるに ひかる'},{id:FLOWERBED,q:16,p:3},{id:PATH,q:32,p:2},
   {id:PINK,q:32,p:3},{id:SKYB,q:32,p:3},{id:YELLOW,q:32,p:3},{id:GLASS,q:32,p:3},{id:BRICK,q:32,p:4},
 ];
-function renderShop(){ $('shopGems').textContent=save.gems; const L=$('shopList'); L.innerHTML='<h3 class="shoph">とくべつな キャラ（じょうけんクリアで もらえる）</h3>'+unlockRows()+'<h3 class="shoph">ショップ</h3>';
+function renderShop(){ $('shopGems').textContent=save.gems; const L=$('shopList'); L.innerHTML='<details class="ulk"><summary>とくべつな キャラ・そうび・ペット（じょうけんクリアで もらえる）</summary>'+unlockRows()+'</details><h3 class="shoph">ショップ</h3>';
   SHOP.forEach((s,i)=>{ const row=document.createElement('div'); row.className='irow';
     row.innerHTML=`<img src="${icon(s.id)}" alt=""><div><div class="nm">${iname(s.id)}${s.q>1?' ×'+s.q:''}${s.rec?'<span class="badge">おすすめ</span>':''}${s.legend?' <span class="rare legend">レジェンド</span>':s.rare?' <span class="rare">レア</span>':''}</div>${s.d?`<div class="ds">${s.d}</div>`:''}</div>${(s.rare&&have(s.id))||(s.buddy&&save.buddies[ITEMS[s.id].buddy])?'<button class="sbtn" disabled>'+(s.buddy?'なかま':'もっている')+'</button>':`<button class="sbtn" ${save.gems>=s.p?'':'disabled'} data-s="${i}">◆${s.p} かう</button>`}`;
     L.appendChild(row); }); }
@@ -3097,16 +3203,16 @@ $('reset').addEventListener('click',()=>{ if(!armed){ resetArm(true); return; } 
 
 
 /* ================= skin picker ================= */
-const SKIN_ITEM={4:SK_GOLD,5:SK_PRIN,6:SK_NEKO,7:SK_BLUE,8:SK_LEG,9:SK_KING};
+const SKIN_ITEM={4:SK_GOLD,5:SK_PRIN,6:SK_NEKO,7:SK_BLUE,8:SK_LEG,9:SK_KING,10:SK_VAL,11:SK_DARK};
 const ownsSkin=i=>i<4||have(SKIN_ITEM[i])>0;
-const skinLockText=i=>i===8?'じょうけん：だいまおうを たおす':i===9?'じょうけん：キャラ Lv50':'ショップで ◆50';
+const skinLockText=i=>i===8?'じょうけん：だいまおうを たおす':i===9?'じょうけん：Lv50＋まおう3かい':i===10?'じょうけん：Lv70＋ぼうえいせん5かい':i===11?'じょうけん：Lv70＋だいまおう3かい':'ショップで ◆50';
 function openSkins(){ renderSkins(); openOv('skins'); }
 function renderSkins(){ const G_=$('skinGrid'); G_.innerHTML='';
-  for(let i=0;i<10;i++){ const own=ownsSkin(i), on=(save.heroColor|0)===i, d=document.createElement('button'); d.className='dcard skincard'+(on?' on':'')+(own?'':' lock'); d.dataset.sk=i;
+  for(let i=0;i<12;i++){ const own=ownsSkin(i), on=(save.heroColor|0)===i, d=document.createElement('button'); d.className='dcard skincard'+(on?' on':'')+(own?'':' lock'); d.dataset.sk=i;
     d.innerHTML=`${THUMBS['skin'+i]?`<img src="${THUMBS['skin'+i]}" alt="">`:`<div class="dot" style="--c:${skinColor(i)}"></div>`}<div class="t">${skinName(i)}</div>${i>=8?'<span class="rare legend">レジェンド</span>':i>=4?'<span class="rare">レア</span>':''}<div class="s">${on?'つかっている':own?'タップで えらぶ':skinLockText(i)}</div><div class="ab">${ABIL[i]?'のうりょく：'+ABIL[i].t:'のうりょく：ふつう'}</div>`;
     G_.appendChild(d); } }
 $('skinGrid').addEventListener('click',e=>{ const b=e.target.closest('[data-sk]'); if(!b) return; const i=+b.dataset.sk;
-  if(!ownsSkin(i)){ if(i===8){ toast('レジェンドキャラは「だいまおう イグニス」を たおすと もらえるよ！',3200); return; } if(i===9){ toast('ドラゴンキングは キャラの レベルを 50に すると もらえるよ！',3200); return; } closeOv('skins'); renderShop(); openOv('shop'); toast('レアキャラは ショップで 手に入るよ'); return; }
+  if(!ownsSkin(i)){ if(i===8){ toast('レジェンドキャラは「だいまおう イグニス」を たおすと もらえるよ！',3200); return; } if(i===9){ toast('ドラゴンキングは キャラ Lv50で まおうを 3かい たおすと もらえるよ！',3200); return; } if(i>=10){ toast('じょうけんは「なかま」や「ショップ」の いちばん上で 見られるよ！',3200); return; } closeOv('skins'); renderShop(); openOv('shop'); toast('レアキャラは ショップで 手に入るよ'); return; }
   if(MP.on){ toast('へやに いる あいだは かえられないよ'); return; }
   save.heroColor=i; persist(); rebuildHero(); renderSkins(); toast(`「${skinName(i)}」に きがえた！`); spawnBits(pl.x,pl.y+1.2,pl.z,[255,156,240],16,1.2); });
 $('skinBtn').addEventListener('click',()=>{ closeOv('menu'); openSkins(); });
@@ -3186,7 +3292,7 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v25';
+const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v28';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
@@ -3380,7 +3486,7 @@ $('camBtn').addEventListener('click',cycleCam); $('camBtn').textContent=CAM_LABE
 $('flyBtn').addEventListener('click',()=>{ if(riding) return; setFly(!pl.flying); if(pl.flying) award('sky'); });
 addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return; keys[e.code]=true; if(e.code==='Space'){ if(!e.repeat) jumpPressed=true; jumpHeld=true; e.preventDefault(); }
   if(e.code==='KeyV') cycleCam();
-  if(e.code==='KeyF'){ if(riding) dismount(); else if(have(CAPE)){ setFly(!pl.flying); if(pl.flying) award('sky'); } }
+  if(e.code==='KeyF'){ if(riding) dismount(); else if(canFly()){ setFly(!pl.flying); if(pl.flying) award('sky'); } }
   const m=/^Digit(\d)$/.exec(e.code); if(m&&active()){ const l=slotList(), n=+m[1], i=n===0?9:n-1; if(l[i]!==undefined) select(l[i]); } });
 addEventListener('keyup',e=>{ keys[e.code]=false; if(e.code==='Space') jumpHeld=false; });
 addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; resetPointers(); });
@@ -3511,11 +3617,12 @@ function makeThumbs(){
   { const g=new THREE.Group(); buildUsa(g,M); g.rotation.y=.4; shot(g,'usa',new THREE.Vector3(.3,.15,1),1.05); }
   { const g=new THREE.Group(); buildDragon(g,{mi:'#ff8a3d',cr:'#ffe9c7',go:'#ffd23f',wg:'#ffc95e',dk:'#c8551e'}); g.rotation.y=Math.PI/2; shot(g,'volca',side,1.0); }
   { const g=new THREE.Group(); buildRaiju(g); g.rotation.y=.6; shot(g,'billy',new THREE.Vector3(.4,.2,1),1.1); }
+  ['darkling','goldhorn','phoenix','wolf','pinkling','purpling','unicorn','starcat'].forEach(k=>{ const g=new THREE.Group(); BUD_DEFS[k].build(g); g.rotation.y=k==='phoenix'?.5:Math.PI/2.4; shot(g,k,new THREE.Vector3(.5,.25,1),1.05); });
   { const g=new THREE.Group(); buildMaou(g,M); g.rotation.y=.35; shot(g,'maou',new THREE.Vector3(.25,.15,1),1.0); }
   { const g=new THREE.Group(), p=buildRyu(g,M,SEI_PAL); p.segs.slice(0,6).forEach((sg,i)=>{ sg.position.set(0,-Math.sin(i*.7)*1.3-.3,-1.6-i*1.05); sg.rotation.x=Math.cos(i*.7)*.7; g.add(sg); }); g.rotation.y=Math.PI/2; shot(g,'seiryu',new THREE.Vector3(.6,.25,1),1.0); }
   [['golem',buildGolem,1.05],['ghost',buildGhost,1.05],['kaiju',buildKaiju,1.0]].forEach(([k,fn,pd2])=>{ const g=new THREE.Group(); fn(g,M); g.rotation.y=Math.PI/2; shot(g,k,side,pd2); });
   { const g=new THREE.Group(); buildHero(g); g.rotation.y=.5; shot(g,'hero',new THREE.Vector3(.2,.15,1),1.12); }
-  for(let i=0;i<10;i++){ const g=new THREE.Group(); buildHero(g,i); g.rotation.y=.45; shot(g,'skin'+i,new THREE.Vector3(.2,.15,1),1.15); }
+  for(let i=0;i<12;i++){ const g=new THREE.Group(); buildHero(g,i); g.rotation.y=.45; shot(g,'skin'+i,new THREE.Vector3(.2,.15,1),1.15); }
   const zm=c=>M(c), zp={skin:M('#b9a7cf'),hood:M('#e07b39'),pants:M('#4b3a5a'),mouth:M('#3a2a40'),eye:new THREE.MeshBasicMaterial({color:'#fff36b'}),mk:zm};
   { const g=new THREE.Group(); zombieModel(g,false,zp); shot(g,'zombie',new THREE.Vector3(.45,.15,1),1.05); }
   { const g=new THREE.Group(); zombieModel(g,true,Object.assign({},zp,{skin:M('#a48fc4'),hood:M('#b0263a'),eye:new THREE.MeshBasicMaterial({color:'#ff5a5a'})})); shot(g,'king',new THREE.Vector3(.45,.15,1),1.05); }
