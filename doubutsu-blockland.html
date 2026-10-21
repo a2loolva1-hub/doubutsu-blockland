@@ -67,9 +67,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .bar i{font-style:normal;font-size:15px;line-height:1;text-shadow:0 1px 0 rgba(0,0,0,.55)}
 #hp i{color:var(--heart)}
 #hp i.h{color:#ffb3c6}
+.bar i.e{color:rgba(30,40,60,.55)!important;text-shadow:0 0 1px rgba(255,255,255,.6)}
+#hp.hit{animation:hpHit .35s}
+@keyframes hpHit{0%,100%{transform:none}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 #mp i{color:var(--mana);font-size:14px}
 .bar i.e{color:rgba(20,32,50,.5);text-shadow:none}
 #mini{pointer-events:auto;width:104px;height:104px;border-radius:50%;border:3px solid rgba(255,255,255,.8);background:#3480d6;box-shadow:0 3px 0 rgba(0,0,0,.3);cursor:pointer;touch-action:pan-x pan-y}
+.bigcode{font-family:var(--f-pix);font-size:26px;letter-spacing:.18em;text-align:center}
+.okmsg{color:var(--ink)!important;background:var(--mist)!important}
 #siegebar{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 118px);transform:translateX(-50%);background:#b0263a;color:#fff;border:2px solid #fff;border-radius:999px;padding:5px 14px;font-family:var(--f-pix);font-size:14px;white-space:nowrap;pointer-events:none}
 #bossbar{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 168px);transform:translateX(-50%);width:min(62%,320px);background:var(--panel);border:2px solid var(--edge);border-radius:12px;padding:6px 10px 8px;font-family:var(--f-pix);font-size:14px;text-align:center;pointer-events:none}
 .bbar{height:10px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:4px}
@@ -536,7 +541,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="card">
     <div class="cardhead"><h2>せかいの ちず</h2><button class="close" data-close="mapov">とじる</button></div>
     <p class="note">ちずを タップすると、その場所へ ワープできるよ。下の 名所からも 行けるよ。<br>ピンク＝自分、黄色＝きょうの たからばこ、ピンクの点＝なかよしの動物、緑＝ドラゴン</p>
-    <div class="mapwrap"><canvas id="mapcv" width="608" height="608" aria-label="せかいの ちず"></canvas></div>
+    <div class="mapwrap"><canvas id="mapcv" width="1056" height="1056" aria-label="せかいの ちず"></canvas></div>
     <div id="lmList" class="list"></div>
   </div>
 </div>
@@ -545,18 +550,19 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="card">
     <div class="cardhead"><h2>みんなで あそぶ</h2><button class="close" data-close="online">とじる</button></div>
     <div id="onSetup" class="btns">
-      <p class="lead">おなじ「合言葉」を 入れた 友だちと、同じ せかいで あそべるよ（4人まで）。</p>
+      <p class="lead">へやを つくって 4けたの ばんごうを 友だちに つたえると、同じ せかいで あそべるよ（4人まで）。</p>
       <section><h3>なまえ</h3><input id="onName" class="field" maxlength="8" autocomplete="off" aria-label="なまえ"></section>
       <section><h3>キャラ</h3><div class="seg" id="onColor" style="justify-self:start"><button data-v="0">ピンク</button><button data-v="1">みずいろ</button><button data-v="2">みどり</button><button data-v="3">きいろ</button></div><button id="onSkinBtn" class="sbtn light" style="justify-self:start;margin-top:8px">レアキャラを えらぶ</button></section>
-      <section><h3>合言葉</h3><div class="inline" style="grid-template-columns:1fr auto"><input id="onPass" class="field" maxlength="40" autocomplete="off" aria-label="合言葉"><button id="onGen" class="sbtn light">つくる</button></div>
-        <p class="note" style="margin-top:6px">合言葉は、いっしょに あそぶ 友だちにだけ ないしょで つたえてね。</p></section>
-      <button id="onHost" class="btn">へやを つくる</button>
-      <button id="onJoin" class="btn sub">へやに はいる</button>
+      <section><h3>へやを つくる</h3><button id="onHost" class="btn">へやを つくる（4けたの ばんごうが でるよ）</button></section>
+      <section><h3>へやに はいる</h3><div class="inline" style="grid-template-columns:1fr auto"><input id="onCode" class="field bigcode" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="1234" aria-label="へやばんごう"><button id="onJoin" class="btn sub">はいる</button></div>
+        <p class="note" style="margin-top:6px">友だちが つくった へやの ばんごう（4けた）を 入れてね。</p></section>
       <p id="onMsg" class="err" hidden></p>
+      <p id="onEnv" class="note" hidden>※ Claudeの 画面の中では オンラインが つながらないことが あるよ。GitHubで 公開した ページで あそんでね。</p>
       <p class="note">たてもの・こわした ブロック・昼と夜は みんなで いっしょ。動物・ペット・ゾンビ・もちものは それぞれの 画面ごとだよ。へやに はいった人が つくったものは、へやを つくった人の 島に のこるよ。</p>
     </div>
     <div id="onRoom" class="btns" hidden>
       <p class="lead" id="onStatus"></p>
+      <div class="tg" id="pvpRow" hidden><span>たいせんモード<br><span class="note" id="pvpNote"></span></span><button id="pvpBtn" class="sbtn">OFF</button></div>
       <div id="onMembers" class="list"></div>
       <button id="onStampOpen" class="btn sub">スタンプを おくる</button>
       <button id="onLeave" class="btn warn">へやを でる</button>
@@ -601,17 +607,17 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   if(window.visualViewport) window.visualViewport.addEventListener('resize',()=>{ clearTimeout(fix.t); fix.t=setTimeout(fix,300); });
 })();
 /* ================= constants ================= */
-const W=608, D=608, H=72, CS=16, SEA=9, SEED=20261021, DAY=420, TH=12, G0=TH-1;
+const W=1056, D=1056, OW=608, H=72, CS=16, SEA=9, SEED=20261021, DAY=420, TH=12, G0=TH-1;
 const AIR=0,GRASS=1,DIRT=2,STONE=3,SAND=4,LOG=5,LEAVES=6,PLANK=7,WATER=8,GLASS=9,BRICK=10,PINK=11,SKYB=12,YELLOW=13,ORE=14,BOUNCE=15,WARP=16,CHEST=17,
   WHITE=18,ROOFB=19,ROOFR=20,GOLD=21,PATH=22,LAMP=23,FLOWERBED=24,
   CONCRETE=25,ASPHALT=26,ROADLINE=27,BWIN=28,BGLASS=29,STEEL=30,COPPER=31,DOOR=32,SHELF=33,TILE=34,DPLANK=35,MARBLE=36,NEONP=37,NEONB=38,WHITEB=39,BLACKB=40,GREENB=41,ORANGEB=42,PURPLEB=43,
-  SNOW=44,SAKURA=45,SANDSTONE=46,CACTUS=47,STONEBRICK=48,RED=49;
+  SNOW=44,SAKURA=45,SANDSTONE=46,CACTUS=47,STONEBRICK=48,RED=49,DARKB=50,CRYSTAL=51,MUSHR=52,CLOUDB=53,MAGICB=54,CURSED=55;
 const NAMES=['','くさ','つち','いし','すな','まるた','はっぱ','いた','みず','ガラス','レンガ','ピンク','みずいろ','きいろ','てっこうせき','トランポリン','ワープゲート','たからばこ',
   'しろいかべ','あおいやね','あかいやね','きんブロック','いしだたみ','ランタン','はなだん',
-  'コンクリート','アスファルト','どうろのせん','ビルのまど','あおガラスかべ','ぎんいろかべ','あおどう','とびら','ほんだな','チェックゆか','こげちゃのいた','だいりせき','ピンクネオン','あおネオン','しろ','くろ','みどり','オレンジ','むらさき','ゆき','さくら','すなのいし','サボテン','いしがき','あか'];
-const T_TOP =[0,0,2,3,4,6,7,8,9,10,11,12,13,14,15,17,18,20,21,22,23,24,25,27,28,29,30,31,32,33,34,35,39,39,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,54];
-const T_SIDE=[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,18,19,21,22,23,24,25,26,1,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,53,54];
-const T_BOT =[0,2,2,3,4,6,7,8,9,10,11,12,13,14,15,16,18,20,21,22,23,24,25,27,2,29,30,30,32,33,34,35,39,39,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,54];
+  'コンクリート','アスファルト','どうろのせん','ビルのまど','あおガラスかべ','ぎんいろかべ','あおどう','とびら','ほんだな','チェックゆか','こげちゃのいた','だいりせき','ピンクネオン','あおネオン','しろ','くろ','みどり','オレンジ','むらさき','ゆき','さくら','すなのいし','サボテン','いしがき','あか','まおうレンガ','クリスタル','キノコ','くも','まほうのいし','のろいのつち'];
+const T_TOP =[0,0,2,3,4,6,7,8,9,10,11,12,13,14,15,17,18,20,21,22,23,24,25,27,28,29,30,31,32,33,34,35,39,39,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,54,55,56,57,58,59,60];
+const T_SIDE=[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,18,19,21,22,23,24,25,26,1,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,53,54,55,56,57,58,59,60];
+const T_BOT =[0,2,2,3,4,6,7,8,9,10,11,12,13,14,15,16,18,20,21,22,23,24,25,27,2,29,30,30,32,33,34,35,39,39,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,54,55,56,57,58,59,60];
 const TRANSP=new Uint8Array(64); TRANSP[AIR]=TRANSP[LEAVES]=TRANSP[WATER]=TRANSP[GLASS]=TRANSP[45]=1;
 const NT=64;
 const SW_W=100,SW_S=101,SW_I=102,SW_STAR=103,APPLE=110,CAKE=111,SADDLE=120,IRON=121,TREAT=122,BED=123,CAPE=124,SHARD=125,
@@ -625,9 +631,9 @@ const ITEMS={[SW_W]:{n:'木の剣',dmg:3},[SW_S]:{n:'石の剣',dmg:4},[SW_I]:{n
   [W_ICE]:{n:'こおりのつえ',mp:3,magic:'ice'},[W_BLAZE]:{n:'ほのおのたつまき',mp:5,magic:'blaze'}};
 const iname=id=>id===0?'こわす':id<100?NAMES[id]:ITEMS[id].n;
 const ORDER=[SK_GOLD,SK_PRIN,SK_NEKO,SK_BLUE,V_PLANE,V_CAR,V_BOAT,G_STAR,G_BEAM,G_BOW,SW_STAR,SW_I,SW_S,SW_W,W_FIRE,W_WATER,W_WIND,W_THUNDER,W_HEAL,W_ICE,W_BLAZE,APPLE,CAKE,TREAT,SEED_H,BED,CAPE,SADDLE,SHARD,IRON,
-  GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,BOUNCE,WARP,ORE];
-const BLOCKS=[GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,BOUNCE,WARP];
-const DEX_BLOCKS=[GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,ORE,BOUNCE,WARP];
+  GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,BOUNCE,WARP,ORE,CRYSTAL,MAGICB,DARKB,MUSHR,CLOUDB,CURSED];
+const BLOCKS=[CRYSTAL,MAGICB,DARKB,MUSHR,CLOUDB,CURSED,GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,BOUNCE,WARP];
+const DEX_BLOCKS=[CRYSTAL,MAGICB,DARKB,MUSHR,CLOUDB,CURSED,GRASS,DIRT,STONE,SAND,LOG,PLANK,LEAVES,GLASS,BRICK,PINK,SKYB,YELLOW,WHITEB,BLACKB,GREENB,ORANGEB,PURPLEB,RED,CONCRETE,BWIN,BGLASS,STEEL,MARBLE,TILE,DPLANK,DOOR,SHELF,NEONP,NEONB,COPPER,ASPHALT,ROADLINE,STONEBRICK,SANDSTONE,SAKURA,SNOW,CACTUS,WHITE,ROOFB,ROOFR,GOLD,PATH,LAMP,FLOWERBED,ORE,BOUNCE,WARP];
 
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -648,12 +654,13 @@ if(!save.dragon) save.dragon={hearts:0,friend:false};
 const isNewPlayer=!save.inv;
 if(isNewPlayer){ save.inv={[SW_W]:1,[APPLE]:3,[PLANK]:16,[LOG]:4,[GLASS]:8,[W_FIRE]:1,[SHARD]:4,[BOUNCE]:4}; save.v3=true; }
 let worldNotice=false;
-let buildGift=false, worldNotice4=false;
+let buildGift=false, worldNotice4=false, worldNotice5=false;
 if((save.worldV||1)<3){ if(!isNewPlayer){ worldNotice=true; buildGift=true; } save.worldV=3; save.edits={}; save.warps=[]; save.chest=null;
   (save.babies||[]).forEach((b,i)=>{ b.x=68+(i%8); b.z=84+Math.floor(i/8); }); }
 if(save.worldV===3){ if(!isNewPlayer) worldNotice4=true; const sh2=k=>{ const q=k.split(',').map(Number); return (q[0]+208)+','+q[1]+','+(q[2]+208); };
   const ne={}; for(const k in save.edits) ne[sh2(k)]=save.edits[k]; save.edits=ne; save.warps=(save.warps||[]).map(sh2);
   (save.babies||[]).forEach(b=>{ b.x+=208; b.z+=208; }); save.chest=null; save.worldV=4; }
+if(save.worldV===4){ if(!isNewPlayer) worldNotice5=true; save.worldV=5; }
 if(save.zmode===undefined) save.zmode=save.zombies===false?0:2;
 if(save.bosses===undefined) save.bosses=true;
 if(save.zombieDen===undefined) save.zombieDen=1; if(save.animalDen===undefined) save.animalDen=2; if(save.bossFreq===undefined) save.bossFreq=1;
@@ -733,6 +740,12 @@ paint(51,(x,y,r)=>x%4===0?sh(hex('#3f9a46'),.75):((x+y*3)%11===0?[245,240,200]:v
 paint(52,(x,y,r)=>(x===0||y===0||x===15||y===15)?sh(hex('#3f9a46'),.8):vary(hex('#6cc070'),r,.05));
 paint(53,(x,y,r)=>(y%4===3||x===((y>>2)%2?3:11))?sh(hex('#8d8f94'),.7):vary(hex('#8d8f94'),r,.08));
 paint(54,wool(hex('#e0403a')));
+paint(55,(x,y,r)=>(y%4===3||x===((y>>2)%2?3:11))?[28,20,38]:(r()<.04?[200,40,60]:vary(hex('#4a3360'),r,.1)));
+paint(56,(x,y,r)=>{ const d=(x+y)%8, e=(x-y+16)%8; if(d===0||e===0) return [235,255,255]; return vary(d<4?hex('#7fe8ff'):hex('#4fc0e8'),r,.05); });
+paint(57,(x,y,r)=>{ const sp=[[3,3,2.2],[11,5,2.6],[6,11,2],[13,13,1.6],[1,9,1.3]]; for(const q of sp) if(Math.hypot(x-q[0],y-q[1])<q[2]) return [255,250,240]; return vary(hex('#e0403a'),r,.06); });
+paint(58,(x,y,r)=>{ const b=Math.sin(x*.8)+Math.cos(y*.7+x*.3); return b>1.2?[226,238,255]:vary(hex('#ffffff'),r,.02); });
+paint(59,(x,y,r)=>{ if((x===3&&y>2&&y<13)||(y===7&&x>3&&x<12)||(x===12&&y>4&&y<11)||(Math.abs(x-y)===0&&x>8)) return [190,150,255]; return (x%8===0||y%8===0)?[40,32,90]:vary(hex('#4a3f8f'),r,.08); });
+paint(60,(x,y,r)=>r()<.08?[140,90,170]:vary(hex('#4a3550'),r,.12));
 paint(43,wool(hex('#f7f7f2'))); paint(44,wool(hex('#2e2e34'))); paint(45,wool(hex('#4fbf5a'))); paint(46,wool(hex('#ff9a3c'))); paint(47,wool(hex('#a874e8')));
 
 /* ================= scene ================= */
@@ -748,7 +761,7 @@ const sunL=new THREE.DirectionalLight(0xffffff,.55); sunL.position.set(.6,1,.4);
 const tex=new THREE.CanvasTexture(atlas); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.NearestFilter; tex.generateMipmaps=false;
 const solidMat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,alphaTest:.5});
 const emisMat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,alphaTest:.5});
-const EMIS=new Uint8Array(64); EMIS[23]=EMIS[28]=EMIS[37]=EMIS[38]=1;
+const EMIS=new Uint8Array(64); EMIS[23]=EMIS[28]=EMIS[37]=EMIS[38]=EMIS[51]=EMIS[54]=1;
 const waterMat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:true,opacity:.72,depthWrite:false,side:THREE.DoubleSide});
 const skyObj=new THREE.Group(); scene.add(skyObj);
 const sunM=new THREE.Mesh(new THREE.PlaneGeometry(13,13),new THREE.MeshBasicMaterial({color:0xfff2a8,fog:false,depthWrite:false}));
@@ -772,10 +785,16 @@ function vnoise(x,z){ const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi,u=
 const fbm=(x,z)=>vnoise(x,z)*.6+vnoise(x*2.1+7,z*2.1)*.28+vnoise(x*4.3,z*4.3+3)*.12;
 const wallZ=x=>Math.round(110+18*Math.sin(x/40));
 const isDesert=(x,z)=>Math.hypot(x-300,z-505)<92+fbm(x/30,z/30)*24-12;
-function heightAt(x,z){ let h=5+fbm(x/18,z/18)*16; h+=Math.max(0,vnoise(x/110+50,z/110+50)-.55)*40;
+const isCursed=(x,z)=>x>780&&z>780&&Math.hypot(x-935,z-935)<120+(fbm(x/30,z/30)-.5)*30;
+const isMush=(x,z)=>Math.hypot(x-904,z-520)<92+(fbm(x/25,z/25)-.5)*20;
+function landMask(x,z){ const n=(fbm(x/45+31,z/45+17)-.5)*50; return Math.max(Math.min(x-672,1030-x,z-30,1030-z),Math.min(x-30,690-x,z-672,1030-z))+n; }
+function newHeight(x,z){ if(Math.max(Math.min(x-672,1030-x,z-30,1030-z),Math.min(x-30,690-x,z-672,1030-z))<-26) return 4; const m=landMask(x,z); let h=6+fbm(x/20+40,z/20+40)*15; h+=Math.max(0,vnoise(x/95+70,z/95+70)-.55)*46;
+  if(isCursed(x,z)) h=Math.min(h,10+fbm(x/15,z/15)*8);
+  if(m<40){ const t=Math.max(0,m)/40, s=t*t*(3-2*t); h=4*(1-s)+h*s; } return Math.floor(h); }
+function heightAt(x,z){ if(x>=OW||z>=OW) return newHeight(x,z); if(Math.max(Math.abs((x-OW/2)/(OW/2)),Math.abs((z-OW/2)/(OW/2)))>=.98&&Math.hypot(x-520,z-445)>=54) return 4; let h=5+fbm(x/18,z/18)*16; h+=Math.max(0,vnoise(x/110+50,z/110+50)-.55)*40;
   if(x>100&&x<512){ const d=Math.abs(z-wallZ(x)); if(d<55) h+=(1-d/55)*fbm(x/26+9,z/26)*20; }
   if(isDesert(x,z)) h=Math.min(h,8+fbm(x/40,z/40)*6);
-  const d=Math.max(Math.abs((x-W/2)/(W/2)),Math.abs((z-D/2)/(D/2)));
+  const d=Math.max(Math.abs((x-OW/2)/(OW/2)),Math.abs((z-OW/2)/(OW/2)));
   if(d>.68){ const t=Math.min(1,(d-.68)/.3); h=h*(1-t)+4*t; }
   const fd=Math.hypot(x-520,z-445); if(fd<54){ let fh=12+(54-fd)*.9; if(fd<5) fh-=3; h=Math.max(h,Math.min(60,fh)); }
   return Math.floor(h); }
@@ -783,8 +802,10 @@ function heightAt(x,z){ let h=5+fbm(x/18,z/18)*16; h+=Math.max(0,vnoise(x/110+50
 const CASTLE={x0:33,x1:63,z0:13,z1:39}, CASTLE_W={x0:265,x1:295,z0:245,z1:271};
 const FLAT=[{x0:258,x1:302,z0:241,z1:304},{x0:312,x1:380,z0:274,z1:360},{x0:298,x1:316,z0:274,z1:286},{x0:336,x1:356,z0:362,z1:382},
   {x0:462,x1:536,z0:276,z1:340},{x0:232,x1:356,z0:462,z1:566},{x0:105,x1:156,z0:275,z1:340},{x0:85,x1:120,z0:350,z1:382},{x0:138,x1:192,z0:388,z1:432},
-  {x0:140,x1:202,z0:222,z1:252},{x0:78,x1:128,z0:222,z1:270},{x0:405,x1:435,z0:160,z1:190},{x0:62,x1:122,z0:508,z1:536},{x0:398,x1:442,z0:458,z1:528},{x0:428,x1:546,z0:184,z1:272},{x0:172,x1:252,z0:254,z1:334}];
-function zoneDist(x,z){ let m=1e9; for(const f of FLAT){ const dx=Math.max(f.x0-x,0,x-f.x1), dz=Math.max(f.z0-z,0,z-f.z1); m=Math.min(m,Math.hypot(dx,dz)); } return m; }
+  {x0:140,x1:202,z0:222,z1:252},{x0:78,x1:128,z0:222,z1:270},{x0:405,x1:435,z0:160,z1:190},{x0:62,x1:122,z0:508,z1:536},{x0:398,x1:442,z0:458,z1:528},{x0:428,x1:546,z0:184,z1:272},{x0:172,x1:252,z0:254,z1:334},
+  {x0:690,x1:722,z0:288,z1:312},{x0:286,x1:306,z0:690,z1:722},{x0:740,x1:925,z0:218,z1:392},{x0:912,x1:1012,z0:150,z1:252},{x0:690,x1:790,z0:570,z1:670},{x0:864,x1:944,z0:482,z1:558},
+  {x0:342,x1:418,z0:812,z1:888},{x0:162,x1:248,z0:772,z1:848},{x0:884,x1:988,z0:884,z1:986}];
+function zoneDist(x,z){ let m=1e18; for(let i=0;i<FLAT.length;i++){ const f=FLAT[i], dx=f.x0-x>0?f.x0-x:x-f.x1>0?x-f.x1:0, dz=f.z0-z>0?f.z0-z:z-f.z1>0?z-f.z1:0, q=dx*dx+dz*dz; if(q<m){ m=q; if(q===0) return 0; } } return Math.sqrt(m); }
 const townDist=zoneDist;
 function groundH(x,z){ const h=heightAt(x,z), d=zoneDist(x,z); if(d<=0) return G0; if(d<10){ const t=d/10, s=t*t*(3-2*t); return Math.round(G0*(1-s)+h*s); } return h; }
 let TX=0, TZ=0;
@@ -1112,22 +1133,127 @@ function buildFort(){ TX=TZ=0; const {x0,x1,z0,z1}=FORT, cx=FCX, cz=FCZ, WT=TH+1
   fillBox(184,G0,271,196,G0,284,YELLOW); for(const [x,z] of [[184,271],[196,271],[184,284],[196,284],[190,271],[190,284]]) fillBox(x,TH,z,x,TH+3,z,LOG); fillBox(183,TH+4,270,197,TH+4,285,DPLANK); fillBox(185,TH+5,272,195,TH+5,283,ROOFR);
   for(const [x,z] of [[226,291],[226,297],[236,291],[236,297],[206,290],[218,290]]) lampPost(x,z);
 }
-function buildLandmarks(){ TX=TZ=0; buildJapan(); buildEgypt(); buildEurope(); buildMore(); buildPark(); buildFort(); }
+/* ---------- new continent: fantasy lands (original designs) ---------- */
+function towerRound(cx,cz,r,y0,h,wall,roof,win){ cyl(cx,cz,r,y0,y0+h,wall); cyl(cx,cz,r-1,y0,y0+h-1,AIR);
+  for(let y=y0+3;y<y0+h-1;y+=4) for(let k=0;k<4;k++){ const a=k*Math.PI/2+(y%8?0:Math.PI/4); rawSet(Math.round(cx+Math.cos(a)*r),y,Math.round(cz+Math.sin(a)*r),win||GLASS); rawSet(Math.round(cx+Math.cos(a)*r),y+1,Math.round(cz+Math.sin(a)*r),win||GLASS); }
+  cyl(cx,cz,r,y0+h,y0+h,wall); const t=cone(cx,cz,r+1.2,y0+h+1,roof,.42); fillBox(cx,t,cz,cx,t+1,cz,GOLD); return t; }
+function lineVox(a,b,id,th){ const n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2])*2); for(let i=0;i<=n;i++){ const t=i/n, x=a[0]+(b[0]-a[0])*t, y=a[1]+(b[1]-a[1])*t, z=a[2]+(b[2]-a[2])*t;
+  if(th) cyl(x,z,th,Math.round(y),Math.round(y),id); else rawSet(Math.round(x),Math.round(y),Math.round(z),id); } }
+function buildBridges(){ const cols=[RED,ORANGEB,YELLOW,GREENB,SKYB,PURPLEB];
+  for(let x=513;x<=712;x++){ for(let k=0;k<6;k++){ rawSet(x,G0,297+k,cols[k]); for(let y=TH;y<TH+5;y++) rawSet(x,y,297+k,AIR); } rawSet(x,TH,296,WHITEB); rawSet(x,TH,303,WHITEB); for(let y=TH+1;y<TH+5;y++){ rawSet(x,y,296,AIR); rawSet(x,y,303,AIR); }
+    if(x%8===0){ rawSet(x,TH+1,296,LAMP); rawSet(x,TH+1,303,LAMP); } if(x>560&&x<690&&x%16===0){ fillBox(x,1,296,x,G0-1,296,WHITEB); fillBox(x,1,303,x,G0-1,303,WHITEB); } }
+  for(let z=567;z<=712;z++){ for(let k=0;k<6;k++){ rawSet(294+k,G0,z,cols[k]); for(let y=TH;y<TH+5;y++) rawSet(294+k,y,z,AIR); } rawSet(293,TH,z,WHITEB); rawSet(300,TH,z,WHITEB); for(let y=TH+1;y<TH+5;y++){ rawSet(293,y,z,AIR); rawSet(300,y,z,AIR); }
+    if(z%8===0){ rawSet(293,TH+1,z,LAMP); rawSet(300,TH+1,z,LAMP); } if(z>600&&z<690&&z%16===0){ fillBox(293,1,z,293,G0-1,z,WHITEB); fillBox(300,1,z,300,G0-1,z,WHITEB); } }
+  // arches
+  for(const [x,z,ax] of [[600,300,'x'],[296.5,640,'z']]) for(let a=0;a<=Math.PI;a+=.04){ const r=ax==='x'?4.5:4.5, yy=Math.round(TH+Math.sin(a)*7);
+    if(ax==='x'){ const zz=Math.round(299.5+Math.cos(a)*r); rawSet(x,yy,zz,cols[Math.floor(a/Math.PI*5.99)]); } else { const xx=Math.round(296.5+Math.cos(a)*r); rawSet(xx,yy,Math.round(z),cols[Math.floor(a/Math.PI*5.99)]); } } }
+function buildMagicSchool(){ const PB=G0+10;
+  // rocky plateau & lake
+  for(let x=760;x<=900;x++) for(let z=226;z<=304;z++){ const e=((x-830)/64)**2+((z-265)/34)**2, j=(x>822&&x<838)?0:(fbm(x/7,z/7)-.5)*.35; if(e>1+j) continue; fillBox(x,G0,z,x,PB,z,STONE); rawSet(x,PB,z,GRASS); if(e>.86+j) rawSet(x,PB,z,STONE); }
+  for(let x=770;x<=890;x++) for(let z=312;z<=380;z++){ const e=((x-830)/58)**2+((z-346)/30)**2; if(e>1) continue; if(e>.9){ rawSet(x,G0,z,SAND); continue; } rawSet(x,G0,z,WATER); rawSet(x,G0-1,z,WATER); if(e<.6) rawSet(x,G0-2,z,WATER); }
+  for(let k=0;k<=9;k++) fillBox(827,TH,309-k,833,TH+k,309-k,STONEBRICK); for(let k=0;k<=9;k++){ if(k%3===0){ rawSet(826,TH+k+1,309-k,LAMP); rawSet(834,TH+k+1,309-k,LAMP); } }
+  const B=PB+1;
+  // great hall with gable roof
+  fillBox(805,B,243,855,B+13,262,STONEBRICK); fillBox(806,B,244,854,B+12,261,AIR); fillBox(806,PB,244,854,PB,261,TILE);
+  for(let x=808;x<=852;x+=4){ fillBox(x,B+3,243,x,B+10,243,GLASS); fillBox(x,B+3,262,x,B+10,262,GLASS); rawSet(x,B+11,243,GOLD); rawSet(x,B+11,262,GOLD); }
+  for(let k=0;k<=10;k++){ fillBox(804,B+14+k,242+k,856,B+14+k,242+k,ROOFB); fillBox(804,B+14+k,263-k,856,B+14+k,263-k,ROOFB); if(242+k<263-k) for(const xx of [805,855]) fillBox(xx,B+14+k,243+k,xx,B+14+k,262-k,STONEBRICK); }
+  fillBox(828,B,262,832,B+5,262,AIR); rawSet(830,B+6,262,LAMP); for(let x=812;x<=848;x+=9){ rawSet(x,B+9,252,LAMP); }
+  fillBox(822,B,248,838,B,257,RED); for(const x of [814,846]) for(const z of [248,257]) fillBox(x,B,z,x,B+1,z,DPLANK);
+  // towers
+  towerRound(868,252,5,B,34,STONEBRICK,ROOFB); towerRound(796,238,4,B,22,STONEBRICK,ROOFB); towerRound(852,236,3,B,26,SANDSTONE,ROOFB); towerRound(812,292,4,B,18,STONEBRICK,ROOFB);
+  towerRound(858,292,4,B,20,SANDSTONE,ROOFB); towerRound(790,268,3,B,28,STONEBRICK,ROOFB); towerRound(884,274,3,B,16,STONEBRICK,ROOFB);
+  // clock tower
+  fillBox(797,B,276,803,B+26,282,SANDSTONE); fillBox(798,B,277,802,B+25,281,AIR); for(let a=-2;a<=2;a++) for(let y=-2;y<=2;y++){ const id=(Math.abs(a)===2||Math.abs(y)===2)?GOLD:WHITEB; rawSet(800+a,B+20+y,283,id); rawSet(804,B+20+y,279+a,id); }
+  rawSet(800,B+21,283,BLACKB); rawSet(800,B+20,283,BLACKB); rawSet(801,B+20,283,BLACKB); fillBox(797,B+27,276,803,B+27,282,SANDSTONE); { const t=cone(800,279,4.8,B+28,ROOFB,.5); fillBox(800,t,279,800,t+1,279,GOLD); }
+  // covered bridge to the far tower
+  fillBox(890,B+2,272,912,B+2,276,DPLANK); for(let x=890;x<=912;x+=3){ fillBox(x,B+3,272,x,B+6,272,DPLANK); fillBox(x,B+3,276,x,B+6,276,DPLANK); } fillBox(890,B+7,271,912,B+7,277,ROOFR);
+  cyl(916,274,4,G0,B+2,STONEBRICK); towerRound(916,274,4,B+3,14,STONEBRICK,ROOFB); fillBox(911,B+3,273,913,B+5,275,AIR);
+  // courtyard fountain
+  cyl(830,282,4,B,B,STONEBRICK); cyl(830,282,3,B,B,WATER); fillBox(830,B,282,830,B+3,282,MARBLE); rawSet(830,B+4,282,WATER); rawSet(830,B+5,282,CRYSTAL);
+  for(const [x,z] of [[818,272],[842,272],[818,298],[842,298]]){ rawSet(x,B,z,STONE); rawSet(x,B+1,z,LAMP); }
+  // boathouse & dock
+  fillBox(846,G0,318,852,G0,330,DPLANK); fillBox(845,TH,312,853,TH+3,317,DPLANK); fillBox(846,TH,313,852,TH+2,316,AIR); fillBox(844,TH+4,311,854,TH+4,318,ROOFR); }
+function buildSkyIslands(){
+  const isl=(cx,cz,R,top)=>{ for(let dy=0;dy<=11;dy++){ const r=R*Math.pow(1-dy/12,.75); for(let x=Math.floor(cx-r);x<=Math.ceil(cx+r);x++) for(let z=Math.floor(cz-r);z<=Math.ceil(cz+r);z++){ const d=Math.hypot(x-cx,z-cz)+(hash(x,z+dy)-.5)*1.4; if(d>r) continue; rawSet(x,top-dy,z,dy===0?GRASS:dy<3?DIRT:STONE); } } };
+  isl(955,175,12,52); isl(990,212,10,57); isl(930,212,9,48); isl(1000,165,7,62);
+  // temple on A
+  fillBox(948,53,168,962,53,182,MARBLE); for(const x of [949,953,957,961]) for(const z of [169,181]) fillBox(x,54,z,x,59,z,MARBLE); fillBox(947,60,167,963,60,183,MARBLE); fillBox(950,61,170,960,61,180,WHITEB); fillBox(953,62,173,957,62,177,GOLD); rawSet(955,54,175,GOLD); rawSet(955,55,175,CRYSTAL);
+  // waterfall on B
+  { let gy=40; while(gy>0&&get(1002,gy,212)===AIR) gy--; for(let y=gy+1;y<=57;y++) rawSet(1002,y,212,WATER); fillBox(999,57,211,1001,57,213,WATER); cyl(1002,212,2.5,gy,gy,WATER); }
+  for(const [x,z] of [[985,207],[993,218]]){ fillBox(x,58,z,x,61,z,LOG); cyl(x,z,1.8,61,62,SAKURA,true); }
+  rawSet(930,49,212,CRYSTAL); rawSet(930,50,212,CRYSTAL); for(const [x,z] of [[926,209],[934,216],[927,217]]) rawSet(x,49,z,FLOWERBED);
+  rawSet(1000,63,165,GOLD); rawSet(1000,64,165,LAMP);
+  // cloud bridges
+  const cb=(a,b,y)=>{ const n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])); for(let i=0;i<=n;i++){ const x=Math.round(a[0]+(b[0]-a[0])*i/n), z=Math.round(a[1]+(b[1]-a[1])*i/n), yy=Math.round(y[0]+(y[1]-y[0])*i/n); fillBox(x,yy,z,x+1,yy,z+1,CLOUDB); fillBox(x,yy+1,z,x+1,yy+3,z+1,AIR); } };
+  cb([937,207],[946,183],[48,52]); cb([965,180],[982,206],[52,57]); cb([996,203],[999,172],[57,62]);
+  // cloud staircase from the meadow
+  const sx=930, sz=238; let last=null; for(let k=0;k<=35;k++){ const a=k*.34, x=Math.round(sx+Math.cos(a)*4.5), z=Math.round(sz+Math.sin(a)*4.5), y=TH+k; fillBox(x,y,z,x+1,y,z+1,CLOUDB); fillBox(x,y+1,z,x+1,y+3,z+1,AIR); last=[x,z]; }
+  cb(last,[930,219],[48,48]); }
+function buildWorldTree(){ const cx=740, cz=620;
+  for(let y=TH;y<TH+46;y++){ const r=y<TH+4?8-(y-TH):y<TH+30?5.5:4.5; cyl(cx,cz,r,y,y,LOG); }
+  for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; lineVox([cx+Math.cos(a)*6,TH+2,cz+Math.sin(a)*6],[cx+Math.cos(a)*15,G0,cz+Math.sin(a)*15],LOG,1); }
+  for(let x=cx-26;x<=cx+26;x++) for(let z=cz-26;z<=cz+26;z++) for(let y=TH+38;y<H;y++){ const e=((x-cx)/25)**2+((y-(TH+50))/9)**2+((z-cz)/25)**2+(hash(x*3+y,z)-.5)*.25; if(e<1&&get(x,y,z)===AIR) rawSet(x,y,z,hash(x+y*7,z)<.03?LAMP:hash(z+y,x)<.12?SAKURA:LEAVES); }
+  for(let k=0;k<6;k++){ const a=k/6*Math.PI*2+.3; lineVox([cx,TH+40,cz],[cx+Math.cos(a)*16,TH+46,cz+Math.sin(a)*16],LOG,0); }
+  // spiral stair + treehouse deck
+  for(let k=0;k<30;k++){ const a=k*.26; for(let rr=6.5;rr<=9;rr+=.8){ const x=Math.round(cx+Math.cos(a)*rr), z=Math.round(cz+Math.sin(a)*rr); rawSet(x,TH+k,z,PLANK); rawSet(x,TH+k+1,z,AIR); rawSet(x,TH+k+2,z,AIR); rawSet(x,TH+k+3,z,AIR); } }
+  for(let x=cx-13;x<=cx+13;x++) for(let z=cz-13;z<=cz+13;z++){ const d=Math.hypot(x-cx,z-cz); if(d>13||d<5) continue; rawSet(x,TH+30,z,PLANK); if(d>12.2&&(x+z)%2===0) rawSet(x,TH+31,z,DPLANK); }
+  fillBox(cx+7,TH+31,cz-3,cx+11,TH+34,cz+3,PLANK); fillBox(cx+8,TH+31,cz-2,cx+10,TH+33,cz+2,AIR); fillBox(cx+7,TH+31,cz,cx+7,TH+32,cz,AIR); fillBox(cx+6,TH+35,cz-4,cx+12,TH+35,cz+4,ROOFR); rawSet(cx+9,TH+33,cz,LAMP); }
+function mushHouse(cx,cz,r,cap){ cyl(cx,cz,r,TH,TH+5,WHITEB); cyl(cx,cz,r-1,TH,TH+5,AIR); fillBox(cx-1,G0,cz-1,cx+1,G0,cz+1,PLANK);
+  for(let dy=0;dy<=4;dy++) cyl(cx,cz,Math.sqrt(Math.max(0,(r+3)**2-(dy*1.25)**2)),TH+6+dy,TH+6+dy,cap); cyl(cx,cz,r+2,TH+6,TH+6,cap); cyl(cx,cz,r-1,TH+6,TH+6,WHITEB);
+  const dx=Math.sign(904-cx)||1, dz=Math.sign(520-cz)||1; if(Math.abs(904-cx)>Math.abs(520-cz)){ fillBox(cx+dx*r,TH,cz,cx+dx*r,TH+1,cz,AIR); rawSet(cx+dx*(r+1),TH+2,cz,LAMP); } else { fillBox(cx,TH,cz+dz*r,cx,TH+1,cz+dz*r,AIR); rawSet(cx,TH+2,cz+dz*(r+1),LAMP); }
+  rawSet(cx-r,TH+3,cz,GLASS); rawSet(cx+r,TH+3,cz,GLASS); rawSet(cx,TH+3,cz-r,GLASS); rawSet(cx,TH+3,cz+r,GLASS); }
+function giantMush(x,z,h,r,cap){ const y=topY(x,z); fillBox(x,y,z,x,y+h,z,WHITEB); for(let dy=0;dy<=2;dy++) cyl(x,z,r-dy*.9,y+h+dy,y+h+dy,cap,true); }
+function buildMushVillage(){ for(let x=870;x<=940;x++) for(let z=486;z<=556;z++) if(Math.hypot(x-904,z-520)<8) rawSet(x,G0,z,PATH);
+  [[884,500,3,MUSHR],[922,498,3,PURPLEB],[928,538,3,MUSHR],[882,540,3,SKYB],[904,520,4,MUSHR]].forEach(q=>mushHouse(q[0],q[1],q[2],q[3]));
+  for(let k=0;k<5;k++){ const a=k/5*Math.PI*2+.6; for(let r=6;r<30;r++) rawSet(Math.round(904+Math.cos(a)*r),G0,Math.round(520+Math.sin(a)*r),PATH); } }
+function buildCrystal(){ const cx=380, cz=850; for(let x=cx-30;x<=cx+30;x++) for(let z=cz-30;z<=cz+30;z++){ const d=Math.hypot(x-cx,z-cz); if(d<28) rawSet(x,G0,z,d<9?MAGICB:(Math.floor(d)%5===0?CRYSTAL:STONE)); }
+  cyl(cx,cz,6,TH,TH+3,MAGICB); for(let y=TH+4;y<TH+30;y++) cyl(cx,cz,Math.max(2,5-(y-TH)/10),y,y,(y%6===0)?CRYSTAL:MAGICB); cyl(cx,cz,3,TH,TH+2,AIR); fillBox(cx-1,TH,cz+5,cx+1,TH+2,cz+6,AIR);
+  lineVox([cx,TH+30,cz],[cx,TH+40,cz],CRYSTAL,1.2); rawSet(cx,TH+41,cz,CRYSTAL);
+  for(let k=0;k<9;k++){ const a=k/9*Math.PI*2, r=13+(k%3)*4, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r, h=8+(k*7)%12; lineVox([x,TH,z],[x+Math.cos(a)*3,TH+h,z+Math.sin(a)*3],CRYSTAL,1.4-(k%2)*.4); } }
+function lollipop(x,z,c){ fillBox(x,TH,z,x,TH+5,z,WHITEB); for(let a=-3;a<=3;a++) for(let b=-3;b<=3;b++){ const d=Math.hypot(a,b); if(d>3.2) continue; rawSet(x+a,TH+8+b,z,(Math.floor(d*1.5+Math.atan2(b,a)*1.2)%2+2)%2?c:WHITEB); } }
+function buildCandy(){ const cx=205, cz=810; for(let x=cx-38;x<=cx+38;x++) for(let z=cz-34;z<=cz+34;z++){ if(Math.abs(x-cx)<3||Math.abs(z-cz)<3) rawSet(x,G0,z,PINK); }
+  const house=(x0,z0,w,c)=>{ fillBox(x0,TH,z0,x0+w,TH+4,z0+w,DPLANK); fillBox(x0+1,TH,z0+1,x0+w-1,TH+3,z0+w-1,AIR); fillBox(x0+(w>>1),TH,z0+w,x0+(w>>1),TH+1,z0+w,AIR);
+    for(let k=0;k<=(w>>1)+1;k++) fillBox(x0-1+k,TH+5+k,z0-1,x0+w+1-k,TH+5+k,z0+w+1,k%2?WHITEB:c); for(let x=x0;x<=x0+w;x+=2) rawSet(x,TH+4,z0-1,[RED,YELLOW,SKYB,GREENB][x%4]); rawSet(x0+1,TH+2,z0+w,GLASS); rawSet(x0+w-1,TH+2,z0+w,GLASS); };
+  house(cx-26,cz-24,8,PINK); house(cx+14,cz-26,8,SKYB); house(cx-28,cz+14,8,YELLOW); house(cx+16,cz+12,9,PINK);
+  // giant cake
+  cyl(cx,cz,9,TH,TH+3,PINK); cyl(cx,cz,9,TH+4,TH+4,WHITEB); cyl(cx,cz,6,TH+5,TH+8,YELLOW); cyl(cx,cz,6,TH+9,TH+9,WHITEB); cyl(cx,cz,3.5,TH+10,TH+12,PINK); cyl(cx,cz,3.5,TH+13,TH+13,WHITEB);
+  for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; rawSet(Math.round(cx+Math.cos(a)*7.5),TH+5,Math.round(cz+Math.sin(a)*7.5),RED); } fillBox(cx,TH+14,cz,cx,TH+15,cz,WHITEB); rawSet(cx,TH+16,cz,LAMP);
+  lollipop(cx-14,cz-8,RED); lollipop(cx+12,cz+2,PURPLEB); lollipop(cx-6,cz+22,GREENB); lollipop(cx+28,cz-6,SKYB);
+  for(const [x,z] of [[cx,cz-30],[cx,cz+30]]) for(let a=0;a<=Math.PI;a+=.05){ const xx=Math.round(x+Math.cos(a)*5), yy=Math.round(TH+Math.sin(a)*8); rawSet(xx,yy,z,Math.floor(a*6)%2?RED:WHITEB); } }
+function buildDemonCastle(){ const cx=935, cz=935, x0=900,x1=970,z0=900,z1=970;
+  for(let x=x0-8;x<=x1+8;x++) for(let z=z0-8;z<=z1+8;z++){ const out=Math.max(x0-x,x-x1,z0-z,z-z1); if(out>=3&&out<=6){ rawSet(x,G0,z,(hash(x,z)<.3)?RED:ORANGEB); } else if(out<3) rawSet(x,G0,z,DARKB); }
+  for(let x=x0;x<=x1;x++) for(let z=z0;z<=z1;z++){ const inn=Math.min(x-x0,x1-x,z-z0,z1-z); if(inn>2) continue; fillBox(x,TH,z,x,TH+13,z,DARKB); if(inn===0&&(x+z)%3===0) fillBox(x,TH+14,z,x,TH+15,z,BLACKB); if(inn===1&&(x+z)%9===0) rawSet(x,TH+8,z,MAGICB); }
+  fillBox(cx-3,TH,z1-2,cx+3,TH+8,z1,AIR); fillBox(cx-3,TH+9,z1,cx+3,TH+9,z1,MAGICB); for(let x=cx-3;x<=cx+3;x+=2) rawSet(x,TH+8,z1,BLACKB); fillBox(cx-3,G0,z1+1,cx+3,G0,z1+8,DARKB);
+  for(const [x,z] of [[x0,z0],[x1,z0],[x0,z1],[x1,z1]]){ cyl(x,z,5,TH,TH+24,DARKB); cyl(x,z,4,TH+1,TH+23,AIR); for(let y=TH+4;y<TH+22;y+=5) rawSet(x+5,y,z,NEONP); const t=cone(x,z,6,TH+25,BLACKB,.55); fillBox(x,t,z,x,t+2,z,RED); rawSet(x,TH+25,z,LAMP); }
+  // keep
+  fillBox(cx-9,TH,cz-9,cx+9,TH+32,cz+9,DARKB); fillBox(cx-8,TH,cz-8,cx+8,TH+31,cz+8,AIR); fillBox(cx-2,TH,cz+9,cx+2,TH+5,cz+9,AIR);
+  for(let y=TH+4;y<TH+30;y+=5) for(let a=-6;a<=6;a+=4){ rawSet(cx+a,y,cz-9,MAGICB); rawSet(cx+a,y,cz+9,MAGICB); rawSet(cx-9,y,cz+a,MAGICB); rawSet(cx+9,y,cz+a,MAGICB); }
+  fillBox(cx-9,TH+33,cz-9,cx+9,TH+33,cz+9,DARKB); for(let a=-9;a<=9;a+=2){ fillBox(cx+a,TH+34,cz-9,cx+a,TH+36,cz-9,BLACKB); fillBox(cx+a,TH+34,cz+9,cx+a,TH+36,cz+9,BLACKB); fillBox(cx-9,TH+34,cz+a,cx-9,TH+36,cz+a,BLACKB); fillBox(cx+9,TH+34,cz+a,cx+9,TH+36,cz+a,BLACKB); }
+  for(const [x,z] of [[cx-9,cz-9],[cx+9,cz-9],[cx-9,cz+9],[cx+9,cz+9]]){ fillBox(x,TH+34,z,x,TH+42,z,BLACKB); rawSet(x,TH+43,z,RED); }
+  fillBox(cx-3,TH+34,cz-3,cx+3,TH+34,cz+3,RED); fillBox(cx-1,TH+35,cz-6,cx+1,TH+39,cz-6,DARKB); rawSet(cx,TH+40,cz-6,GOLD);
+  fillBox(cx-1,TH,cz-6,cx+1,TH+3,cz-6,DARKB); fillBox(cx-3,TH,cz-3,cx+3,TH,cz+5,RED); for(const [x,z] of [[cx-6,cz-6],[cx+6,cz-6],[cx-6,cz+6],[cx+6,cz+6]]){ rawSet(x,TH,z,BLACKB); rawSet(x,TH+1,z,NEONP); }
+  for(let k=0;k<14;k++){ fillBox(cx-8+k,TH,cz-8,cx-8+k,TH+k,cz-7,DARKB); } for(let k=0;k<16;k++) fillBox(cx+8-k,TH+14,cz-6,cx+8-k,TH+14+k,cz-5,DARKB);
+  for(let y=TH+14;y<=TH+30;y+=16) fillBox(cx-8,y,cz-8,cx+8,y,cz+8,DARKB); fillBox(cx-8,TH+14,cz-8,cx+7,TH+14,cz-4,AIR); fillBox(cx-8,TH+30,cz-6,cx+8,TH+30,cz-4,AIR); fillBox(cx-8,TH+33,cz-6,cx-6,TH+33,cz-4,AIR);
+  for(let k=0;k<3;k++) fillBox(cx-8,TH+31+k,cz-6+k,cx-6,TH+31+k,cz-6+k,DARKB);
+  for(let k=0;k<20;k++){ const a=k/20*Math.PI*2, r=58+hash(k,7)*14, x=Math.round(cx+Math.cos(a)*r), z=Math.round(cz+Math.sin(a)*r), y=topY(x,z); fillBox(x,y,z,x,y+3+(k%4),z,BLACKB); if(k%3===0) rawSet(x,y+4+(k%4),z,NEONP); } }
+function buildFantasy(){ TX=TZ=0; buildBridges(); buildMagicSchool(); buildSkyIslands(); buildWorldTree(); buildMushVillage(); buildCrystal(); buildCandy(); buildDemonCastle(); }
+function buildLandmarks(){ TX=TZ=0; buildJapan(); buildEgypt(); buildEurope(); buildMore(); buildPark(); buildFort(); buildFantasy(); }
 function genWorld(ed){ const EDITS=ed||save.edits;
   world.fill(0); const oreR=mulberry32(SEED+21);
-  for(let x=0;x<W;x++) for(let z=0;z<D;z++){ const h=groundH(x,z), beach=h<=SEA+1, des=isDesert(x,z), snow=h>=46;
-    for(let y=0;y<=h;y++){ let id=y===h?(snow?SNOW:(beach||des)?SAND:GRASS):y>h-3?(snow?SNOW:des?SANDSTONE:beach?SAND:DIRT):STONE; if(id===STONE&&y>0&&oreR()<.06) id=ORE; rawSet(x,y,z,id); }
+  for(let x=0;x<W;x++) for(let z=0;z<D;z++){ const h=groundH(x,z), beach=h<=SEA+1, des=x<OW&&z<OW&&isDesert(x,z), snow=h>=46, cur=!beach&&x>780&&z>780&&isCursed(x,z);
+    for(let y=0;y<=h;y++){ let id=y===h?(snow?SNOW:cur?CURSED:(beach||des)?SAND:GRASS):y>h-3?(snow?SNOW:des?SANDSTONE:beach?SAND:DIRT):STONE; if(id===STONE&&y>0&&oreR()<.06) id=ORE; rawSet(x,y,z,id); }
     for(let y=h+1;y<=SEA;y++) rawSet(x,y,z,WATER); }
   buildWall();
   const r=mulberry32(SEED+9), tgrid=new Set();
-  for(let i=0;i<4200;i++){ const x=4+Math.floor(r()*(W-8)), z=4+Math.floor(r()*(D-8)), h=groundH(x,z);
-    if(get(x,h,z)!==GRASS||h<=SEA+1) continue; if(zoneDist(x,z)<4) continue; if(x>110&&x<500&&Math.abs(z-wallZ(x))<6) continue;
+  for(let i=0;i<12600;i++){ const x=4+Math.floor(r()*(W-8)), z=4+Math.floor(r()*(D-8)), h=groundH(x,z);
+    if(get(x,h,z)===CURSED&&zoneDist(x,z)>=4&&r()<.4){ const th=3+Math.floor(r()*3); fillBox(x,h+1,z,x,h+th,z,LOG); rawSet(x+1,h+th,z,LOG); rawSet(x-1,h+th-1,z,LOG); continue; }
+    if(get(x,h,z)!==GRASS||h<=SEA+1) continue; if(isMush(x,z)&&zoneDist(x,z)>=4&&r()<.45){ giantMush(x,z,4+Math.floor(r()*5),2.5+r()*1.5,[MUSHR,MUSHR,PURPLEB,SKYB][Math.floor(r()*4)]); continue; } if(zoneDist(x,z)<4) continue; if(x>110&&x<500&&Math.abs(z-wallZ(x))<6) continue;
     const gk=(x>>2)+','+(z>>2); if(tgrid.has(gk)) continue; tgrid.add(gk);
     const th=4+Math.floor(r()*2), top=h+th;
     for(let dy=-2;dy<=1;dy++){ const rad=dy>=0?1:2;
       for(let dx=-rad;dx<=rad;dx++) for(let dz=-rad;dz<=rad;dz++){ if(Math.abs(dx)===rad&&Math.abs(dz)===rad&&(dy===1||r()<.5)) continue; if(get(x+dx,top+dy,z+dz)===AIR) rawSet(x+dx,top+dy,z+dz,LEAVES); } }
     for(let k=1;k<=th;k++) rawSet(x,h+k,z,LOG); }
-  for(let i=0;i<500;i++){ const x=4+Math.floor(r()*(W-8)), z=4+Math.floor(r()*(D-8)); if(!isDesert(x,z)||zoneDist(x,z)<3) continue; const y=topY(x,z); if(get(x,y-1,z)!==SAND||get(x,y,z)!==AIR) continue; fillBox(x,y,z,x,y+1+Math.floor(r()*2),z,CACTUS); }
+  for(let i=0;i<500;i++){ const x=4+Math.floor(r()*(OW-8)), z=4+Math.floor(r()*(OW-8)); if(!isDesert(x,z)||zoneDist(x,z)<3) continue; const y=topY(x,z); if(get(x,y-1,z)!==SAND||get(x,y,z)!==AIR) continue; fillBox(x,y,z,x,y+1+Math.floor(r()*2),z,CACTUS); }
   buildTown(); buildNY(); buildLandmarks();
   for(const k in EDITS){ const p=k.split(',').map(Number); rawSet(p[0],p[1],p[2],EDITS[k]); }
 }
@@ -1251,7 +1377,7 @@ function icon(id){
 const hud=$('hud'), toastEl=$('toast'), bname=$('bname'), joyEl=$('joy'), knob=joyEl.firstElementChild, hotbar=$('hotbar'), heldEl=$('held');
 let toastT=0,bnameT=0;
 function toast(html,ms){ toastEl.innerHTML=html; toastEl.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>toastEl.classList.remove('show'),ms||2300); }
-function updateHearts(){ let h=''; for(let i=0;i<10;i++){ const v=save.hp-i*2; h+=`<i class="${v>=2?'f':v===1?'h':'e'}">♥</i>`; } $('hp').innerHTML=h; }
+let lastHp=99; function updateHearts(){ let h=''; for(let i=0;i<10;i++){ const v=save.hp-i*2; h+=`<i class="${v>=2?'f':v===1?'h':'e'}">♥</i>`; } const el=$('hp'); el.innerHTML=h; if(save.hp<lastHp){ el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } lastHp=save.hp; }
 function updateMP(){ let h=''; for(let i=0;i<10;i++) h+=`<i class="${i<save.mp?'f':'e'}">★</i>`; $('mp').innerHTML=h; }
 function updateGems(){ $('gems').textContent=save.gems; }
 function flash(){ const f=$('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),70); }
@@ -1266,7 +1392,7 @@ const BADGES=[
   {id:'chest7',n:'でんせつの たからハンター',d:'たからばこを 7こ 見つける'},{id:'build100',n:'たてもの めいじん',d:'ブロックを 100こ 置く'},
   {id:'craft10',n:'クラフト めいじん',d:'クラフトを 10回 する'},{id:'warp',n:'ワープ！',d:'ワープゲートで 移動する'},
   {id:'lv5',n:'なかよし レベル5',d:'ペットを Lv5に する'},{id:'house',n:'マイホーム',d:'おうちのタネで 家を たてる'},
-  {id:'boss1',n:'ボスに かった！',d:'ボスを たおす'},{id:'kaiju',n:'かいじゅう ハンター',d:'かいじゅうを たおす'},{id:'bossAll',n:'ボス マスター',d:'4しゅるいの ボスを ぜんぶ たおす'},{id:'ryu',n:'りゅう たいじ',d:'てんくうりゅうを たおす'},{id:'park1',n:'ゆうえんち デビュー',d:'スパランドの のりものに のる'},{id:'coaster',n:'ぜっきょう マスター',d:'ジェットコースターに さいごまで のる'},{id:'parkAll',n:'スパランド せいは',d:'のりもの 5つ ぜんぶに のる'},{id:'siege',n:'とりでの えいゆう',d:'ぼうえいせんで 3ウェーブ まもりきる'},{id:'gun',n:'ねらいうち',d:'ゆみや ビームガンを つかう'},{id:'wild',n:'のらの なかま',d:'のらの 動物と なかよくなる'},{id:'drive',n:'スピード スター',d:'のりものに のる'}];
+  {id:'boss1',n:'ボスに かった！',d:'ボスを たおす'},{id:'kaiju',n:'かいじゅう ハンター',d:'かいじゅうを たおす'},{id:'bossAll',n:'ボス マスター',d:'4しゅるいの ボスを ぜんぶ たおす'},{id:'ryu',n:'りゅう たいじ',d:'てんくうりゅうを たおす'},{id:'maou',n:'でんせつの ゆうしゃ',d:'さいきょうの まおうを たおす'},{id:'seiryu',n:'りゅうの ともだち',d:'りゅうの セイランを なかまにする'},{id:'park1',n:'ゆうえんち デビュー',d:'スパランドの のりものに のる'},{id:'coaster',n:'ぜっきょう マスター',d:'ジェットコースターに さいごまで のる'},{id:'parkAll',n:'スパランド せいは',d:'のりもの 5つ ぜんぶに のる'},{id:'siege',n:'とりでの えいゆう',d:'ぼうえいせんで 3ウェーブ まもりきる'},{id:'gun',n:'ねらいうち',d:'ゆみや ビームガンを つかう'},{id:'wild',n:'のらの なかま',d:'のらの 動物と なかよくなる'},{id:'drive',n:'スピード スター',d:'のりものに のる'}];
 const badgeQ=[]; let badgeShowing=false;
 function award(id){ if(save.badges[id]) return; save.badges[id]=1; persist(); badgeQ.push(BADGES.find(b=>b.id===id)); if(!badgeShowing) nextBadge(); }
 function nextBadge(){ const b=badgeQ.shift(); if(!b){ badgeShowing=false; return; } badgeShowing=true; const el=$('badge');
@@ -1358,7 +1484,7 @@ function setAcc(a,i){ if(a.acc){ a.g.remove(a.acc); a.acc=null; } pd(a).acc=i; i
 /* ================= animals ================= */
 const RIDE={pegasus:{h:1.3,sp:9.5,jump:10,fly:1},horse:{h:1.25,sp:8.5,jump:10},panda:{h:1.05,sp:5.2,jump:8.4},dog:{h:.78,sp:6.8,jump:8.8},dragon:{h:1.55,sp:11}};
 const FIGHT={fox:3,pegasus:3,cat:2,rabbit:1,chick:1,panda:4,dog:3,horse:2};
-const COLOR={pegasus:'#c9a8ff',fox:'#f08a3c',ryu:'#e0a91a',golem:'#8d8f94',ghost:'#c9b8ff',kaiju:'#3f7d4f',cat:'#f2a65a',rabbit:'#fbfbf8',chick:'#ffdf4a',dog:'#d98c45',panda:'#f7f7f2',horse:'#9b6a43',dragon:'#5fd3b0',zombie:'#b9a7cf',king:'#ffcc33'};
+const COLOR={maou:'#7a4fd0',seiryu:'#8fe3e0',pegasus:'#c9a8ff',fox:'#f08a3c',ryu:'#e0a91a',golem:'#8d8f94',ghost:'#c9b8ff',kaiju:'#3f7d4f',cat:'#f2a65a',rabbit:'#fbfbf8',chick:'#ffdf4a',dog:'#d98c45',panda:'#f7f7f2',horse:'#9b6a43',dragon:'#5fd3b0',zombie:'#b9a7cf',king:'#ffcc33'};
 const TYPES={
   cat:{label:'ねこ',speed:1.4,hop:0,top:1.15,names:['みけ','トラ','ミルク'],build(g){ const o='#f2a65a',dk='#d9823a';
     bx(g,.46,.34,.78,o,0,.42,0); bx(g,.48,.06,.5,dk,0,.6,-.05); bx(g,.44,.4,.4,o,0,.68,.46); bx(g,.12,.14,.08,o,-.13,.94,.42); bx(g,.12,.14,.08,o,.13,.94,.42);
@@ -1460,7 +1586,7 @@ function updateAnimals(dt,time,active){
 }
 
 /* ================= dragon ================= */
-const dragon={type:'dragon',key:'d',name:'ソラ',x:W/2+60,y:66,z:D/2,rot:0,trot:0,hearts:Math.min(3,save.dragon.hearts||0),friend:false,ang:0,lured:false,flying:true,cool:0,fireCool:0,label:null,acc:null,g:new THREE.Group(),legs:[],wings:[],rmove:false};
+const dragon={type:'dragon',key:'d',name:'ソラ',x:OW/2+60,y:66,z:OW/2,rot:0,trot:0,hearts:Math.min(3,save.dragon.hearts||0),friend:false,ang:0,lured:false,flying:true,cool:0,fireCool:0,label:null,acc:null,g:new THREE.Group(),legs:[],wings:[],rmove:false};
 const dragonMeshes=[];
 function buildDragon(g){ const mi='#5fd3b0', cr='#fff1c4', go='#ffcc33', wg='#ff9cc2', dk='#3aa88a', wings=[];
   bx(g,.9,.8,1.6,mi,0,1.05,0); bx(g,.7,.12,1.3,cr,0,.64,.05); for(let i=0;i<4;i++) bx(g,.12,.18,.12,go,0,1.53,-.55+i*.35);
@@ -1495,7 +1621,7 @@ function updateDragon(dt,time,active){
       if(!dg.lured){ dg.lured=true; toast('ドラゴンが おやつの においに 気づいたみたい！',2800); }
       const tx=clamp(pl.x-Math.sin(pl.yaw)*4,1,W-1), tz=clamp(pl.z-Math.cos(pl.yaw)*4,1,D-1), gy=surface(tx,tz);
       const L=flyTo(dg,tx,gy,tz,10,dt); dg.flying=L>.2; if(!dg.flying) dg.trot=Math.atan2(dx,dz);
-    } else { dg.lured=false; dg.ang+=dt*.08; const tx=W/2+Math.cos(dg.ang)*60, tz=D/2+Math.sin(dg.ang)*60; flyTo(dg,tx,66+Math.sin(dg.ang*3)*2,tz,8,dt); dg.flying=true; }
+    } else { dg.lured=false; dg.ang+=dt*.08; const tx=OW/2+Math.cos(dg.ang)*60, tz=OW/2+Math.sin(dg.ang)*60; flyTo(dg,tx,66+Math.sin(dg.ang*3)*2,tz,8,dt); dg.flying=true; }
   } else dg.flying=!pl.onGround;
   let d=dg.trot-dg.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); dg.rot+=d*Math.min(1,dt*(dg===riding?12:5));
   const f=dg.flying?Math.sin(time*7)*.6+.15:.85; dg.wings[0].rotation.z=-f; dg.wings[1].rotation.z=f;
@@ -1719,7 +1845,7 @@ function buildKaiju(g,mk){ const gr=mk('#3f7d4f'), dk=mk('#2c5b39'), be=mk('#e8e
   bx(g,2.6,2.2,2.2,gr,0,3.6,-3.8); bx(g,2,1.6,2,gr,0,2.9,-5.6); bx(g,1.4,1.1,1.8,gr,0,2.5,-7.3); bx(g,.9,.7,1.6,gr,0,2.2,-8.8);
   [[-3.9,4.9],[-5.6,4.0],[-7.3,3.3]].forEach(q=>spikes.push(bx(g,.4,.7,.4,sp,0,q[1],q[0])));
   return {legs,arms,head,spikes}; }
-function buildRyu(g,mk){ const go=mk('#f2c230'), dk=mk('#c9971c'), cr=mk('#fff1c4'), rd=mk('#e8443a'), hn=mk('#fff6d8'), wt=MB('#ffffff'), ey=MB('#ff3b3b');
+function buildRyu(g,mk,P){ P=P||{}; const go=mk(P.go||'#f2c230'), dk=mk(P.dk||'#c9971c'), cr=mk(P.cr||'#fff1c4'), rd=mk(P.rd||'#e8443a'), hn=mk(P.hn||'#fff6d8'), wt=MB('#ffffff'), ey=MB(P.ey||'#ff3b3b');
   bx(g,1.5,1.2,1.7,go,0,0,0); bx(g,1.05,.6,1.3,go,0,-.15,1.35); bx(g,.95,.28,1.2,cr,0,-.55,1.2); bx(g,.7,.12,.2,dk,0,.12,1.98);
   for(let i=-1;i<=1;i+=2){ bx(g,.12,.12,.06,dk,i*.22,.0,2.0); bx(g,.34,.28,.05,wt,i*.5,.32,.86); bx(g,.14,.22,.06,ey,i*.52,.3,.885); bx(g,.46,.14,.34,rd,i*.5,.55,.7);
     bx(g,.1,.16,.1,wt,i*.3,-.42,1.85);
@@ -1753,21 +1879,65 @@ function updateRyu(b,dt,time){ const T=BOSS.ryu; b.cool-=dt; b.hitT-=dt; b.t2-=d
   for(let i=0;i<segs.length;i++){ const tgt=i?segs[i-1].position:head; if(tgt.distanceToSquared(segs[i].position)>1e-4) segs[i].lookAt(tgt); }
   b.g.position.set(b.x,b.y,b.z); if(b.vel.lengthSq()>.01) b.g.lookAt(b.x+b.vel.x,b.y+b.vel.y,b.z+b.vel.z);
   const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red,fr?.25:0,fr?.5:0); }); }
-const BOSS={golem:{n:'いわの ゴーレム',hp:120,sp:1.8,reach:3.4,dmg:3,gems:20,shard:6,r:1.9,cy:2.6,build:buildGolem},
+function buildMaou(g,mk){ const rb=mk('#2d1b4e'), pu=mk('#4a2a7a'), dk=mk('#1c1030'), sk=mk('#6b4fa8'), gd=mk('#e8c25a'), hn=mk('#efe2b8'), cp=mk('#b0263a'), wg=mk('#5a1f6e'), ey=MB('#ffe14d'), orbM=MB('#d38cff');
+  bx(g,2.2,2.8,1.5,rb,0,1.4,0); bx(g,2.3,.25,1.6,gd,0,.2,0); bx(g,2.3,.25,1.6,gd,0,2.6,0);
+  bx(g,2.6,2.2,1.6,pu,0,3.8,0); bx(g,2.7,.3,1.7,gd,0,2.85,0); bx(g,.5,.5,.1,MB('#ff3b5c'),0,3.9,.82); bx(g,1.8,.2,.1,gd,0,4.5,.81);
+  for(const s of [-1,1]){ bx(g,1.1,.8,1.4,dk,s*1.75,4.7,0); for(let k=0;k<3;k++){ const sp=bx(g,.18,.6,.18,hn,s*(1.4+k*.35),5.25,-.3+k*.3); sp.rotation.z=-s*.3; } }
+  bx(g,2.6,4.4,.16,cp,0,2.9,-.9); bx(g,2.8,.4,.3,cp,0,5,-.85);
+  const head=new THREE.Group(); head.position.set(0,5.2,.05); g.add(head);
+  bx(head,1.5,1.5,1.4,sk,0,.75,0); bx(head,1.56,.35,1.46,dk,0,1.45,0); bx(head,.38,.2,.05,ey,-.36,.85,.71); bx(head,.38,.2,.05,ey,.36,.85,.71); bx(head,.5,.08,.05,dk,0,.42,.71);
+  bx(head,.1,.18,.05,MB('#ffffff'),-.18,.3,.72); bx(head,.1,.18,.05,MB('#ffffff'),.18,.3,.72); bx(head,.5,.15,.06,dk,-.36,1.08,.71).rotation.z=-.3; bx(head,.5,.15,.06,dk,.36,1.08,.71).rotation.z=.3;
+  for(const s of [-1,1]){ const h1=bx(head,.32,1.0,.32,hn,s*.75,1.6,-.1); h1.rotation.z=-s*.55; const h2=bx(head,.26,.9,.26,hn,s*1.25,2.25,-.2); h2.rotation.z=-s*.15; const h3=bx(head,.2,.5,.2,gd,s*1.32,2.85,-.25); }
+  const wings=[-1,1].map(s=>{ const p=new THREE.Group(); p.position.set(s*.7,4.6,-.85); g.add(p);
+    bx(p,4.2,.22,.22,dk,s*2.1,1.1,0); bx(p,.2,3.2,.2,dk,s*4.1,-.4,0); bx(p,.18,2.6,.18,dk,s*2.8,-.2,0); bx(p,.16,2.2,.16,dk,s*1.5,-.1,0);
+    bx(p,4.0,2.6,.08,wg,s*2.1,-.3,0); bx(p,1.2,.8,.08,wg,s*3.6,-1.9,0); bx(p,1,.7,.08,wg,s*2.2,-1.8,0); return p; });
+  const arms=[-1,1].map(s=>{ const p=new THREE.Group(); p.position.set(s*1.6,4.6,0); bx(p,.6,2.2,.6,pu,0,-1.1,0); bx(p,.7,.4,.7,gd,0,-1.9,0); bx(p,.55,.55,.55,sk,0,-2.35,0); g.add(p); return p; });
+  bx(arms[1],.2,5.4,.2,'#2b2b33',0,-1.6,.5); const orb=bx(arms[1],.8,.8,.8,orbM,0,1.25,.5); bx(arms[1],.3,.6,.3,gd,-.35,1.3,.5); bx(arms[1],.3,.6,.3,gd,.35,1.3,.5);
+  const aura=new THREE.Mesh(new THREE.SphereGeometry(4.4,12,10),new THREE.MeshBasicMaterial({color:0xc27cff,transparent:true,opacity:0,depthWrite:false})); aura.position.y=3.6; g.add(aura);
+  return {head,wings,arms,orb,aura}; }
+function updateMaou(b,dt,time){ const T=BOSS.maou; b.cool-=dt; b.hitT-=dt; b.t2-=dt; b.frozen=Math.max(0,b.frozen*1-dt*1.6); const fr=b.frozen>0; b.kx=b.kz=0;
+  const dp=Math.hypot(pl.x-b.x,pl.z-b.z), ph2=b.hp<b.max*.5; if(ph2&&!b.ph2){ b.ph2=true; toast('まおうが ほんきを だした！<br>こうげきが はげしく なるぞ！',3000); shake(.6,1); flash(); }
+  let tx,ty,tz,sp=ph2?7.5:5.5;
+  if(b.dive>0){ b.dive-=dt; tx=b.dtx; ty=b.dty; tz=b.dtz; sp=17; if(!b.hitDone&&!dead&&Math.hypot(b.x-pl.x,b.y+2.5-(pl.y+1),b.z-pl.z)<3.2){ b.hitDone=1; damage(T.dmg,b.x,b.z); shake(.5,.4); } if(Math.hypot(tx-b.x,ty-b.y,tz-b.z)<1.8) b.dive=0; }
+  else { b.ang+=dt*(ph2?.5:.32); tx=pl.x+Math.cos(b.ang)*13; tz=pl.z+Math.sin(b.ang)*13; ty=pl.y+5+Math.sin(time*1.4)*1.5; }
+  ty=Math.max(ty,surface(tx,tz)+2);
+  const want=new THREE.Vector3(tx-b.x,ty-b.y,tz-b.z); if(want.lengthSq()>.01) want.normalize().multiplyScalar(sp); else want.set(0,0,0);
+  if(fr) b.vel.multiplyScalar(Math.exp(-dt*6)); else b.vel.lerp(want,Math.min(1,dt*(b.dive>0?3:1.5)));
+  b.x=clamp(b.x+b.vel.x*dt,3,W-4); b.y=clamp(b.y+b.vel.y*dt,2,H+20); b.z=clamp(b.z+b.vel.z*dt,3,D-4);
+  const orbP=new THREE.Vector3(); b.orb.getWorldPosition(orbP);
+  if(!fr&&!dead&&!(b.dive>0)&&dp<46){
+    if(b.cool<=0){ b.cool=ph2?1.4:2.4; const n=ph2?5:3, to=new THREE.Vector3(pl.x,pl.y+1,pl.z); for(let i=0;i<n;i++){ const off=(i-(n-1)/2)*1.6, t2=to.clone().add(new THREE.Vector3(Math.cos(b.ang)*off,0,Math.sin(b.ang)*off)); shootEnemy(orbP.clone(),t2,ph2?14:12,2,0xc27cff); } b.cast=.4; }
+    if(b.t2<=0){ b.t2=ph2?6.5:9; const moves=['bolt','dive',save.zmode?'summon':'bolt']; const mv=moves[b.mi=(b.mi|0)%3]; b.mi++;
+      if(mv==='dive'){ b.dive=3; b.hitDone=0; b.dtx=pl.x; b.dty=pl.y+1; b.dtz=pl.z; toast('まおうが つっこんでくる！ よけて！',1800); }
+      else if(mv==='summon'){ toast('まおうが ゾンビを よびだした！',2000); for(let k=0;k<(ph2?4:3);k++){ const a=Math.random()*6.28, x=pl.x+Math.cos(a)*7, z=pl.z+Math.sin(a)*7; const y=surface(x,z); if(Math.abs(y-pl.y)<6){ makeZombie(x,y,z,false); spawnBits(x,y+1,z,[120,40,160],12,1.4); } } }
+      else { toast('まおうの いなずま！ ひかる ところから にげて！',2000); b.marks=[]; for(let k=0;k<(ph2?7:5);k++){ const a=Math.random()*6.28, r=k===0?0:2+Math.random()*6; const x=pl.x+Math.cos(a)*r, z=pl.z+Math.sin(a)*r; b.marks.push([x,surface(x,z),z]); } b.markT=1.3; } } }
+  if(b.marks){ b.markT-=dt; if(Math.random()<dt*30) for(const m of b.marks) spawnBits(m[0]+(Math.random()-.5)*1.5,m[1]+.2,m[2]+(Math.random()-.5)*1.5,[210,140,255],1,.3);
+    if(b.markT<=0){ flash(); shake(.4,.4); for(const m of b.marks){ bolt(m[0],m[1],m[2]); if(!dead&&Math.hypot(pl.x-m[0],pl.z-m[2])<2.3&&Math.abs(pl.y-m[1])<4) damage(3,m[0],m[2]); } b.marks=null; } }
+  b.cast=Math.max(0,(b.cast||0)-dt); b.arms[1].rotation.x=b.cast>0?-1.6:-.3+Math.sin(time*2)*.1; b.arms[0].rotation.x=Math.sin(time*2+1)*.15;
+  const f=Math.sin(time*(ph2?7:4.5))*.45; b.wings[0].rotation.y=.35+f; b.wings[1].rotation.y=-.35-f;
+  b.aura.material.opacity=ph2?.12+Math.sin(time*6)*.05:0; b.orb.scale.setScalar(1+Math.sin(time*8)*.15);
+  const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red,fr?.25:0,fr?.5:(ph2?.15:0)); });
+  if(dp>.5){ b.trot=Math.atan2(pl.x-b.x,pl.z-b.z); } let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); b.rot+=d*Math.min(1,dt*3);
+  b.g.position.set(b.x,b.y+Math.sin(time*2.2)*.25,b.z); b.g.rotation.set(b.dive>0?.35:0,b.rot,0); }
+let maouCool=0;
+function maouCheck(dt){ maouCool-=dt; if(maouCool>0||save.bosses===false||bossAlive()||dead) return; if(Math.hypot(pl.x-935,pl.z-935)<58){ maouCool=90; spawnBoss('maou',true,[935.5,TH+44,935.5]); toast('まおうの城に ふみこんだ…<br>「よくきたな、ゆうしゃよ！」',3600); } }
+const BOSS={maou:{n:'やみの まおう ノクス',hp:600,sp:6,fly:1,dmg:4,gems:100,shard:20,r:2.7,cy:3.4,build:buildMaou},golem:{n:'いわの ゴーレム',hp:120,sp:1.8,reach:3.4,dmg:3,gems:20,shard:6,r:1.9,cy:2.6,build:buildGolem},
   ghost:{n:'まじょの おばけ',hp:80,sp:2.8,fly:1,dmg:2,gems:20,shard:8,r:1.3,cy:1.7,build:buildGhost},
   ryu:{n:'てんくうりゅう ライカ',hp:220,sp:7,fly:1,dmg:3,gems:40,shard:10,r:1.9,cy:.01,build:buildRyu},
   kaiju:{n:'かいじゅう ガオラ',hp:300,sp:2.3,reach:5.5,dmg:4,beam:1,gems:50,shard:12,r:3.6,cy:5,build:buildKaiju}};
 const eprojs=[]; let bossT=180+Math.random()*120, shakeT=0, shakeA=0;
 function shake(a,t){ shakeA=Math.max(shakeA,a); shakeT=Math.max(shakeT,t); }
 function bossAlive(){ return zombies.find(z=>z.boss); }
-function spawnBoss(type,forced){ if(bossAlive()) { if(forced) toast('もう ボスが いるよ！'); return; }
-  if(!type){ const r=Math.random(); type=r<.25?'kaiju':r<.5?'ryu':r<.75?'golem':'ghost'; } const T=BOSS[type];
+function spawnBoss(type,forced,at){ if(bossAlive()) { if(forced) toast('もう ボスが いるよ！'); return; }
+  if(!type){ const r=Math.random(); type=r<.08?'maou':r<.3?'kaiju':r<.52?'ryu':r<.76?'golem':'ghost'; } const T=BOSS[type];
   let spot=null; for(let t=0;t<30&&!spot;t++){ const a=Math.random()*6.28, d=forced?22:30+Math.random()*8, x=Math.floor(pl.x+Math.cos(a)*d), z=Math.floor(pl.z+Math.sin(a)*d);
-    if(x<4||z<4||x>W-5||z>D-5) continue; const y=topY(x,z); if(!T.fly&&get(x,y-1,z)===WATER) continue; spot=[x+.5,T.fly?Math.max(pl.y,y)+(type==='ryu'?10:4):y,z+.5]; }
+    if(x<4||z<4||x>W-5||z>D-5) continue; const y=topY(x,z); if(!T.fly&&get(x,y-1,z)===WATER) continue; spot=[x+.5,T.fly?Math.max(pl.y,y)+(type==='ryu'?10:type==='maou'?7:4):y,z+.5]; }
+  if(at) spot=at;
   if(!spot){ if(forced) toast('ボスが こられる 場所が ないみたい'); return; }
   const g=new THREE.Group(), mats=[]; const mk=c=>{ const m=new THREE.MeshLambertMaterial({color:c}); mats.push(m); return m; }; const parts=T.build(g,mk);
   const b=Object.assign({boss:type,x:spot[0],y:spot[1],z:spot[2],vy:0,rot:0,trot:0,hp:T.hp,max:T.hp,r:T.r,cy:T.cy,cool:2,hitT:0,frozen:0,kx:0,kz:0,onGround:true,t2:4,charge:0,ang:Math.random()*6,ph:0,g,mats,legs:parts.legs||[],arms:parts.arms||[]},parts);
   g.traverse(o=>{ o.userData.zombie=b; }); scene.add(g); zombies.push(b); dexMark(type,1);
+  if(type==='maou'){ b.vel=new THREE.Vector3(); b.dive=0; }
   if(b.segs){ b.vel=new THREE.Vector3(); b.dive=0; b.trail=[]; const ox=Math.cos(Math.random()*6.28), oz=Math.sqrt(1-ox*ox);
     for(let j=220;j>=0;j--) b.trail.push(new THREE.Vector3(b.x+ox*j*.1,b.y,b.z+oz*j*.1));
     b.segs.forEach(sg=>{ sg.traverse(o=>{ o.userData.zombie=b; }); scene.add(sg); }); }
@@ -1781,6 +1951,7 @@ function updateBoss(b,dt,time,active){ const T=BOSS[b.boss], dx=pl.x-b.x, dz=pl.
   if(dp>140){ removeZombie(b,false); toast('ボスは どこかへ いってしまった'); bossT=200+Math.random()*120; return; }
   if(!active){ if(!b.segs) b.g.position.set(b.x,b.y,b.z); return; }
   if(b.segs){ updateRyu(b,dt,time); return; }
+  if(b.boss==='maou'){ updateMaou(b,dt,time); return; }
   b.cool-=dt; b.hitT-=dt; b.t2-=dt; b.frozen=Math.max(0,b.frozen-dt); const fr=b.frozen>0;
   b.trot=Math.atan2(dx,dz); let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); b.rot+=d*Math.min(1,dt*2.5);
   b.x+=b.kx*dt; b.z+=b.kz*dt; b.kx*=Math.exp(-dt*5); b.kz*=Math.exp(-dt*5);
@@ -1800,7 +1971,7 @@ function updateBoss(b,dt,time,active){ const T=BOSS[b.boss], dx=pl.x-b.x, dz=pl.
   const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red,fr?.25:0,fr?.5:0); });
   b.g.position.set(b.x,b.y+(T.fly?Math.sin(time*3)*.2:0),b.z); b.g.rotation.y=b.rot; }
 function bossDefeated(b){ const T=BOSS[b.boss]; save.gems+=T.gems; addItem(SHARD,T.shard); addItem(CAKE,1); if(b.boss==='kaiju') addItem(V_PLANE,have(V_PLANE)?0:1);
-  save.stats.bossKinds=Object.assign({},save.stats.bossKinds,{[b.boss]:1}); dexMark(b.boss,2); award('boss1'); if(b.boss==='kaiju') award('kaiju'); if(b.boss==='ryu') award('ryu'); if(Object.keys(save.stats.bossKinds).length>=4) award('bossAll');
+  save.stats.bossKinds=Object.assign({},save.stats.bossKinds,{[b.boss]:1}); dexMark(b.boss,2); award('boss1'); if(b.boss==='kaiju') award('kaiju'); if(b.boss==='ryu') award('ryu'); if(b.boss==='maou'){ award('maou'); addItem(CAKE,2); maouCool=240; } if(Object.keys(save.stats.bossKinds).length>=4) award('bossAll');
   spawnBits(b.x,b.y+T.cy,b.z,[255,204,51],30,2); shake(.5,.8); updateGems(); persist(); bossT=240+Math.random()*180;
   const items=[{gem:T.gems,text:'ジェム ×'+T.gems},{icon:SHARD,text:'まほうのかけら ×'+T.shard},{icon:CAKE,text:'ケーキ ×1'}]; if(b.boss==='kaiju'&&have(V_PLANE)===1) items.push({icon:V_PLANE,text:'ひこうき（もっていなかったら）'});
   notice({title:`${T.n}を たおした！`,lead:'すごい！ 島の ヒーローだね！',items}); }
@@ -1832,16 +2003,16 @@ function bolt(x,y,z){ const g=new THREE.Group(), m=new THREE.MeshBasicMaterial({
 
 /* ================= magic ================= */
 const projs=[], tornados=[], ballGeo=new THREE.IcosahedronGeometry(.22,0);
-const PCOL={fire:0xff7a2e,water:0x3fa9ff,ice:0xbff2ff,dfire:0xff6a2a,arrow:0xc8965a,beam:0x4ff0ff,star:0xffe14d};
+const PCOL={sbolt:0xfff27a,fire:0xff7a2e,water:0x3fa9ff,ice:0xbff2ff,dfire:0xff6a2a,arrow:0xc8965a,beam:0x4ff0ff,star:0xffe14d};
 const arrowGeo=new THREE.BoxGeometry(.09,.09,.8), beamGeo=new THREE.BoxGeometry(.13,.13,1.3);
-const PSPD={water:13,arrow:26,beam:42,star:18}, PLIFE={beam:1.2,arrow:2.6};
-function shoot(kind,from,dir,owner,noclip){ const m=new THREE.Mesh(kind==='arrow'?arrowGeo:kind==='beam'?beamGeo:ballGeo,new THREE.MeshBasicMaterial({color:PCOL[kind]})); if(kind==='dfire') m.scale.setScalar(1.6); if(kind==='star') m.scale.setScalar(2);
-  m.position.copy(from); scene.add(m); const p={m,kind,v:dir.clone().multiplyScalar(PSPD[kind]||16),life:PLIFE[kind]||2.2,trail:0,owner,prev:from.clone(),aim:kind==='arrow'||kind==='beam',grav:kind==='arrow'?7:0,noclip:noclip||0,trav:0};
-  if(p.aim) m.lookAt(from.clone().add(p.v)); projs.push(p); }
+const PSPD={sbolt:40,water:13,arrow:26,beam:42,star:18}, PLIFE={beam:1.2,arrow:2.6};
+function shoot(kind,from,dir,owner,noclip){ const m=new THREE.Mesh(kind==='arrow'?arrowGeo:(kind==='beam'||kind==='sbolt')?beamGeo:ballGeo,new THREE.MeshBasicMaterial({color:PCOL[kind]})); if(kind==='dfire') m.scale.setScalar(1.6); if(kind==='star') m.scale.setScalar(2);
+  m.position.copy(from); scene.add(m); const p={m,kind,v:dir.clone().multiplyScalar(PSPD[kind]||16),life:PLIFE[kind]||2.2,trail:0,owner,prev:from.clone(),aim:kind==='arrow'||kind==='beam'||kind==='sbolt',grav:kind==='arrow'?7:0,noclip:noclip||0,trav:0};
+  if(p.aim) m.lookAt(from.clone().add(p.v)); projs.push(p); return p; }
 let gunNext=0;
 function fireGun(id,dir){ const it=ITEMS[id], now=performance.now()/1000; if(now<gunNext) return; gunNext=now+it.cd; swing(); award('gun');
   const from=camera.position.clone().addScaledVector(dir,camMode?camDist+.4:.7); from.y-=camMode?0:.25;
-  shoot(it.gun,from,dir,null); if(it.gun==='star') shake(.15,.15); }
+  const pj=shoot(it.gun,from,dir,null); pj.mine=true; if(it.gun==='star') shake(.15,.15); }
 function zHit(zb,q,extra){ const r=(zb.r||(zb.king?1.4:.8))+(extra||0), cy=zb.y+(zb.cy||(zb.king?1.6:.95)); if(Math.hypot(zb.x-q.x,cy-q.y,zb.z-q.z)<r) return true;
   if(zb.segs) for(const sg of zb.segs) if(sg.position.distanceTo(q)<1.25+(extra||0)) return true; return false; }
 function starBoom(q){ spawnBits(q.x,q.y,q.z,[255,225,77],26,2.2); spawnBits(q.x,q.y,q.z,[255,140,200],14,1.6); shake(.3,.3);
@@ -1851,6 +2022,7 @@ function updateProjs(dt){
     const NS=p.v.length()>20?4:2; if(p.grav){ p.v.y-=p.grav*dt; }
     for(let s=0;s<NS&&!done;s++){ p.prev.copy(p.m.position); p.m.position.addScaledVector(p.v,dt/NS); p.trav+=p.v.length()*dt/NS; const q=p.m.position;
       for(const zb of zombies){ if(zHit(zb,q)){ projHit(p,zb); done=true; break; } }
+      if(!done&&p.mine&&MP.pvp&&pvpCheck(p,q)) done=true;
       if(!done&&p.trav>p.noclip&&solidAt(Math.floor(q.x),Math.floor(q.y),Math.floor(q.z))){ projImpact(p); done=true; } }
     if(p.aim) p.m.lookAt(p.m.position.clone().add(p.v)); else { p.m.rotation.x+=dt*9; p.m.rotation.y+=dt*7; } p.trail-=dt;
     if(p.trail<=0&&!done){ p.trail=.05; const c=new THREE.Color(PCOL[p.kind]); spawnBits(p.m.position.x,p.m.position.y,p.m.position.z,[c.r*255,c.g*255,c.b*255],1,.3); }
@@ -1862,6 +2034,7 @@ function projHit(p,zb){ const L=p.v.length()||1, kx=p.v.x/L, kz=p.v.z/L; const c
   else if(p.kind==='ice') damageZombie(zb,5,{freeze:5});
   else if(p.kind==='arrow') damageZombie(zb,4,{kx:kx*5,kz:kz*5,up:2});
   else if(p.kind==='beam') damageZombie(zb,3,{kx:kx*3,kz:kz*3});
+  else if(p.kind==='sbolt'){ damageZombie(zb,7,{kx:kx*5,kz:kz*5,up:3}); bolt(zb.x,zb.y,zb.z); }
   else if(p.kind==='star') starBoom(p.m.position);
   if(p.owner&&p.owner.friend) gainXp(p.owner,2); }
 function projImpact(p){ const q=p.m.position, c=new THREE.Color(PCOL[p.kind]); spawnBits(q.x,q.y,q.z,[c.r*255,c.g*255,c.b*255],8,1.1); if(p.kind==='star') starBoom(q);
@@ -1877,7 +2050,7 @@ function castMagic(id,dir,blockHit){ const it=ITEMS[id];
   if(save.mp<it.mp){ toast('まほうの ★が たりないよ<br>少し まつと たまるよ'); return; }
   save.mp-=it.mp; updateMP(); award('magic'); swing();
   const from=camera.position.clone().addScaledVector(dir,.7); from.y-=.25;
-  if(it.magic==='fire'||it.magic==='water'||it.magic==='ice') shoot(it.magic,from,dir,null);
+  if(it.magic==='fire'||it.magic==='water'||it.magic==='ice') shoot(it.magic,from,dir,null).mine=true;
   else if(it.magic==='wind'){ const L=Math.hypot(dir.x,dir.z)||1, fx_=dir.x/L, fz_=dir.z/L;
     for(const zb of zombies.slice()){ const dx=zb.x-pl.x,dz=zb.z-pl.z,d=Math.hypot(dx,dz)||1; if(d<10&&(dx*fx_+dz*fz_)/d>.45) damageZombie(zb,2,{kx:dx/d*18,kz:dz/d*18,up:7}); }
     for(let i=1;i<9;i++) spawnBits(pl.x+fx_*i,camY-.4+Math.random()*.6,pl.z+fz_*i,[235,250,255],2,.8); }
@@ -2118,6 +2291,38 @@ function endSiege(win){ siege.on=false; $('siegebar').hidden=true; zombies.filte
   if(win){ save.gems+=20; addItem(SHARD,6); addItem(CAKE,1); award('siege'); updateGems(); persist(); spawnBits(FCX,TH+12,FCZ,[255,204,51],30,2);
     notice({title:'とりでを まもりきった！',lead:'すごい！ マイとりでは ぶじだよ。',items:[{gem:20,text:'ジェム ×20'},{icon:SHARD,text:'まほうのかけら ×6'},{icon:CAKE,text:'ケーキ ×1'}]}); }
   else toast('ぼうえいせんは ちゅうし になったよ'); }
+/* ================= friendly eastern dragon "Seiran" (original) ================= */
+if(!save.seiryu) save.seiryu={hearts:0,friend:false};
+const SEI_PAL={go:'#8fe3e0',dk:'#3fa3b8',cr:'#f4fbff',rd:'#c9a8ff',hn:'#ffe08a',ey:'#1b2a4a'};
+const seiMeshes=[], SEI_S=.6;
+const seiryu={type:'seiryu',name:'セイラン',x:830,y:TH+16,z:346,friend:!!save.seiryu.friend,hearts:save.seiryu.hearts|0,vel:new THREE.Vector3(),trail:[],ang:0,g:new THREE.Group(),segs:[],rmove:false,trot:0,rot:0,timer:0,hinted:false};
+RIDE.seiryu={h:.55,sp:13,fly:1};
+{ const p=buildRyu(seiryu.g,M,SEI_PAL); seiryu.segs=p.segs; seiryu.g.scale.setScalar(SEI_S); scene.add(seiryu.g); p.segs.forEach(sg=>{ sg.scale.setScalar(SEI_S); scene.add(sg); });
+  [seiryu.g].concat(p.segs).forEach(G_=>G_.traverse(o=>{ if(o.isMesh){ o.userData.seiryu=true; seiMeshes.push(o); } }));
+  for(let j=120;j>=0;j--) seiryu.trail.push(new THREE.Vector3(seiryu.x+j*.1,seiryu.y,seiryu.z)); }
+function updateSeiryu(dt,time,active){ const s=seiryu, dp=Math.hypot(pl.x-s.x,pl.z-s.z);
+  if(dp>150&&!s.friend&&riding!==s) return;
+  if(riding===s){ const fx=-Math.sin(pl.yaw), fz=-Math.cos(pl.yaw); s.x=pl.x+fx*1.1; s.z=pl.z+fz*1.1; s.y=pl.y-.15; s.vel.set(fx*(.5+heroMove*8),pl.vy*.6,fz*(.5+heroMove*8)); }
+  else { let tx,ty,tz,sp=6;
+    if(s.friend){ if(dp>70&&active){ s.x=pl.x+5; s.z=pl.z+5; s.y=pl.y+6; } s.ang+=dt*.5; tx=pl.x+Math.cos(s.ang)*6; tz=pl.z+Math.sin(s.ang)*6; ty=pl.y+4.5+Math.sin(time*1.1); sp=dp>14?15:6; }
+    else if(dp<42&&active&&Math.hypot(pl.x-830,pl.z-346)<120){ s.ang+=dt*.25; tx=pl.x+Math.cos(s.ang)*4.5; tz=pl.z+Math.sin(s.ang)*4.5; ty=pl.y+2.3+Math.sin(time*1.5)*.4; sp=5;
+      if(!s.hinted){ s.hinted=true; dexMark('seiryu',1); toast('きれいな りゅうが よってきた！<br>「ドラゴンのおやつ」を もって タップしてみよう',3600); } }
+    else { s.ang+=dt*.22; tx=830+Math.cos(s.ang)*34; tz=346+Math.sin(s.ang)*20; ty=TH+15+Math.sin(time*.8)*3; }
+    ty=Math.max(ty,surface(tx,tz)+2.5);
+    const want=new THREE.Vector3(tx-s.x,ty-s.y,tz-s.z); if(want.lengthSq()>.01) want.normalize().multiplyScalar(sp); s.vel.lerp(want,Math.min(1,dt*1.8));
+    s.x=clamp(s.x+s.vel.x*dt,3,W-4); s.y=clamp(s.y+s.vel.y*dt,2,H+20); s.z=clamp(s.z+s.vel.z*dt,3,D-4); }
+  const tr=s.trail, last=tr[tr.length-1]; if(last.distanceToSquared(new THREE.Vector3(s.x,s.y,s.z))>.0016) tr.push(new THREE.Vector3(s.x,s.y,s.z)); if(tr.length>700) tr.splice(0,200);
+  const head=tr[tr.length-1]; let acc=0,k=0,prev=head; const sg=s.segs;
+  for(let j=tr.length-2;j>=0&&k<sg.length;j--){ const p=tr[j]; acc+=p.distanceTo(prev); prev=p; while(k<sg.length&&acc>=(1.5+k*1.1)*SEI_S){ sg[k].position.copy(p); sg[k].position.y+=Math.sin(time*3-k*.6)*.06; k++; } }
+  for(;k<sg.length;k++) sg[k].position.copy(prev);
+  for(let i=0;i<sg.length;i++){ const t=i?sg[i-1].position:head; if(t.distanceToSquared(sg[i].position)>1e-5) sg[i].lookAt(t); }
+  s.g.position.set(s.x,s.y,s.z); if(s.vel.lengthSq()>.02) s.g.lookAt(s.x+s.vel.x,s.y+s.vel.y*.5,s.z+s.vel.z); }
+function seiryuTap(){ const s=seiryu; dexMark('seiryu',1);
+  if(s.friend){ if(riding!==s) mount(s); return; }
+  if(selId!==TREAT){ toast(have(TREAT)?'ホットバーで「ドラゴンのおやつ」を えらんで タップしてね':'「ドラゴンのおやつ」を あげると なかよく なれるかも<br>（ショップで かえるよ）',3200); return; }
+  addItem(TREAT,-1); s.hearts=Math.min(3,s.hearts+1); save.seiryu.hearts=s.hearts; for(let i=0;i<4;i++) setTimeout(()=>spawnHeart(s.x,s.y+1,s.z),i*120);
+  if(s.hearts>=3){ s.friend=true; save.seiryu.friend=true; dexMark('seiryu',2); award('seiryu'); notice({title:'りゅうの セイランが なかまに なった！',lead:'タップすると せなかに のれるよ。「うえ」「した」で 空を とび、てぶらで タップすると かみなりを はくよ。',items:[]}); }
+  else toast(`セイランは おやつを ぱくっ！ <span class="hs">${hs(s.hearts,3)}</span>`); persist(); }
 /* ================= tap actions ================= */
 function raycastVoxel(o,d,maxD){
   let x=Math.floor(o.x),y=Math.floor(o.y),z=Math.floor(o.z); const sx=d.x>0?1:-1,sy=d.y>0?1:-1,sz=d.z>0?1:-1;
@@ -2132,11 +2337,13 @@ function dropFor(id){ return id===GRASS?DIRT:id===ORE?IRON:id; }
 let breathCool=0;
 function doAction(cx,cy){
   ndc.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1); raycaster.setFromCamera(ndc,camera); const dir=raycaster.ray.direction;
-  const targets=animalMeshes.concat(dragonMeshes,vehMeshes,rideMeshes); zombies.forEach(zb=>[zb.g].concat(zb.segs||[]).forEach(G_=>G_.traverse(o=>{ if(o.isMesh) targets.push(o); })));
-  const hits=raycaster.intersectObjects(targets,false).filter(h=>!(riding&&(h.object.userData.animal===riding||h.object.userData.vehicle===riding||(riding===dragon&&h.object.userData.dragon))));
+  const targets=animalMeshes.concat(dragonMeshes,vehMeshes,rideMeshes,seiMeshes); zombies.forEach(zb=>[zb.g].concat(zb.segs||[]).forEach(G_=>G_.traverse(o=>{ if(o.isMesh) targets.push(o); })));
+  const hits=raycaster.intersectObjects(targets,false).filter(h=>!(riding&&(h.object.userData.animal===riding||h.object.userData.vehicle===riding||(riding===dragon&&h.object.userData.dragon)||(riding===seiryu&&h.object.userData.seiryu))));
   const hitE=hits[0], hitB=raycastVoxel(raycaster.ray.origin,dir,7+(camMode?camDist:0)), it=ITEMS[selId];
   const ent=(hitE&&hitE.distance<12&&(!hitB||hitE.distance<hitB.t+.3))?hitE:null, u=ent?ent.object.userData:null;
   if(riding===dragon&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.7; const from=dragonHead(); shoot('dfire',from,dir,dragon); } return; }
+  if(riding===seiryu&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.45; shoot('sbolt',new THREE.Vector3(seiryu.x,seiryu.y+.3,seiryu.z).addScaledVector(dir,1),dir,null).mine=true; } return; }
+  if(u&&u.seiryu&&ent.distance<14){ seiryuTap(); return; }
   if(u&&u.vehicle&&u.vehicle!==riding&&ent.distance<10){ mount(u.vehicle); return; }
   if(u&&(u.ride||u.bell)){ if(ent.distance>14){ toast('もっと 近づいて タップしてね'); return; } if(u.bell) startSiege(); else rideStart(u.ride); return; }
   if(it&&it.veh){ if(riding&&riding.type===it.veh){ toast('もう のっているよ'); return; } summonVehicle(it.veh); return; }
@@ -2313,7 +2520,7 @@ $('petList').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'
 $('petBtn').addEventListener('click',()=>{ renderPets(); openOv('pets'); });
 
 /* dex */
-const DEX_A=[['ryu','てんくうりゅう ライカ','空を およぐ 金色の りゅう。かみなりの たまと たいあたりに 気をつけて'],['golem','いわの ゴーレム','岩の かたまり。力いっぱい たたいてくる'],['ghost','まじょの おばけ','空を ふわふわ。まほうの たまを とばす'],['kaiju','かいじゅう ガオラ','島で いちばん 大きい。せなかが 光ると ビーム！'],['cat','ねこ','のんびりや。なでられるのが 大すき'],['rabbit','うさぎ','ぴょんぴょん はねる。耳が長い'],['chick','ひよこ','ちいさくて 元気いっぱい'],['dog','しばいぬ','いっしょに たたかってくれる'],
+const DEX_A=[['maou','やみの まおう ノクス','さいきょうの ボス。まおうの城に すむ。いなずまと ゾンビよびに ちゅうい！'],['seiryu','せいりゅう セイラン','まほう学校の みずうみに すむ りゅう。おやつ3こで なかまに'],['ryu','てんくうりゅう ライカ','空を およぐ 金色の りゅう。かみなりの たまと たいあたりに 気をつけて'],['golem','いわの ゴーレム','岩の かたまり。力いっぱい たたいてくる'],['ghost','まじょの おばけ','空を ふわふわ。まほうの たまを とばす'],['kaiju','かいじゅう ガオラ','島で いちばん 大きい。せなかが 光ると ビーム！'],['cat','ねこ','のんびりや。なでられるのが 大すき'],['rabbit','うさぎ','ぴょんぴょん はねる。耳が長い'],['chick','ひよこ','ちいさくて 元気いっぱい'],['dog','しばいぬ','いっしょに たたかってくれる'],
   ['panda','パンダ','力もち。背中に のせてくれる'],['horse','うま','とっても はやい。くらで のれる'],['pegasus','ペガサス','つばさの ある うま。くらで のると 空を とべる'],['fox','キツネ','ふわふわ しっぽの すばしっこい なかま'],['dragon','ドラゴン','空のぬし。おやつが 大好物'],['zombie','ゾンビ','よるに 出てくる。朝になると きえる'],['king','ゾンビキング','まんげつの よるだけ あらわれる']];
 let dexTab='a';
 function renderDex(){ const G_=$('dexGrid'); G_.innerHTML=''; let got=0,tot=0;
@@ -2413,7 +2620,7 @@ $('parentBtn').addEventListener('click',openParent);
 let armed=false;
 function resetArm(v){ armed=v; const b=$('reset'); b.textContent=v?'ほんとうに？ もう一回おしてね':'島をはじめからにする'; b.classList.toggle('warn',v); b.classList.toggle('sub',!v); }
 $('reset').addEventListener('click',()=>{ if(!armed){ resetArm(true); return; } resetArm(false); dismount(); setFly(false);
-  save.edits={}; save.hearts=[]; save.allDone=false; save.dragon={hearts:0,friend:false}; save.warps=[]; save.babies=[]; save.chest=null; persist(true);
+  save.edits={}; save.hearts=[]; save.allDone=false; save.dragon={hearts:0,friend:false}; save.seiryu={hearts:0,friend:false}; seiryu.friend=false; seiryu.hearts=0; save.warps=[]; save.babies=[]; save.chest=null; persist(true);
   genWorld(); disposeAll(); computeMap(); clearZombies(null,true); animals.filter(a=>a.baby||a.bdata||a.wild).forEach(removeAnimal);
   animals.forEach(a=>{ a.hearts=0; setFriend(a,false); a.x=a.home[0]; a.z=a.home[1]; a.y=topY(Math.floor(a.x),Math.floor(a.z)); a.vy=0; a.love=0; });
   dragon.hearts=0; setFriend(dragon,false); ensureChest(); placePlayer(); updateFriends(); closeOv('menu'); toast('島が はじめに もどったよ'); });
@@ -2437,7 +2644,9 @@ $('skinBtn').addEventListener('click',()=>{ closeOv('menu'); openSkins(); });
 const LANDMARKS=[{n:'おしろの街（スタート）',x:280,z:296},{n:'マイとりで（おうち）',x:226,z:294},{n:'ゆうえんち スパランド',x:432,z:238},{n:'ビルの街',x:355,z:303},{n:'みなとの 大きな像',x:346,z:360},{n:'万里の長城',x:300,z:wallZ(300)},
   {n:'東京タワー・五重塔',x:500,z:336},{n:'富士山（ちょうじょう）',x:520,z:438},{n:'ピラミッド・スフィンクス',x:318,z:468},{n:'エッフェル塔',x:130,z:326},
   {n:'ピサの斜塔',x:100,z:378},{n:'コロッセオ',x:165,z:410},{n:'ビッグ・ベン',x:166,z:247},{n:'風車の村',x:100,z:262},{n:'ストーンヘンジ',x:420,z:175},
-  {n:'モアイ',x:92,z:515},{n:'しろい大理石の 宮殿',x:420,z:510}];
+  {n:'モアイ',x:92,z:515},{n:'しろい大理石の 宮殿',x:420,z:510},{n:'にじの はし（東）',x:640,z:300},{n:'にじの はし（南）',x:297,z:655},
+  {n:'まほう学校 ルミナス城',x:830,z:318},{n:'そらの島（くもの かいだん）',x:930,z:246},{n:'せかいじゅ',x:740,z:653},{n:'キノコの村',x:904,z:512},
+  {n:'クリスタルの とう',x:380,z:868},{n:'おかしの村',x:205,z:790},{n:'まおうの城（きけん！）',x:935,z:984}];
 let mapBase=null;
 function computeMap(){ const cv=document.createElement('canvas'); cv.width=W; cv.height=D; const c=cv.getContext('2d'); const img=c.createImageData(W,D);
   for(let z=0;z<D;z++) for(let x=0;x<W;x++){ let y=H-1; while(y>0&&world[x+z*W+y*W*D]===AIR) y--; const id=world[x+z*W+y*W*D], o=(z*W+x)*4;
@@ -2445,7 +2654,7 @@ function computeMap(){ const cv=document.createElement('canvas'); cv.width=W; cv
   c.putImageData(img,0,0); mapBase=cv; }
 function drawMap(){ const cv=$('mapcv'), c=cv.getContext('2d'); if(mapBase) c.drawImage(mapBase,0,0); else { c.fillStyle='#3480d6'; c.fillRect(0,0,W,D); }
   c.font='bold 13px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
-  LANDMARKS.forEach((l,i)=>{ c.fillStyle='#18263a'; c.beginPath(); c.arc(l.x,l.z,10,0,7); c.fill(); c.strokeStyle='#ffd23f'; c.lineWidth=2; c.stroke(); c.fillStyle='#fffdf5'; c.fillText(String(i+1),l.x,l.z+1); });
+  c.font='bold 18px sans-serif'; LANDMARKS.forEach((l,i)=>{ c.fillStyle='#18263a'; c.beginPath(); c.arc(l.x,l.z,14,0,7); c.fill(); c.strokeStyle='#ffd23f'; c.lineWidth=2; c.stroke(); c.fillStyle='#fffdf5'; c.fillText(String(i+1),l.x,l.z+1); });
   const ch=save.chest; if(ch&&!ch.opened&&ch.date===dayStr(0)){ c.fillStyle='#ffd23f'; c.strokeStyle='#8a5a12'; c.lineWidth=2; c.beginPath(); c.arc(ch.pos[0]+.5,ch.pos[2]+.5,7,0,7); c.fill(); c.stroke(); }
   animals.forEach(a=>{ if(!a.friend) return; c.fillStyle='#ff8fd0'; c.beginPath(); c.arc(a.x,a.z,3.5,0,7); c.fill(); }); if(dragon.friend){ c.fillStyle='#5fd3b0'; c.beginPath(); c.arc(dragon.x,dragon.z,5,0,7); c.fill(); }
   c.save(); c.translate(pl.x,pl.z); c.rotate(-pl.yaw); c.fillStyle='#ff3fae'; c.strokeStyle='#fff'; c.lineWidth=3; c.beginPath(); c.moveTo(0,-14); c.lineTo(10,10); c.lineTo(0,5); c.lineTo(-10,10); c.closePath(); c.stroke(); c.fill(); c.restore(); }
@@ -2478,14 +2687,11 @@ function drawMini(){ if(!mapBase) return; const c=mctx, C=66, Rb=44, S=C/Rb;
 miniCv.addEventListener('click',()=>{ if(!playing) return; drawMap(); renderLandmarks(); openOv('mapov'); });
 
 /* ================= online play with a room passphrase (PeerJS, peer-to-peer) ================= */
-const MP={on:false,host:false,guest:false,peer:null,conns:new Map(),hostConn:null,myId:'me',players:new Map(),sendT:0,timeT:0,phrase:''};
+const MP={code:'',pvp:false,score:{},on:false,host:false,guest:false,peer:null,conns:new Map(),hostConn:null,myId:'me',players:new Map(),sendT:0,timeT:0,phrase:''};
 const STAMPS=['やあ！','こっちに きて！','すごい！','ありがとう！','いっしょに あそぼ！','いいね！','たすけて〜！','またね！'];
-const PASS_WORDS=['ねこ','いぬ','うさぎ','りんご','いちご','ほし','つき','にじ','くも','さくら','ドラゴン','おしろ','たから','まほう','パンダ','ひよこ','クッキー','ロケット'];
 if(save.online===undefined) save.online=true;
 const cleanName=n=>String(n||'').replace(/[<>&"']/g,'').trim().slice(0,8)||'なまえなし';
 const myName=()=>cleanName(save.mpName||'プレイヤー'), myColor=()=>save.heroColor|0;
-function roomId(ph){ const s=ph.trim().toLowerCase(); let h=2166136261, h2=5381; for(const c of s){ h^=c.charCodeAt(0); h=Math.imul(h,16777619)>>>0; h2=((h2*33)^c.charCodeAt(0))>>>0; } return 'dbland'+h.toString(36)+'x'+h2.toString(36); }
-function loadPeer(){ return new Promise((res,rej)=>{ if(window.Peer) return res(); const sc=document.createElement('script'); sc.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'; sc.onload=()=>window.Peer?res():rej(); sc.onerror=()=>rej(); document.head.appendChild(sc); }); }
 function plainLabel(text,col){ const c=document.createElement('canvas'); c.width=256; c.height=64; const x=c.getContext('2d');
   x.fillStyle='rgba(20,32,50,.85)'; x.beginPath(); if(x.roundRect) x.roundRect(4,6,248,52,16); else x.rect(4,6,248,52); x.fill(); x.fillStyle=col||'#fffdf5';
   x.font='28px DotGothic16, "Hiragino Maru Gothic ProN", sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(text,128,33);
@@ -2510,74 +2716,106 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
+const ROOM_PREFIX='dbland4-', PROTO=2;
+const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
+const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
+function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
+  return new Promise((res,rej)=>{ if(window.Peer) return res(); let i=0; const next=()=>{ if(i>=srcs.length) return rej(); const sc=document.createElement('script'); sc.src=srcs[i++]; sc.onload=()=>window.Peer?res():next(); sc.onerror=()=>{ sc.remove(); next(); }; document.head.appendChild(sc); }; next(); }); }
+function setMsg(t,err){ const m=$('onMsg'); m.textContent=t||''; m.hidden=!t; m.classList.toggle('okmsg',!err); }
+function errText(e){ const t=e&&e.type; return t==='browser-incompatible'?'この ブラウザでは オンラインが つかえないよ':t==='peer-unavailable'?'その ばんごうの へやが 見つからないよ。ばんごうを たしかめてね（へやを つくった人が さきに まっていてね）':(t==='network'||t==='socket-error'||t==='server-error'||t==='socket-closed')?'サーバーに つながらなかったよ。インターネットを たしかめてね':t==='unavailable-id'?'へやが つくれなかったよ。もういちど ためしてね':'つながらなかったよ（'+(t||'?')+'）。もういちど ためしてね'; }
 function hostHandle(conn){
   conn.on('data',d=>{ if(!d||typeof d!=='object') return;
-    if(d.t==='hello'){ if(MP.conns.size>=3){ try{ conn.send({t:'full'}); }catch(e){} setTimeout(()=>conn.close(),400); return; }
+    if(d.t==='hello'){ if(d.v!==PROTO){ try{ conn.send({t:'ver'}); }catch(e){} setTimeout(()=>conn.close(),600); return; }
+      if(MP.conns.size>=3){ try{ conn.send({t:'full'}); }catch(e){} setTimeout(()=>conn.close(),400); return; }
       const id=conn.peer, name=cleanName(d.name), color=(d.color|0)%8; MP.conns.set(id,conn);
-      conn.send({t:'welcome',id,edits:save.edits,time:save.time,pos:[pl.x,pl.y,pl.z],players:[{id:MP.myId,name:myName(),color:myColor()}].concat([...MP.players.values()].map(r=>({id:r.id,name:r.name,color:r.color})))});
+      const ent=Object.entries(save.edits), CH=2500, n=Math.ceil(ent.length/CH);
+      conn.send({t:'welcome',id,edN:n,time:save.time,pos:[pl.x,pl.y,pl.z],pvp:MP.pvp,score:MP.score,players:[{id:MP.myId,name:myName(),color:myColor()}].concat([...MP.players.values()].map(r=>({id:r.id,name:r.name,color:r.color})))});
+      for(let i=0;i<n;i++) conn.send({t:'ed',i,l:ent.slice(i*CH,(i+1)*CH)});
       addRemote(id,name,color); mpBroadcast({t:'join',id,name,color},id); toast(`${esc(name)}が へやに はいってきた！`); renderRoom(); return; }
     if(!MP.conns.has(conn.peer)) return;
     if(d.t==='st') { setRemote(conn.peer,d.p); mpBroadcast({t:'st',id:conn.peer,p:d.p},conn.peer); }
     else if(d.t==='blk'){ const l=sanitize(d.l); if(l.length){ setBlocks(l,true); mpBroadcast({t:'blk',l},conn.peer); } }
     else if(d.t==='emo'){ showStamp(conn.peer,d.i); mpBroadcast({t:'emo',id:conn.peer,i:d.i|0},conn.peer); }
+    else if(d.t==='hit'){ const m={t:'hit',to:String(d.to),from:conn.peer,d:clamp(d.d|0,1,6)}; if(m.to===MP.myId) recvHit(m); else { const c=MP.conns.get(m.to); if(c&&c.open) try{ c.send(m); }catch(e){} } }
+    else if(d.t==='ko'){ const m={t:'ko',by:String(d.by),id:conn.peer}; onKo(m); mpBroadcast(m,conn.peer); }
     else if(d.t==='quit') drop(); });
   const drop=()=>{ if(!MP.conns.has(conn.peer)) return; const r=MP.players.get(conn.peer); MP.conns.delete(conn.peer); removeRemote(conn.peer); mpBroadcast({t:'leave',id:conn.peer}); if(r) toast(`${esc(r.name)}が へやを でたよ`); renderRoom(); };
   conn.on('close',drop); conn.on('error',drop); }
+let edBuf=null;
 function guestHandle(d){ if(!d||typeof d!=='object') return;
   switch(d.t){
+    case 'ver': onFail('ゲームの バージョンが ちがうよ。ふたりとも さいしんの ページを ひらきなおしてね'); leaveRoom(true); break;
     case 'full': onFail('へやが いっぱいだよ（4人まで）'); leaveRoom(true); break;
-    case 'welcome': clearTimeout(MP.joinTO); MP.on=true; MP.guest=true; MP.myId=d.id; if(typeof d.time==='number') save.time=d.time; dismount(); setFly(false);
-      const ed={}; if(d.edits&&typeof d.edits==='object') for(const k in d.edits){ if(/^\d+,\d+,\d+$/.test(k)) ed[k]=d.edits[k]|0; }
-      genWorld(ed); disposeAll(); computeMap(); (d.players||[]).forEach(p=>addRemote(p.id,cleanName(p.name),(p.color|0)%8));
-      if(Array.isArray(d.pos)) warpTo(d.pos[0]+2,d.pos[2]+2,''); afterJoin(); toast('へやに はいったよ！ みんなと いっしょだね',3000); break;
+    case 'welcome': clearTimeout(MP.joinTO); MP.on=true; MP.guest=true; MP.myId=d.id; MP.pvp=!!d.pvp; MP.score=(d.score&&typeof d.score==='object')?d.score:{}; if(typeof d.time==='number') save.time=d.time; dismount(); setFly(false);
+      MP.wpos=Array.isArray(d.pos)?d.pos:null; MP.wplayers=d.players||[]; edBuf={n:d.edN|0,got:0,ed:{}}; setMsg('せかいを うけとっています…'); if(!edBuf.n) finishJoin(); break;
+    case 'ed': if(!edBuf) break; (Array.isArray(d.l)?d.l:[]).forEach(q=>{ if(Array.isArray(q)&&/^\d+,\d+,\d+$/.test(q[0])) edBuf.ed[q[0]]=q[1]|0; }); edBuf.got++; setMsg(`せかいを うけとっています… ${Math.round(edBuf.got/edBuf.n*100)}%`); if(edBuf.got>=edBuf.n) finishJoin(); break;
     case 'join': addRemote(d.id,cleanName(d.name),(d.color|0)%8); toast(`${esc(cleanName(d.name))}が へやに はいってきた！`); renderRoom(); break;
     case 'leave': { const r=MP.players.get(d.id); removeRemote(d.id); if(r) toast(`${esc(r.name)}が へやを でたよ`); renderRoom(); break; }
     case 'st': if(d.id!==MP.myId) setRemote(d.id,d.p); break;
     case 'blk': setBlocks(sanitize(d.l),true); break;
     case 'emo': showStamp(d.id,d.i); break;
     case 'time': if(typeof d.v==='number') save.time=d.v; break;
+    case 'pvp': MP.pvp=!!d.v; toast(MP.pvp?'たいせんモード ON！<br>ゆみ・ビーム・まほうが 友だちにも あたるよ':'たいせんモード OFF',3000); renderRoom(); break;
+    case 'hit': if(d.to===MP.myId) recvHit(d); break;
+    case 'ko': onKo(d); break;
     case 'bye': toast('へやが とじられたよ',3000); leaveRoom(true); break; } }
-function onFail(msg){ const m=$('onMsg'); m.textContent=msg; m.hidden=false; $('onHost').disabled=$('onJoin').disabled=false; }
+function finishJoin(){ const ed=edBuf?edBuf.ed:{}; edBuf=null; genWorld(ed); disposeAll(); computeMap(); MP.wplayers.forEach(p=>addRemote(p.id,cleanName(p.name),(p.color|0)%8));
+  if(MP.wpos) warpTo(MP.wpos[0]+2,MP.wpos[2]+2,''); setMsg(''); afterJoin(); toast('へやに はいったよ！ みんなと いっしょだね',3000); }
+// ---- versus (pvp) ----
+const PVP_DMG={arrow:3,beam:2,star:4,fire:3,water:2,ice:2,sbolt:4};
+function pvpCheck(p,q){ if(!MP.on||!MP.pvp||!p.mine) return false; for(const r of MP.players.values()){ if(r.seen&&Math.hypot(r.x-q.x,r.y+1-q.y,r.z-q.z)<1){ spawnBits(r.x,r.y+1.2,r.z,[255,90,120],10,1.2);
+  const m={t:'hit',to:r.id,from:MP.myId,d:PVP_DMG[p.kind]||2}; if(MP.host){ const c=MP.conns.get(r.id); if(c&&c.open) try{ c.send(m); }catch(e){} } else mpSend(m); return true; } } return false; }
+function recvHit(d){ if(!MP.pvp||dead) return; save.hp=Math.max(0,save.hp-(d.d|0)); pl.hurtT=0; pl.regenT=0; updateHearts(); const h=$('hurt'); h.classList.add('on'); setTimeout(()=>h.classList.remove('on'),60); shake(.2,.2);
+  if(save.hp<=0){ save.hp=20; updateHearts(); dismount(); setFly(false); placePlayer(); const r=MP.players.get(d.from); toast(`${r?esc(r.name):'だれか'}に やられた！ スタートに もどったよ`,3000); const m={t:'ko',by:d.from,id:MP.myId}; onKo(m,true); mpSend(m); } }
+function onKo(d,self){ MP.score[d.by]=(MP.score[d.by]|0)+1; const nm=id=>id===MP.myId?'あなた':(MP.players.get(id)?esc(MP.players.get(id).name):'だれか'); if(!self) toast(`${nm(d.by)}が ${nm(d.id)}を たおした！`,2600); renderRoom(); }
+function onFail(msg){ setMsg(msg,true); $('onHost').disabled=$('onJoin').disabled=false; }
 function afterJoin(){ $('stampBtn').hidden=false; updateStampBtn(); showRoomView(); }
 function updateStampBtn(){ $('stampBtn').textContent=`スタンプ（${MP.players.size+1}人）`; }
-async function startOnline(asHost){ const ph=$('onPass').value.trim(); $('onMsg').hidden=true;
+async function startOnline(asHost){ setMsg('');
   if(save.online===false){ onFail('おうちの人の せっていで オンラインが オフに なっているよ'); return; }
-  if(ph.length<4){ onFail('合言葉は 4もじ いじょうに してね'); return; }
-  if(typeof RTCPeerConnection==='undefined'){ onFail('このページでは オンラインが つかえないよ。GitHubで 公開した版で あそんでね'); return; }
-  save.mpName=cleanName($('onName').value); persist(); $('onHost').disabled=$('onJoin').disabled=true; $('onMsg').hidden=false; $('onMsg').textContent='つないでいます…';
+  const code=$('onCode').value.replace(/\D/g,''); if(!asHost&&code.length!==4){ onFail('4けたの へやばんごうを 入れてね'); return; }
+  if(typeof RTCPeerConnection==='undefined'){ onFail('このページでは オンラインが つかえないよ。GitHubで 公開した ページで あそんでね'); return; }
+  save.mpName=cleanName($('onName').value); persist(); $('onHost').disabled=$('onJoin').disabled=true; setMsg('じゅんびちゅう…');
   try{ await loadPeer(); }catch(e){ onFail('つなぐための どうぐを よみこめなかったよ。インターネットを たしかめてね'); return; }
-  MP.phrase=ph;
-  if(asHost){ const peer=new Peer(roomId(ph)); MP.peer=peer;
-    peer.on('open',id=>{ MP.on=true; MP.host=true; MP.myId=id; $('onMsg').hidden=true; afterJoin(); toast('へやを つくったよ！ 友だちに 合言葉を つたえてね',3500); });
-    peer.on('connection',hostHandle);
-    peer.on('error',e=>{ if(MP.on&&e.type!=='unavailable-id'&&e.type!=='network'&&e.type!=='server-error') return; onFail(e.type==='unavailable-id'?'その合言葉の へやは もう あるよ。「へやに はいる」を おしてね':'つながらなかったよ。すこし たってから もういちど ためしてね'); if(!MP.on) cleanupPeer(); });
-    peer.on('disconnected',()=>{ try{ peer.reconnect(); }catch(e){} }); }
-  else { const peer=new Peer(); MP.peer=peer;
-    peer.on('open',id=>{ MP.myId=id; const conn=peer.connect(roomId(ph),{reliable:true}); MP.hostConn=conn;
-      MP.joinTO=setTimeout(()=>{ if(!MP.on){ onFail('へやが 見つからないよ。合言葉を たしかめてね'); cleanupPeer(); } },12000);
-      conn.on('open',()=>conn.send({t:'hello',name:myName(),color:myColor()})); conn.on('data',guestHandle);
-      conn.on('close',()=>{ if(MP.on){ toast('へやとの つながりが きれたよ',3000); leaveRoom(true); } }); });
-    peer.on('error',e=>{ if(e.type==='peer-unavailable'){ clearTimeout(MP.joinTO); onFail('へやが 見つからないよ。合言葉を たしかめてね'); cleanupPeer(); } else if(!MP.on){ clearTimeout(MP.joinTO); onFail('つながらなかったよ。すこし たってから もういちど ためしてね'); cleanupPeer(); } }); } }
+  if(asHost) hostTry(0); else joinRoom(code); }
+function hostTry(n){ const code=String(1000+Math.floor(Math.random()*9000)); setMsg('へやを つくっています…'); let peer; try{ peer=new Peer(ROOM_PREFIX+code,peerOpts()); }catch(e){ onFail(errText(e)); return; } MP.peer=peer; let opened=false;
+  const to=setTimeout(()=>{ if(!opened){ cleanupPeer(); onFail('サーバーに つながらなかったよ。インターネットを たしかめて もういちど ためしてね'); } },16000);
+  peer.on('open',()=>{ opened=true; clearTimeout(to); MP.on=true; MP.host=true; MP.myId=peer.id; MP.code=code; MP.pvp=false; MP.score={}; setMsg(''); afterJoin(); toast(`へやばんごうは ${code}！<br>友だちに おしえてね`,4500); });
+  peer.on('connection',hostHandle);
+  peer.on('error',e=>{ if(e.type==='unavailable-id'&&!opened&&n<6){ clearTimeout(to); try{ peer.destroy(); }catch(_){} hostTry(n+1); return; }
+    if(MP.on){ if(e.type!=='peer-unavailable') toast('サーバーとの つながりが ふあんてい みたい…'); return; } clearTimeout(to); onFail(errText(e)); cleanupPeer(); });
+  peer.on('disconnected',()=>{ if(MP.on&&!peer.destroyed) setTimeout(()=>{ try{ peer.reconnect(); }catch(_){} },1200); }); }
+function joinRoom(code){ setMsg('サーバーに つないでいます…'); let peer; try{ peer=new Peer(peerOpts()); }catch(e){ onFail(errText(e)); return; } MP.peer=peer; let stage=0;
+  const fail=m=>{ clearTimeout(MP.joinTO); if(MP.on) return; onFail(m); cleanupPeer(); };
+  MP.joinTO=setTimeout(()=>fail(stage===0?'サーバーに つながらなかったよ。インターネットを たしかめてね':stage===1?'へやが 見つからないか、つながりにくい みたい。ばんごうを たしかめて もういちど ためしてね（Wi-Fiどうしだと つながりやすいよ）':'へんじが ないよ。もういちど ためしてね'),25000);
+  peer.on('open',id=>{ stage=1; MP.myId=id; MP.code=code; setMsg('へや '+code+' を さがしています…'); const conn=peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json'}); MP.hostConn=conn;
+    conn.on('open',()=>{ stage=2; setMsg('つながった！ あいさつ ちゅう…'); conn.send({t:'hello',name:myName(),color:myColor(),v:PROTO}); });
+    conn.on('data',guestHandle); conn.on('error',()=>fail('つながらなかったよ。もういちど ためしてね'));
+    conn.on('close',()=>{ if(MP.on){ toast('へやとの つながりが きれたよ',3000); leaveRoom(true); } else fail('へやとの つながりが きれたよ'); }); });
+  peer.on('error',e=>{ if(MP.on) return; fail(errText(e)); });
+  peer.on('disconnected',()=>{ if(MP.on&&!peer.destroyed) setTimeout(()=>{ try{ peer.reconnect(); }catch(_){} },1200); }); }
 function cleanupPeer(){ try{ MP.peer&&MP.peer.destroy(); }catch(e){} MP.peer=null; MP.hostConn=null; MP.conns.clear(); }
-function leaveRoom(silent){ const wasGuest=MP.guest;
+function leaveRoom(silent){ const wasGuest=MP.guest; clearTimeout(MP.joinTO); edBuf=null;
   if(MP.host) mpBroadcast({t:'bye'}); else if(MP.hostConn&&MP.hostConn.open){ try{ MP.hostConn.send({t:'quit'}); }catch(e){} } setTimeout(cleanupPeer,300);
-  [...MP.players.keys()].forEach(removeRemote); MP.on=MP.host=MP.guest=false; $('stampBtn').hidden=true;
+  [...MP.players.keys()].forEach(removeRemote); MP.on=MP.host=MP.guest=false; MP.pvp=false; $('stampBtn').hidden=true;
   if(wasGuest){ genWorld(); disposeAll(); computeMap(); }
   showSetupView(); if(!silent) toast('へやを でたよ'); }
 function showSetupView(){ $('onSetup').hidden=false; $('onRoom').hidden=true; $('onHost').disabled=$('onJoin').disabled=false; }
 function showRoomView(){ $('onSetup').hidden=true; $('onRoom').hidden=false; renderRoom(); }
 function renderRoom(){ if(!MP.on) return; updateStampBtn();
-  $('onStatus').innerHTML=`${MP.host?'あなたの へや':'友だちの へや'}　合言葉：<b>${esc(MP.phrase)}</b>`;
+  $('onStatus').innerHTML=`${MP.host?'あなたの へや':'友だちの へや'}<br>へやばんごう <b class="bigcode">${esc(MP.code||'')}</b>`;
+  $('pvpRow').hidden=false; $('pvpBtn').textContent=MP.pvp?'ON':'OFF'; $('pvpBtn').setAttribute('aria-pressed',String(!!MP.pvp)); $('pvpBtn').disabled=!MP.host; $('pvpNote').textContent=MP.host?'ON にすると ゆみ・ビーム・まほうが 友だちにも あたるよ':'へやを つくった人が きりかえられるよ';
   const L=$('onMembers'); L.innerHTML='';
-  [{name:myName()+'（あなた）',color:myColor()}].concat([...MP.players.values()]).forEach(p=>{ const d=document.createElement('div'); d.className='irow two'; d.innerHTML=`<span class="mdot" style="--c:${skinColor(p.color)}"></span><div class="nm">${esc(p.name)}</div>`; L.appendChild(d); }); }
-function openOnline(){ closeOv('menu'); $('onName').value=myName(); renderOnColor(); if(MP.on) showRoomView(); else { showSetupView(); $('onMsg').hidden=true; if(!$('onPass').value) genPass(); }
+  [{id:MP.myId,name:myName()+'（あなた）',color:myColor()}].concat([...MP.players.values()]).forEach(p=>{ const d=document.createElement('div'); d.className='irow two'; d.innerHTML=`<span class="mdot" style="--c:${skinColor(p.color)}"></span><div class="nm">${esc(p.name)}${MP.pvp||MP.score[p.id]?` <span class="gem">★${MP.score[p.id]|0}</span>`:''}</div>`; L.appendChild(d); }); }
+function openOnline(){ closeOv('menu'); $('onName').value=myName(); renderOnColor(); if(MP.on) showRoomView(); else { showSetupView(); setMsg(''); }
+  $('onEnv').hidden=/github\.io$/.test(location.hostname)||location.protocol==='file:';
   if(save.online===false){ onFail('おうちの人の せっていで オンラインが オフに なっているよ'); }
   openOv('online'); }
-function genPass(){ const r=()=>PASS_WORDS[Math.floor(Math.random()*PASS_WORDS.length)]; $('onPass').value=r()+'-'+r()+'-'+(10+Math.floor(Math.random()*90)); }
 function renderOnColor(){ $('onColor').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===myColor()))); }
 $('onlineBtn').addEventListener('click',openOnline);
 $('bossBtn').addEventListener('click',()=>{ closeOv('menu'); if(save.bosses===false){ toast('おうちの人の せっていで ボスは 出ないように なっているよ'); return; } spawnBoss(null,true); });
-$('onGen').addEventListener('click',genPass);
+$('pvpBtn').addEventListener('click',()=>{ if(!MP.host) return; MP.pvp=!MP.pvp; mpBroadcast({t:'pvp',v:MP.pvp}); toast(MP.pvp?'たいせんモード ON！':'たいせんモード OFF'); renderRoom(); });
+$('onCode').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/\D/g,'').slice(0,4); });
 $('onColor').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||MP.on) return; save.heroColor=+b.dataset.v; persist(); rebuildHero(); renderOnColor(); });
 $('onSkinBtn').addEventListener('click',()=>{ if(MP.on){ toast('へやに いる あいだは かえられないよ'); return; } closeOv('online'); openSkins(); });
 $('onHost').addEventListener('click',()=>startOnline(true));
@@ -2629,6 +2867,7 @@ $('play').addEventListener('click',()=>{ closeOv('intro'); hud.hidden=false; pla
   const coarse=matchMedia('(pointer:coarse)').matches;
   if(!isNewPlayer&&!save.v3){ save.v3=true; [[W_FIRE,1],[W_HEAL,1],[SHARD,6],[BOUNCE,4],[WARP,2],[SEED_H,1]].forEach(p=>addItem(p[0],p[1]));
     notice({title:'アップデートの プレゼント！',lead:'まほう・ペット・たからばこ などが ふえたよ。メニューの「あそびかた」も 見てね。',items:[{icon:W_FIRE,text:'ほのおのつえ ×1'},{icon:W_HEAL,text:'かいふくのつえ ×1'},{icon:SHARD,text:'まほうのかけら ×6'},{icon:BOUNCE,text:'トランポリン ×4'},{icon:WARP,text:'ワープゲート ×2'},{icon:SEED_H,text:'おうちのタネ ×1'}]}); }
+  if(!worldNotice4&&worldNotice5){ worldNotice5=false; notice({title:'せかいが 3ばいに 広がったよ！',lead:'東と南に 新しい 大陸が できたよ。にじの はしを わたるか、「ちず」から ワープしてね。まほう学校の 城・そらの島・せかいじゅ・まおうの城 などが あるよ！',items:[{icon:CRYSTAL,text:'クリスタル など 新しい ブロック'}]}); }
   if(worldNotice4){ worldNotice4=false; notice({title:'せかいが 10ばいに 広がったよ！',lead:'万里の長城・東京タワー・富士山・ピラミッド・エッフェル塔 など、せかいの 名所が できたよ。右上の「ちず」から ワープできるよ。たてものは そのまま のこっているよ。',items:[{icon:SAKURA,text:'さくら など 新しいブロック 6しゅるい'}],ok:'ぼうけんに 行く！'}); }
   if(worldNotice){ worldNotice=false; notice({title:'島が 4ばいに 広がったよ！',lead:'お城の街の 東に、ビルが ならぶ 大都会が できたよ。タワー、ネオンの広場、公園、港の 大きな像も あるよ。よるは ビルの あかりが きれい！',items:[],ok:'見に行く！'}); }
   if(!save.v6){ save.v6=true; addItem(V_CAR,1); notice({title:'のりもの と ボスが 登場！',lead:'くるまを プレゼント！ もちものから えらんで タップすると のれるよ。ボートと ひこうきは ショップで。島には ときどき ボスや かいじゅうも あらわれるよ！',items:[{icon:V_CAR,text:'くるま ×1'}],ok:'のってみる！'}); }
@@ -2716,7 +2955,7 @@ function frame(now){
     dexTick-=dt; if(dexTick<=0){ dexTick=.5; for(const a of animals) if(!a.baby&&Math.hypot(a.x-pl.x,a.z-pl.z)<7) dexMark(a.type,1);
       if(Math.hypot(dragon.x-pl.x,dragon.z-pl.z,dragon.y-pl.y)<16) dexMark('dragon',1); for(const z of zombies) if(Math.hypot(z.x-pl.x,z.z-pl.z)<10) dexMark(z.king?'king':'zombie',1); } }
   else if(!playing) pl.yaw+=dt*.08;
-  if(sim){ if(act) updateWild(dt); updateAnimals(dt,time,act); updateDragon(dt,time,act); }
+  if(sim){ updateSeiryu(dt,time,act); if(act) maouCheck(dt); if(act) updateWild(dt); updateAnimals(dt,time,act); updateDragon(dt,time,act); }
   updateZombies(dt,time,act,isNight(save.time));
   if(act){ updateProjs(dt); updateTornados(dt); }
   if(act){ updateEProjs(dt); if(save.bosses!==false&&!bossAlive()){ bossT-=dt*(save.bossFreq||1); if(bossT<=0){ bossT=120; spawnBoss(); } } } updateBossBar();
@@ -2746,6 +2985,8 @@ function makeThumbs(){
   Object.keys(TYPES).forEach(t=>{ const g=new THREE.Group(); TYPES[t].build(g); g.rotation.y=Math.PI/2; shot(g,t,side,1.08); });
   { const g=new THREE.Group(); buildDragon(g); g.rotation.y=Math.PI/2; shot(g,'dragon',side,1.0); }
   { const g=new THREE.Group(), p=buildRyu(g,M); p.segs.slice(0,6).forEach((sg,i)=>{ sg.position.set(0,-Math.sin(i*.7)*1.3-.3,-1.6-i*1.05); sg.rotation.x=Math.cos(i*.7)*.7; g.add(sg); }); g.rotation.y=Math.PI/2; shot(g,'ryu',new THREE.Vector3(.6,.25,1),1.0); }
+  { const g=new THREE.Group(); buildMaou(g,M); g.rotation.y=.35; shot(g,'maou',new THREE.Vector3(.25,.15,1),1.0); }
+  { const g=new THREE.Group(), p=buildRyu(g,M,SEI_PAL); p.segs.slice(0,6).forEach((sg,i)=>{ sg.position.set(0,-Math.sin(i*.7)*1.3-.3,-1.6-i*1.05); sg.rotation.x=Math.cos(i*.7)*.7; g.add(sg); }); g.rotation.y=Math.PI/2; shot(g,'seiryu',new THREE.Vector3(.6,.25,1),1.0); }
   [['golem',buildGolem,1.05],['ghost',buildGhost,1.05],['kaiju',buildKaiju,1.0]].forEach(([k,fn,pd2])=>{ const g=new THREE.Group(); fn(g,M); g.rotation.y=Math.PI/2; shot(g,k,side,pd2); });
   { const g=new THREE.Group(); buildHero(g); g.rotation.y=.5; shot(g,'hero',new THREE.Vector3(.2,.15,1),1.12); }
   for(let i=0;i<8;i++){ const g=new THREE.Group(); buildHero(g,i); g.rotation.y=.45; shot(g,'skin'+i,new THREE.Vector3(.2,.15,1),1.15); }
