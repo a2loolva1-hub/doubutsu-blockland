@@ -57,7 +57,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-block:calc(env(safe-area-inset-top,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 12px)}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.stats{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.stats{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:0;flex:1 1 auto}
+.tbtns{flex:0 0 auto}
 .tbtns{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .chip{pointer-events:auto;background:var(--panel);border:2px solid var(--edge);border-radius:12px;padding:6px 10px;font-family:var(--f-pix);font-size:14px;line-height:1.2;display:flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .chip .h{color:var(--heart);font-size:16px}
@@ -314,8 +315,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="hud" hidden>
   <div class="top">
     <div class="stats">
-      <div class="chip" aria-label="なかよしの数"><span class="h">♥</span><span><b id="friends">0</b>/<span id="total">0</span></span><span class="sep"></span><span id="tod">ひる</span></div>
-      <div class="lvrow"><button id="lvChip" class="chip" aria-label="レベルと ステータス">Lv1</button><div id="hp" class="bar" aria-label="たいりょく"></div></div>
+      <div class="lvrow"><div class="chip" aria-label="なかよしの数"><span class="h">♥</span><span><b id="friends">0</b>/<span id="total">0</span></span><span class="sep"></span><span id="tod">ひる</span></div><button id="lvChip" class="chip" aria-label="レベルと ステータス">Lv1</button></div>
+      <div id="hp" class="bar" aria-label="たいりょく"></div>
       <div id="mp" class="bar" aria-label="まほうの ちから"></div>
       <button id="tchip" class="chip" hidden aria-label="きょうの たからばこ"><span id="tarrow">▲</span>たからばこ まで <b id="tdist">0</b>m</button>
       <canvas id="mini" width="132" height="132" aria-label="ミニマップ（タップで せかいの ちず）" role="button"></canvas>
@@ -3166,7 +3167,7 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v23';
+const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v24';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
