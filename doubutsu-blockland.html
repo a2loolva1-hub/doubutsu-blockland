@@ -287,6 +287,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <button id="craftBtn" class="chip">クラフト</button>
       <button id="shopBtn" class="chip">ショップ <span class="gem">◆</span><b id="gems">0</b></button>
       <button id="petBtn" class="chip">ペット</button>
+      <button id="camBtn" class="chip">してん：め</button>
       <button id="menuBtn" class="chip">メニュー</button>
     </div>
   </div>
@@ -947,8 +948,8 @@ function select(id){ selId=id; hotbar.querySelectorAll('.slot').forEach(b=>b.cla
   bname.textContent=id===0?'こわす':id<100?NAMES[id]+'を置く':it.heal?it.n+'（タップで食べる）':it.dmg?it.n+'（こうげき '+it.dmg+'）':it.magic?it.n+'（★'+it.mp+'）':id===SEED_H?'タップした場所に 家がたつ':it.n;
   bname.classList.add('show'); clearTimeout(bnameT); bnameT=setTimeout(()=>bname.classList.remove('show'),1500);
   const el=hotbar.querySelector(`[data-id="${id}"]`); if(el) el.scrollIntoView({block:'nearest',inline:'nearest'}); updateHeld(); }
-function updateHeld(){ if(selId===0){ heldEl.hidden=true; return; } heldEl.src=icon(selId); heldEl.hidden=false; }
-function swing(){ heldEl.classList.remove('swing'); void heldEl.offsetWidth; heldEl.classList.add('swing'); }
+function updateHeld(){ if(selId===0||camMode!==0){ heldEl.hidden=true; return; } heldEl.src=icon(selId); heldEl.hidden=false; }
+function swing(){ heroSwingT=.32; heldEl.classList.remove('swing'); void heldEl.offsetWidth; heldEl.classList.add('swing'); }
 
 /* ================= player ================= */
 const PW=.3, PH=1.75, EYE=1.58;
@@ -1136,6 +1137,69 @@ function updateDragon(dt,time,active){
   dg.g.position.set(dg.x,dg.y+(dg.flying?Math.sin(time*3.5)*.08:0),dg.z); dg.g.rotation.y=dg.rot;
 }
 
+/* ================= the player's own character (original design) ================= */
+const MBc={}; const MB=c=>MBc[c]||(MBc[c]=new THREE.MeshBasicMaterial({color:c}));
+const MBT=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,side:THREE.DoubleSide,depthWrite:false});
+function buildHero(g){
+  const skin='#ffe1d0', pinkH='#ff8fd0', lav='#c9a6ff', cyanH='#9ee6ff', armor='#8a3fd0', mag='#ff3fae', gold='#ffcf3a', boot='#c0258a';
+  const legs=[-1,1].map(s=>{ const p=leg(g,.24,.74,mag,s*.125,.75,0); bx(p,.2,.08,.03,gold,0,-.38,.14); bx(p,.27,.22,.31,boot,0,-.64,.01); bx(p,.28,.05,.32,gold,0,-.52,.01); return p; });
+  bx(g,.52,.66,.3,armor,0,1.08,0); bx(g,.3,.4,.03,mag,0,1.03,.16); bx(g,.54,.07,.33,gold,0,.78,0);
+  bx(g,.07,.05,.02,gold,-.09,1.22,.175); bx(g,.07,.05,.02,gold,.09,1.22,.175); bx(g,.05,.07,.03,MB('#ff6fd0'),0,1.22,.18); bx(g,.09,.04,.02,gold,0,1.14,.175);
+  const arms=[-1,1].map(s=>{ const p=new THREE.Group(); p.position.set(s*.36,1.36,0); bx(p,.2,.6,.22,'#b23fd8',0,-.3,0); bx(p,.22,.06,.24,gold,0,-.42,0); bx(p,.18,.12,.2,skin,0,-.64,0); g.add(p); return p; });
+  [-1,1].forEach(s=>{ bx(g,.27,.16,.35,mag,s*.37,1.43,0); bx(g,.27,.04,.35,gold,s*.37,1.52,0); bx(g,.06,.06,.02,gold,s*.37,1.43,.18); });
+  const head=new THREE.Group(); head.position.set(0,1.44,0); head.scale.setScalar(1.18); g.add(head);
+  bx(head,.48,.48,.48,skin,0,.24,0);
+  [-1,1].forEach(s=>{ bx(head,.11,.13,.02,'#ffffff',s*.11,.22,.245); bx(head,.08,.11,.02,'#8a4fd8',s*.11,.21,.252); bx(head,.03,.04,.02,'#ffffff',s*.09,.25,.258); bx(head,.07,.03,.02,'#ffb3cc',s*.17,.12,.245); });
+  bx(head,.05,.02,.02,'#ff7aa8',0,.1,.245);
+  bx(head,.54,.14,.54,pinkH,0,.52,0); bx(head,.54,.48,.08,lav,0,.27,-.25); [-1,1].forEach(s=>bx(head,.05,.4,.52,lav,s*.27,.29,0));
+  bx(head,.5,.1,.05,pinkH,0,.43,.25); [-.18,-.06,.06,.18].forEach((x,i)=>bx(head,.1,i%2?.08:.12,.05,i%2?pinkH:lav,x,.35,.255));
+  const tails=[-1,1].map(s=>{ const t=new THREE.Group(); t.position.set(s*.31,.4,-.06); bx(t,.16,.3,.16,pinkH,0,-.12,0); bx(t,.15,.3,.15,lav,0,-.42,0); bx(t,.13,.26,.13,cyanH,0,-.7,0); t.rotation.z=s*.18; head.add(t); return t; });
+  const cr='#3b2a5a'; bx(head,.52,.08,.52,cr,0,.6,0);
+  [-.2,-.1,.1,.2].forEach((x,i)=>bx(head,.06,i%3?.12:.16,.06,cr,x,.68,.22)); bx(head,.08,.22,.06,cr,0,.71,.22); bx(head,.06,.07,.03,MB('#ff5fc8'),0,.74,.255);
+  [-.15,.15].forEach(x=>bx(head,.05,.05,.03,MB('#5ff2ff'),x,.6,.265)); bx(head,.05,.05,.03,MB('#5ff2ff'),0,.6,.265);
+  const wcols=['#ffffff','#ffd1f0','#e6c8ff','#a8f0ff'], wings=[-1,1].map(s=>{ const w=new THREE.Group(); w.position.set(s*.14,1.32,-.18);
+    [[1.25,.26,.5],[1.45,.24,.28],[1.25,.22,.06],[.95,.2,-.14]].forEach((f,i)=>{ const m=new THREE.Mesh(G(f[0],f[1],.04),MBT(wcols[i],.88)); m.position.set(s*(f[0]/2-.05),f[2]+f[0]*.22,0); m.rotation.z=s*.42; w.add(m); });
+    g.add(w); return w; });
+  const sw=new THREE.Group(); sw.position.set(0,-.66,.05); sw.rotation.x=-1.15; arms[0].add(sw);
+  bx(sw,.06,.22,.06,'#2b1a3a',0,0,0); bx(sw,.07,.07,.07,MB('#5ff2ff'),0,-.13,0); bx(sw,.34,.06,.09,MB('#ff3fae'),0,.12,0);
+  bx(sw,.12,.92,.04,'#2b1a3a',0,.61,0); bx(sw,.025,.88,.05,MB('#5ff2ff'),-.065,.6,0); bx(sw,.025,.88,.05,MB('#ff5fc8'),.065,.6,0); bx(sw,.05,.1,.05,MB('#ffffff'),0,1.1,0);
+  [.35,.6,.85].forEach(y=>bx(sw,.05,.05,.05,MB('#ff9cf0'),0,y,.02));
+  return {legs,arms,head,tails,wings,sword:sw};
+}
+const hero={g:new THREE.Group()}; Object.assign(hero,buildHero(hero.g)); hero.g.visible=false; scene.add(hero.g);
+let camMode=Math.max(0,Math.min(2,save.cam|0)), camDist=4.2, heroMove=0, heroSwingT=0, heroPhase=0, heroSparkT=0;
+const CAM_LABEL=['してん：め','してん：うしろ','してん：まえ'];
+function cycleCam(){ camMode=(camMode+1)%3; save.cam=camMode; persist(); $('camBtn').textContent=CAM_LABEL[camMode]; updateHeld(); }
+function updateHero(dt,time){
+  const show=camMode!==0&&playing; hero.g.visible=show; if(!show) return;
+  const R=riding?RIDE[riding.type]:null, fly=flyingNow()&&!riding;
+  hero.g.position.set(pl.x,pl.y+(R?R.h-.3:0),pl.z); hero.g.rotation.y=pl.yaw+Math.PI;
+  heroPhase+=dt*9*Math.min(1,heroMove); const sw=Math.sin(heroPhase)*.65*Math.min(1,heroMove);
+  if(R){ hero.legs.forEach((l,i)=>{ l.rotation.x=-1.35; l.rotation.z=(i?1:-1)*.28; }); }
+  else if(fly){ hero.legs.forEach((l,i)=>{ l.rotation.x=.35+(i?.1:-.1); l.rotation.z=0; }); }
+  else hero.legs.forEach((l,i)=>{ l.rotation.x=i?sw:-sw; l.rotation.z=0; });
+  const air=!pl.onGround&&!R&&!fly;
+  hero.arms[1].rotation.x=fly?-.2:(air?-2.4:sw*.8); hero.arms[1].rotation.z=fly?.9:(air?.25:0);
+  heroSwingT=Math.max(0,heroSwingT-dt); const k=heroSwingT>0?heroSwingT/.32:0;
+  hero.arms[0].rotation.x=k>0?(-2.3+ (1-k)*2.9):(-.35-sw*.35); hero.arms[0].rotation.z=fly?-.6:0;
+  const flap=fly||pl.gliding?Math.sin(time*11)*.55:(air?Math.sin(time*7)*.35:Math.sin(time*2.2)*.1);
+  hero.wings[0].rotation.y=.5+flap; hero.wings[1].rotation.y=-.5-flap;
+  hero.tails.forEach((t,i)=>{ t.rotation.x=Math.sin(time*3+i)*.12-Math.min(1,heroMove)*.25; });
+  hero.head.rotation.x=camMode===2?0:-pl.pitch*.35;
+  heroSparkT-=dt; if(heroSparkT<=0){ heroSparkT=.28; const s=Math.random()<.5?-1:1, a=pl.yaw+Math.PI;
+    const lx=s*(.4+Math.random()*.8), wx=pl.x+Math.cos(a)*lx-Math.sin(a)*.25, wz=pl.z-Math.sin(a)*lx-Math.cos(a)*.25;
+    spawnBits(wx,hero.g.position.y+1.1+Math.random()*.7,wz,Math.random()<.5?[255,140,220]:[140,240,255],1,.25); }
+}
+const _eye=new THREE.Vector3(), _dir=new THREE.Vector3(), _p=new THREE.Vector3();
+function updateCamera(){
+  _eye.set(pl.x,camY,pl.z);
+  if(camMode===0||!playing){ camera.position.copy(_eye); camera.rotation.set(pl.pitch,pl.yaw,0,'YXZ'); return; }
+  const cp=Math.cos(pl.pitch); _dir.set(-Math.sin(pl.yaw)*cp,Math.sin(pl.pitch),-Math.cos(pl.yaw)*cp);
+  const sign=camMode===1?-1:1, want=camDist+(riding===dragon?2:0); let d=want;
+  for(let t=.3;t<=want;t+=.15){ _p.copy(_eye).addScaledVector(_dir,sign*t); _p.y+=.35*t/want; if(solidAt(Math.floor(_p.x),Math.floor(_p.y),Math.floor(_p.z))){ d=Math.max(.3,t-.3); break; } }
+  camera.position.copy(_eye).addScaledVector(_dir,sign*d); camera.position.y+=.35*d/want;
+  if(camMode===1) camera.rotation.set(pl.pitch,pl.yaw,0,'YXZ'); else camera.lookAt(_eye.x,_eye.y-.15,_eye.z);
+}
 /* ================= zombies ================= */
 const zombies=[]; let zSpawnT=0, kingSpawned=false, fullMoon=false;
 function makeZombie(x,y,z,king){
@@ -1352,7 +1416,7 @@ function doAction(cx,cy){
   ndc.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1); raycaster.setFromCamera(ndc,camera); const dir=raycaster.ray.direction;
   const targets=animalMeshes.concat(dragonMeshes); zombies.forEach(zb=>zb.g.traverse(o=>{ if(o.isMesh) targets.push(o); }));
   const hits=raycaster.intersectObjects(targets,false).filter(h=>!(riding&&(h.object.userData.animal===riding||(riding===dragon&&h.object.userData.dragon))));
-  const hitE=hits[0], hitB=raycastVoxel(raycaster.ray.origin,dir,7), it=ITEMS[selId];
+  const hitE=hits[0], hitB=raycastVoxel(raycaster.ray.origin,dir,7+(camMode?camDist:0)), it=ITEMS[selId];
   const ent=(hitE&&hitE.distance<12&&(!hitB||hitE.distance<hitB.t+.3))?hitE:null, u=ent?ent.object.userData:null;
   if(riding===dragon&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.7; const from=dragonHead(); shoot('dfire',from,dir,dragon); } return; }
   if(it&&it.magic&&!(u&&(u.animal||u.dragon))){ castMagic(selId,dir,hitB); return; }
@@ -1619,8 +1683,10 @@ function holdBtn(el,set){ el.addEventListener('pointerdown',e=>{ e.preventDefaul
   ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,()=>{ set(false); el.classList.remove('on'); })); }
 holdBtn($('jump'),v=>{ if(v&&!jumpHeld) jumpPressed=true; jumpHeld=v; }); holdBtn($('down'),v=>downHeld=v);
 $('dismount').addEventListener('click',dismount);
+$('camBtn').addEventListener('click',cycleCam); $('camBtn').textContent=CAM_LABEL[camMode];
 $('flyBtn').addEventListener('click',()=>{ if(riding) return; setFly(!pl.flying); if(pl.flying) award('sky'); });
 addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return; keys[e.code]=true; if(e.code==='Space'){ if(!e.repeat) jumpPressed=true; jumpHeld=true; e.preventDefault(); }
+  if(e.code==='KeyV') cycleCam();
   if(e.code==='KeyF'){ if(riding) dismount(); else if(have(CAPE)){ setFly(!pl.flying); if(pl.flying) award('sky'); } }
   const m=/^Digit(\d)$/.exec(e.code); if(m&&active()){ const l=slotList(), n=+m[1], i=n===0?9:n-1; if(l[i]!==undefined) select(l[i]); } });
 addEventListener('keyup',e=>{ keys[e.code]=false; if(e.code==='Space') jumpHeld=false; });
@@ -1685,6 +1751,7 @@ function step(dt){
   const n=Math.max(1,Math.ceil(Math.max(Math.abs(vx),Math.abs(vz),Math.abs(pl.vy))*dt/.2)), h=dt/n;
   for(let i=0;i<n;i++){ moveH('x',vx*h); moveH('z',vz*h); moveY(pl.vy*h); }
   if(pl.onGround){ pl.jumps=0; pl.airT=0; } else pl.airT+=dt;
+  if(!riding) heroMove=m;
   if(pl.y<-5) placePlayer();
   // warp gates
   pl.warpCool-=dt; const under=get(Math.floor(pl.x),Math.round(pl.y)-1,Math.floor(pl.z));
@@ -1693,7 +1760,7 @@ function step(dt){
         pl.x=t[0]+.5; pl.z=t[2]+.5; pl.y=t[1]+1; let up=0; while(collides()&&up<4){ pl.y++; up++; } pl.vy=0; pl.warpCool=1; spawnBits(pl.x,pl.y+1,pl.z,[196,107,255],14,1.3); toast('ワープ！'); award('warp'); }
       else toast('ワープゲートを もう1つ置くと つながるよ'); } }
   else if(under!==WARP) pl.warpReady=true;
-  if(riding){ riding.x=pl.x; riding.y=pl.y; riding.z=pl.z; riding.trot=pl.yaw+Math.PI; riding.rmove=m>.1; rideXpT+=m>.1?dt:0; if(rideXpT>8){ rideXpT=0; gainXp(riding,1); } }
+  if(riding){ riding.x=pl.x; riding.y=pl.y; riding.z=pl.z; riding.trot=pl.yaw+Math.PI; riding.rmove=m>.1; heroMove=m; rideXpT+=m>.1?dt:0; if(rideXpT>8){ rideXpT=0; gainXp(riding,1); } }
   pl.hurtT+=dt; if(pl.hurtT>6&&save.hp<20){ pl.regenT+=dt; if(pl.regenT>2.5){ pl.regenT=0; save.hp++; updateHearts(); } }
   pl.mpT+=dt; if(pl.mpT>1.5){ pl.mpT=0; if(save.mp<10){ save.mp++; updateMP(); } }
   breathCool-=dt;
@@ -1717,7 +1784,7 @@ function frame(now){
   updateFireworks(dt); updateFx(dt);
   for(const c of clouds){ c.position.x+=dt*.6; if(c.position.x>W*1.4) c.position.x=-W*.4; }
   const eye=pl.y+EYE+(riding?RIDE[riding.type].h:0); camY=eye>camY?camY+(eye-camY)*Math.min(1,dt*14):eye;
-  camera.position.set(pl.x,camY,pl.z); camera.rotation.y=pl.yaw; camera.rotation.x=pl.pitch; skyObj.position.copy(camera.position);
+  updateHero(dt,time); updateCamera(); skyObj.position.copy(camera.position);
   const uw=get(Math.floor(pl.x),Math.floor(camY),Math.floor(pl.z))===WATER;
   if(uw!==underwater){ underwater=uw; scene.fog.near=uw?1:34; scene.fog.far=uw?14:82; if(uw){ scene.background.copy(DEEP); scene.fog.color.copy(DEEP); } }
   applyTime();
@@ -1737,6 +1804,7 @@ function makeThumbs(){
   const side=new THREE.Vector3(.5,.32,1);
   Object.keys(TYPES).forEach(t=>{ const g=new THREE.Group(); TYPES[t].build(g); g.rotation.y=Math.PI/2; shot(g,t,side,1.08); });
   { const g=new THREE.Group(); buildDragon(g); g.rotation.y=Math.PI/2; shot(g,'dragon',side,1.0); }
+  { const g=new THREE.Group(); buildHero(g); g.rotation.y=.5; shot(g,'hero',new THREE.Vector3(.2,.15,1),1.12); }
   const zm=c=>M(c), zp={skin:M('#b9a7cf'),hood:M('#e07b39'),pants:M('#4b3a5a'),mouth:M('#3a2a40'),eye:new THREE.MeshBasicMaterial({color:'#fff36b'}),mk:zm};
   { const g=new THREE.Group(); zombieModel(g,false,zp); shot(g,'zombie',new THREE.Vector3(.45,.15,1),1.05); }
   { const g=new THREE.Group(); zombieModel(g,true,Object.assign({},zp,{skin:M('#a48fc4'),hood:M('#b0263a'),eye:new THREE.MeshBasicMaterial({color:'#ff5a5a'})})); shot(g,'king',new THREE.Vector3(.45,.15,1),1.05); }
@@ -1746,7 +1814,7 @@ function makeThumbs(){
 function applyIntroArt(){
   document.querySelectorAll('[data-thumb]').forEach(img=>{ const s=THUMBS[img.dataset.thumb]; if(s) img.src=s; else img.hidden=true; });
   document.querySelectorAll('[data-icon]').forEach(img=>{ img.src=icon(+img.dataset.icon); });
-  const P=$('parade'); P.innerHTML=''; ['dog','cat','rabbit','horse','chick','panda','dragon'].forEach(k=>{ if(!THUMBS[k]) return; const im=document.createElement('img'); im.src=THUMBS[k]; im.alt=''; P.appendChild(im); });
+  const P=$('parade'); P.innerHTML=''; ['dog','cat','rabbit','hero','horse','chick','panda','dragon'].forEach(k=>{ if(!THUMBS[k]) return; const im=document.createElement('img'); im.src=THUMBS[k]; im.alt=''; P.appendChild(im); });
 }
 
 /* ================= boot (with loading gauge) ================= */
