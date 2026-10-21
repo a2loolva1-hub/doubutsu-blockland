@@ -68,6 +68,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #hp i.h{color:#ffb3c6}
 #mp i{color:var(--mana);font-size:14px}
 .bar i.e{color:rgba(20,32,50,.5);text-shadow:none}
+#mini{pointer-events:auto;width:104px;height:104px;border-radius:50%;border:3px solid rgba(255,255,255,.8);background:#3480d6;box-shadow:0 3px 0 rgba(0,0,0,.3);cursor:pointer;touch-action:manipulation}
 #tarrow{display:inline-block;color:var(--sun);transition:transform .15s linear}
 #toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 132px);transform:translate(-50%,-8px);opacity:0;transition:opacity .25s,transform .25s;
   max-width:calc(100% - 32px);width:max-content;box-sizing:border-box;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:8px 14px;
@@ -285,6 +286,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <div id="hp" class="bar" aria-label="たいりょく"></div>
       <div id="mp" class="bar" aria-label="まほうの ちから"></div>
       <div id="tchip" class="chip" hidden><span id="tarrow">▲</span>たから <b id="tdist">0</b>m</div>
+      <canvas id="mini" width="132" height="132" aria-label="ミニマップ（タップで せかいの ちず）" role="button"></canvas>
     </div>
     <div class="tbtns">
       <button id="craftBtn" class="chip">クラフト</button>
@@ -496,7 +498,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="mapov" class="overlay" hidden>
   <div class="card">
     <div class="cardhead"><h2>せかいの ちず</h2><button class="close" data-close="mapov">とじる</button></div>
-    <p class="note">ちずを タップすると、その場所へ ワープできるよ。下の 名所からも 行けるよ。</p>
+    <p class="note">ちずを タップすると、その場所へ ワープできるよ。下の 名所からも 行けるよ。<br>ピンク＝自分、黄色＝きょうの たからばこ、ピンクの点＝なかよしの動物、緑＝ドラゴン</p>
     <div class="mapwrap"><canvas id="mapcv" width="608" height="608" aria-label="せかいの ちず"></canvas></div>
     <div id="lmList" class="list"></div>
   </div>
@@ -1824,6 +1826,8 @@ function computeMap(){ const cv=document.createElement('canvas'); cv.width=W; cv
 function drawMap(){ const cv=$('mapcv'), c=cv.getContext('2d'); if(mapBase) c.drawImage(mapBase,0,0); else { c.fillStyle='#3480d6'; c.fillRect(0,0,W,D); }
   c.font='bold 13px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
   LANDMARKS.forEach((l,i)=>{ c.fillStyle='#18263a'; c.beginPath(); c.arc(l.x,l.z,10,0,7); c.fill(); c.strokeStyle='#ffd23f'; c.lineWidth=2; c.stroke(); c.fillStyle='#fffdf5'; c.fillText(String(i+1),l.x,l.z+1); });
+  const ch=save.chest; if(ch&&!ch.opened&&ch.date===dayStr(0)){ c.fillStyle='#ffd23f'; c.strokeStyle='#8a5a12'; c.lineWidth=2; c.beginPath(); c.arc(ch.pos[0]+.5,ch.pos[2]+.5,7,0,7); c.fill(); c.stroke(); }
+  animals.forEach(a=>{ if(!a.friend) return; c.fillStyle='#ff8fd0'; c.beginPath(); c.arc(a.x,a.z,3.5,0,7); c.fill(); }); if(dragon.friend){ c.fillStyle='#5fd3b0'; c.beginPath(); c.arc(dragon.x,dragon.z,5,0,7); c.fill(); }
   c.save(); c.translate(pl.x,pl.z); c.rotate(-pl.yaw); c.fillStyle='#ff3fae'; c.strokeStyle='#fff'; c.lineWidth=3; c.beginPath(); c.moveTo(0,-14); c.lineTo(10,10); c.lineTo(0,5); c.lineTo(-10,10); c.closePath(); c.stroke(); c.fill(); c.restore(); }
 function renderLandmarks(){ const L=$('lmList'); L.innerHTML=''; LANDMARKS.forEach((l,i)=>{ const d=document.createElement('div'); d.className='irow';
   d.innerHTML=`<span class="lmn">${i+1}</span><div class="nm">${l.n}</div><button class="sbtn" data-lm="${i}">いく</button>`; L.appendChild(d); }); }
@@ -1836,6 +1840,22 @@ function warpTo(x,z,name){ x=clamp(Math.floor(x),2,W-3); z=clamp(Math.floor(z),2
 $('mapBtn').addEventListener('click',()=>{ drawMap(); renderLandmarks(); openOv('mapov'); });
 $('lmList').addEventListener('click',e=>{ const b=e.target.closest('[data-lm]'); if(!b) return; const l=LANDMARKS[+b.dataset.lm]; warpTo(l.x,l.z,l.n); });
 $('mapcv').addEventListener('click',e=>{ const r=e.currentTarget.getBoundingClientRect(); warpTo((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*D,''); });
+
+/* ================= minimap (heading-up) ================= */
+const miniCv=$('mini'), mctx=miniCv.getContext('2d'); let miniT=0;
+function drawMini(){ if(!mapBase) return; const c=mctx, C=66, Rb=44, S=C/Rb;
+  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,132,132); c.save(); c.beginPath(); c.arc(C,C,C,0,7); c.clip(); c.fillStyle='#3480d6'; c.fillRect(0,0,132,132);
+  c.translate(C,C); c.rotate(pl.yaw); c.scale(S,S); c.imageSmoothingEnabled=false; c.drawImage(mapBase,-pl.x,-pl.z);
+  const dot=(x,z,col,r)=>{ const dx=x-pl.x, dz=z-pl.z; if(dx*dx+dz*dz>Rb*Rb*1.6) return; c.fillStyle=col; c.beginPath(); c.arc(dx,dz,r/S,0,7); c.fill(); c.strokeStyle='#fff'; c.lineWidth=1.2/S; c.stroke(); };
+  LANDMARKS.forEach(l=>dot(l.x,l.z,'#18263a',4.5));
+  animals.forEach(a=>{ if(a.friend) dot(a.x,a.z,'#ff8fd0',2.6); }); if(dragon.friend) dot(dragon.x,dragon.z,'#5fd3b0',3.4);
+  zombies.forEach(z=>dot(z.x,z.z,z.king?'#ff3b3b':'#b23fd8',2.6));
+  const ch=save.chest; if(ch&&!ch.opened&&ch.date===dayStr(0)) dot(ch.pos[0]+.5,ch.pos[2]+.5,'#ffd23f',3.8);
+  c.restore();
+  c.fillStyle='#ff3fae'; c.strokeStyle='#fff'; c.lineWidth=2.5; c.beginPath(); c.moveTo(C,C-11); c.lineTo(C+8,C+8); c.lineTo(C,C+4); c.lineTo(C-8,C+8); c.closePath(); c.stroke(); c.fill();
+  const nx=C+ (C-11)*Math.sin(pl.yaw), ny=C-(C-11)*Math.cos(pl.yaw); c.fillStyle='rgba(24,38,58,.85)'; c.beginPath(); c.arc(nx,ny,9,0,7); c.fill();
+  c.fillStyle='#fffdf5'; c.font='bold 12px sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText('N',nx,ny+1); }
+miniCv.addEventListener('click',()=>{ if(!playing) return; drawMap(); renderLandmarks(); openOv('mapov'); });
 /* ================= input ================= */
 let jumpHeld=false, downHeld=false, jumpPressed=false;
 const keys={}, joyV={x:0,y:0}, ptrs=new Map(); let joyP=null;
@@ -1965,6 +1985,7 @@ function frame(now){
   updateZombies(dt,time,act,isNight(save.time));
   if(act){ updateProjs(dt); updateTornados(dt); }
   updateFireworks(dt); updateFx(dt);
+  if(playing){ miniT-=dt; if(miniT<=0){ miniT=.15; drawMini(); } }
   for(const c of clouds){ c.position.x+=dt*.6; if(c.position.x-pl.x>160) c.position.x-=320; if(c.position.x-pl.x<-160) c.position.x+=320; if(c.position.z-pl.z>160) c.position.z-=320; if(c.position.z-pl.z<-160) c.position.z+=320; }
   streamChunks(playing?6:4);
   const eye=pl.y+EYE+(riding?RIDE[riding.type].h:0); camY=eye>camY?camY+(eye-camY)*Math.min(1,dt*14):eye;
