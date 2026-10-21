@@ -2,6 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#8fd0ff">
 <meta name="description" content="動物となかよくなって、のって、まほうとドラゴンで冒険する、ブロックの島のゲーム。">
@@ -81,6 +84,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #mini{pointer-events:auto;width:104px;height:104px;border-radius:50%;border:3px solid rgba(255,255,255,.8);background:#3480d6;box-shadow:0 3px 0 rgba(0,0,0,.3);cursor:pointer;touch-action:pan-x pan-y}
 .bigcode{font-family:var(--f-pix);font-size:26px;letter-spacing:.18em;text-align:center}
 .okmsg{color:var(--ink)!important;background:var(--mist)!important}
+#updBar{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:60;background:#ff3fae;color:#fff;border:2px solid #fff;border-radius:14px;padding:6px 10px;font-family:var(--f-pix);font-size:14px;pointer-events:auto;white-space:nowrap;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+#updBar .sbtn{margin-left:6px}
 #siegebar{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 118px);transform:translateX(-50%);background:#b0263a;color:#fff;border:2px solid #fff;border-radius:999px;padding:5px 14px;font-family:var(--f-pix);font-size:14px;white-space:nowrap;pointer-events:none}
 #bossbar{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 168px);transform:translateX(-50%);width:min(62%,320px);background:var(--panel);border:2px solid var(--edge);border-radius:12px;padding:6px 10px 8px;font-family:var(--f-pix);font-size:14px;text-align:center;pointer-events:none}
 .brow+.brow{margin-top:6px}
@@ -314,6 +319,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   window.__fake=setInterval(function(){ if(p<12){ p++; f.style.width=p+'%'; c.style.left=p+'%'; t.textContent=p; } },140); })();
 </script>
 
+<div id="updBar" hidden>あたらしい バージョン <b></b> が あるよ！ <button id="updGo" class="sbtn">こうしんする</button></div>
 <div id="hud" hidden>
   <div class="top">
     <div class="stats">
@@ -392,6 +398,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <p class="note" style="margin-top:6px">ひる・よるが すすむ はやさを かえられるよ。</p></section>
     <div class="btns">
       <button id="resume" class="btn">つづける</button>
+      <p class="note">ゲームの バージョン：<b id="verLbl"></b> <button id="updCheck" class="sbtn light">さいしんばんか しらべる</button></p>
       <button id="saveBtn" class="btn">セーブ・よみこみ</button>
       <button id="bgmBtn" class="btn sub" aria-pressed="true">おんがく：ON</button>
       <button id="dexBtn" class="btn sub">ずかん・バッジ</button>
@@ -3292,7 +3299,7 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v28';
+const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v29';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
@@ -3387,6 +3394,16 @@ function renderRoom(){ if(!MP.on) return; updateStampBtn(); $('hostTip').hidden=
   $('pvpRow').hidden=false; $('pvpBtn').textContent=MP.pvp?'ON':'OFF'; $('pvpBtn').setAttribute('aria-pressed',String(!!MP.pvp)); $('pvpBtn').disabled=!MP.host; $('pvpNote').textContent=MP.host?'ON にすると ゆみ・ビーム・まほうが 友だちにも あたるよ':'へやを つくった人が きりかえられるよ';
   const L=$('onMembers'); L.innerHTML='';
   [{id:MP.myId,name:myName()+'（あなた）',color:myColor()}].concat([...MP.players.values()]).forEach(p=>{ const d=document.createElement('div'); d.className='irow two'; d.innerHTML=`<span class="mdot" style="--c:${skinColor(p.color)}"></span><div class="nm">${esc(p.name)}${MP.pvp||MP.score[p.id]?` <span class="gem">★${MP.score[p.id]|0}</span>`:''}</div>`; L.appendChild(d); }); }
+/* ================= new version checker (for cached pages, e.g. Safari) ================= */
+function checkNewVersion(manual){ if(!/^https?:/.test(location.protocol)||location.hostname.indexOf('github.io')<0){ if(manual) toast('このページでは つかえないよ'); return; }
+  fetch(location.pathname+'?nocache='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{ const m=t.match(/GAME_VER='(v\d+)'/); if(!m) return; const nv=m[1];
+    if(+nv.slice(1)>+GAME_VER.slice(1)){ const b=$('updBar'); b.hidden=false; b.querySelector('b').textContent=nv; }
+    else if(manual) toast(`いまが さいしんばん（${GAME_VER}）だよ！`); }).catch(()=>{ if(manual) toast('しらべられなかったよ。インターネットを たしかめてね'); }); }
+setTimeout(()=>checkNewVersion(false),2500);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkNewVersion(false); });
+$('updGo').addEventListener('click',()=>{ persist(true); location.replace(location.pathname+'?v='+$('updBar').querySelector('b').textContent.slice(1)+'-'+Date.now()); });
+$('updCheck').addEventListener('click',()=>checkNewVersion(true));
+$('verLbl').textContent=GAME_VER;
 function openOnline(){ closeOv('menu'); $('onVer').textContent=GAME_VER; $('onName').value=myName(); renderOnColor(); if(MP.on) showRoomView(); else { showSetupView(); setMsg(''); }
   $('onEnv').hidden=/github\.io$/.test(location.hostname)||location.protocol==='file:';
   if(save.online===false){ onFail('「せってい」で オンラインが オフに なっているよ'); }
