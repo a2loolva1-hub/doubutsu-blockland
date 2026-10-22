@@ -2436,7 +2436,7 @@ function updateZombies(dt,time,active,night){
 function damageZombie(zb,dmg,o){ if(zombies.indexOf(zb)<0) return; zb.hp-=dmg; zb.hitT=.18; o=o||{}; const kr=zb.boss?.12:zb.king?.25:1;
   zb.kx=(o.kx||0)*kr; zb.kz=(o.kz||0)*kr; if(o.up&&zb.onGround) zb.vy=o.up*(zb.king?.4:1); if(o.freeze) zb.frozen=zb.king?o.freeze*.4:o.freeze;
   spawnBits(zb.x,zb.y+1.4,zb.z,[255,230,90],4); if(zb.hp<=0) killZombie(zb); }
-function hitZombie(zb){ const dmg=((ITEMS[selId]&&ITEMS[selId].dmg)||1)*(abil().atk||1); swing(); const dx=zb.x-pl.x,dz=zb.z-pl.z,L=Math.hypot(dx,dz)||1; damageZombie(zb,dmg,{kx:dx/L*8,kz:dz/L*8,up:4.5}); }
+function hitZombie(zb){ const dmg=((ITEMS[selId]&&ITEMS[selId].dmg)||1)*(abil().atk||1); swing(); if(SWORDS.includes(selId)) slashFX({col:SLASH_COL[selId],r:selId===SW_STAR?1.45:1.2}); const dx=zb.x-pl.x,dz=zb.z-pl.z,L=Math.hypot(dx,dz)||1; damageZombie(zb,dmg,{kx:dx/L*8,kz:dz/L*8,up:4.5}); }
 function killZombie(zb){ removeZombie(zb,true); if(zb.boss){ bossDefeated(zb); return; } save.stats.zombies++; save.qc.zombie++; qkAdd('zombie'); if(qk(10)&&[150,300].includes(qk(save.heroColor|0)?qk(save.heroColor|0).zombie:0)) setTimeout(checkUnlocks,600); addPXP(zb.king?25:5); if(save.qc.zombie===50) setTimeout(checkUnlocks,600); award('zombie1'); if(save.stats.zombies>=10) award('zombie10'); dexMark(zb.king?'king':'zombie',2);
   if(zb.king){ save.gems+=15; addItem(SHARD,5); addItem(CAKE,1); award('king'); spawnBits(zb.x,zb.y+2,zb.z,[255,204,51],24);
     notice({title:'ゾンビキングを たおした！',lead:'すごい！ 島の へいわを まもったね。',items:[{gem:15,text:'ジェム ×15'},{icon:SHARD,text:'まほうのかけら ×5'},{icon:CAKE,text:'ケーキ ×1'}]}); }
@@ -3289,7 +3289,7 @@ function EQUIP_BONUS(){ const s=save.heroColor|0, o={atk:1,def:1,sp:1}; for(cons
 function canFly(){ return have(CAPE)>0||((save.heroColor|0)===11&&have(EQ_DWING)>0)||((save.heroColor|0)===10&&have(EQ_VWING)>0); }
 let mswNext=0;
 function magicSword(dir,it){ if((save.heroColor|0)!==it.msw){ toast(`${it.n}は ${skinName(it.msw)} せんようだよ！`,2600); return; }
-  const now=performance.now()/1000; if(now<mswNext) return; mswNext=now+.8; swing(); const R=13, col=it.msw===10?[255,120,230]:[170,120,255]; let hit=0;
+  const now=performance.now()/1000; if(now<mswNext) return; mswNext=now+.8; swing(); const R=13, col=it.msw===10?[255,120,230]:[170,120,255]; let hit=0; bigSlash(it.msw===10?['#ff7ae6','#ffe6fa']:['#a878ff','#efe6ff'],R,3.6);
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>8) continue; hit++; damageZombie(zb,25*(abil().atk||1),{kx:dx/d*14,kz:dz/d*14,up:6}); }
   const L=zombies.filter(z=>Math.hypot(z.x-pl.x,z.z-pl.z)<24).sort((a,b)=>Math.hypot(a.x-pl.x,a.z-pl.z)-Math.hypot(b.x-pl.x,b.z-pl.z)).slice(0,6);
   L.forEach((z,i)=>setTimeout(()=>{ if(zombies.includes(z)){ bolt(z.x,z.y,z.z); damageZombie(z,15*(abil().atk||1),{up:3}); } },80*i));
@@ -3403,13 +3403,35 @@ function renderStat(){ $('stLv').innerHTML=`<b>${skinName(save.heroColor|0)}</b>
   const ab=ABIL[save.heroColor|0]; const eqs=Object.keys(ITEMS).filter(id=>ITEMS[id].eq&&ITEMS[id].eq.skin===(save.heroColor|0)&&have(+id)).map(id=>ITEMS[id].n); $('stAbil').textContent='キャラの のうりょく：'+(ab?ab.t:'ふつう')+(eqs.length?'　そうび：'+eqs.join('・'):''); }
 /* ================= Excalibur: wide sweep (10 blocks) ================= */
 let exNext=0;
-function kusanagi(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=14; let hit=0;
+/* ================= sword slash effects ================= */
+const SWORDS=[SW_W,SW_S,SW_I,SW_STAR];
+const SLASH_COL={[SW_W]:['#ffd9a0','#fff4e0'],[SW_S]:['#cfd8e2','#ffffff'],[SW_I]:['#bfe6ff','#ffffff'],[SW_STAR]:['#ffe066','#fffbe0'],[SW_EX]:['#7fe8ff','#ffffff'],[SW_HEART]:['#ff6fc0','#ffe0f2'],[SW_KUSA]:['#7dffb0','#f0fff4']};
+const slashes=[]; let slashSide=1, swordNext=0;
+function crescentGeo(R,arc,th){ const s=new THREE.Shape(), n=28; for(let i=0;i<=n;i++){ const a=-arc/2+arc*i/n, w=Math.sin(Math.PI*i/n); const r=R; i?s.lineTo(Math.sin(a)*r,Math.cos(a)*r):s.moveTo(Math.sin(a)*r,Math.cos(a)*r); }
+  for(let i=n;i>=0;i--){ const a=-arc/2+arc*i/n, w=Math.sin(Math.PI*i/n), r=R-th*w; s.lineTo(Math.sin(a)*r,Math.cos(a)*r); } return new THREE.ShapeGeometry(s); }
+function slashFX(o){ o=o||{}; const flat=!!o.flat, tp=camMode!==0&&!flat, R=(o.r||1.2)*(tp?1.45:1), arc=o.arc||2.5, th=o.th||R*.34, col=o.col||['#ffffff','#ffffff'], dur=o.dur||.24, tilt=o.tilt!=null?o.tilt:(slashSide*=-1)*(.55+Math.random()*.45);
+  const G=new THREE.Group(); G.rotation.order='YXZ'; const P=new THREE.Group(); G.add(P);
+  if(flat){ G.position.set(pl.x,pl.y+(o.y!=null?o.y:.6),pl.z); G.rotation.set(0,pl.yaw,0); }
+  else { G.position.set(pl.x,pl.y+1.3,pl.z); G.rotation.set(pl.pitch*.8,pl.yaw,0); P.position.set(0,tp?.1:-.15,-(o.d||1.5)); P.rotation.z=tilt; }
+  const mk=(c,op,rr,tt)=>{ const m=new THREE.Mesh(crescentGeo(rr,arc,tt),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false,depthTest:!tp,blending:THREE.AdditiveBlending})); m.renderOrder=tp?20:0; if(flat) m.rotation.x=-Math.PI/2; P.add(m); return m; };
+  const outer=mk(col[0],.95,R,th), core=mk(col[1],.95,R-th*.15,th*.45); const sw=(o.spin||1.5)*(o.dir||(tilt>0?1:-1));
+  scene.add(G); slashes.push({G,P,m:[outer,core],t:0,dur,sw,flat,tilt,grow:o.grow||.25,d:o.d||1.5,fly:o.fly||0}); return G; }
+function updateSlashes(dt){ for(let i=slashes.length-1;i>=0;i--){ const s=slashes[i]; s.t+=dt; const k=Math.min(1,s.t/s.dur), e=1-Math.pow(1-k,3);
+    if(s.flat) s.P.rotation.y=s.sw*(.5-e); else { s.P.rotation.z=s.tilt+s.sw*(.5-e)*.6; if(s.fly) s.P.position.z=-(s.d+s.fly*e); }
+    s.P.scale.setScalar(1+s.grow*e); s.m[0].material.opacity=.95*(1-k*k); s.m[1].material.opacity=.95*(1-k);
+    if(k>=1){ scene.remove(s.G); s.m.forEach(m=>{ m.geometry.dispose(); m.material.dispose(); }); slashes.splice(i,1); } } }
+function swordSwing(dir){ const now=performance.now()/1000; if(now<swordNext) return; swordNext=now+.28; swing(); slashFX({col:SLASH_COL[selId]||['#ffffff','#ffffff'],r:selId===SW_STAR?1.45:1.2});
+  const L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L, dmg=((ITEMS[selId]&&ITEMS[selId].dmg)||1)*(abil().atk||1); let hit=0;
+  for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>3.4+(zb.r||0)||Math.abs(zb.y-pl.y)>3+(zb.cy||0)) continue; if((dx*fx+dz*fz)/d<.25&&d>1.2) continue; hit++; damageZombie(zb,dmg,{kx:dx/d*8,kz:dz/d*8,up:4.5}); }
+  if(hit) shake(.08,.08); }
+function bigSlash(col,R,spin){ slashFX({col,r:1.7,th:.6,arc:2.7,dur:.26,grow:.3}); setTimeout(()=>slashFX({col,r:2.4,th:.7,arc:2.4,dur:.38,d:2,fly:Math.max(4,R-3),grow:1.1,tilt:(Math.random()<.5?-1:1)*.25}),60); setTimeout(()=>slashFX({col,r:Math.min(R*.85,12),th:1.8,arc:5.8,dur:.45,flat:true,y:.5,spin:spin||3.2,grow:.15}),40); }
+function kusanagi(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=14; let hit=0; bigSlash(SLASH_COL[SW_KUSA],R,4);
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>8) continue; hit++; damageZombie(zb,20*(abil().atk||1),{kx:dx/d*16,kz:dz/d*16,up:6}); spawnBits(zb.x,zb.y+1.2,zb.z,[170,255,200],8,1.4); }
   const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:0xb8ffd0,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}));
   g.rotation.x=-Math.PI/2; g.position.set(pl.x,pl.y+1.1,pl.z); scene.add(g); fx_.push({o:g,grow:R/1.2,life:.4,max:.4});
   for(let k=0;k<24;k++){ const a=k/24*Math.PI*2; spawnBits(pl.x+Math.cos(a)*R*.85,pl.y+1+Math.sin(a*3)*.4,pl.z+Math.sin(a)*R*.85,k%2?[190,255,210]:[255,255,255],1,.7); }
   if(hit) shake(.18,.15); else toast('くさなぎの つるぎ！',800); }
-function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.65; swing(); const A=ABIL[save.heroColor|0]||{}, R=A.exr||10, L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L; let hit=0;
+function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.65; swing(); const A=ABIL[save.heroColor|0]||{}, R=A.exr||10; bigSlash(SLASH_COL[SW_EX],R); const  L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L; let hit=0;
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>7) continue; if((dx*fx+dz*fz)/d<-.35&&d>2) continue;
     hit++; damageZombie(zb,15*(abil().atk||1),{kx:dx/d*14,kz:dz/d*14,up:6}); spawnBits(zb.x,zb.y+1.2,zb.z,[255,230,120],8,1.4); }
   const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:0xfff2a8,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}));
@@ -3417,7 +3439,7 @@ function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return
   for(let k=0;k<18;k++){ const a=Math.atan2(fz,fx)+(k/17-.5)*Math.PI*1.3; spawnBits(pl.x+Math.cos(a)*R*.8,pl.y+1.1,pl.z+Math.sin(a)*R*.8,k%2?[255,240,150]:[150,230,255],2,.6); }
   if(hit){ shake(.15,.15); addPXP(0); } else toast('エクスカリバー！',800); }
 function heartWave(dir){ if((save.heroColor|0)!==8){ toast('ラブリーハートロッドは ハートプリンセス せんようだよ！<br>きせかえで ハートプリンセスに なってね',3000); return; }
-  const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=12; let hit=0;
+  const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=12; let hit=0; bigSlash(SLASH_COL[SW_HEART],R);
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>7) continue; hit++; damageZombie(zb,15*(abil().atk||1),{kx:dx/d*12,kz:dz/d*12,up:6}); spawnHeart(zb.x,zb.y+1.6,zb.z); }
   const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:0xff6fc0,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false})); g.rotation.x=-Math.PI/2; g.position.set(pl.x,pl.y+1.1,pl.z); scene.add(g); fx_.push({o:g,grow:R/1.2,life:.4,max:.4});
   for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; spawnHeart(pl.x+Math.cos(a)*4,pl.y+1.2,pl.z+Math.sin(a)*4); }
@@ -3472,6 +3494,7 @@ function doAction(cx,cy){
   if(selId===FW_ITEM){ const fx=pl.x+dir.x*4, fz=pl.z+dir.z*4; launchFirework(fx,Math.max(pl.y,surface(fx,fz))+1,fz); if(!save.creative){ addItem(FW_ITEM,-1); refreshHotbar(); } return; }
   if(it&&it.heal){ if(save.hp>=20){ toast('ハートは まんタンだよ'); return; } addItem(selId,-1); save.hp=Math.min(20,save.hp+it.heal); updateHearts(); persist(); toast(`${it.n}を たべた！ ハートが回復したよ`); heartBurst(3); return; }
   if(selId===BED){ if(isNight(save.time)){ save.time=.01; save.hp=20; updateHearts(); clearZombies(); toast('ぐっすり ねて、朝になった！',3000); persist(); } else toast('ベッドは よるに 使えるよ'); return; }
+  if(!hitB&&SWORDS.includes(selId)){ swordSwing(dir); if(abil().beam) fireHeart(dir); return; }
   if(!hitB){ if(abil().beam&&(selId===0||(ITEMS[selId]&&ITEMS[selId].dmg))) fireHeart(dir); return; }
   if(isDoor(hitB.id)&&selId!==0){ toggleDoor(hitB.x,hitB.y,hitB.z); return; }
   if(selId===SEED_H){ buildHouse(hitB); return; }
@@ -3863,7 +3886,7 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v33';
+const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v34';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
@@ -4171,7 +4194,7 @@ function frame(now){
     dexTick-=dt; if(dexTick<=0){ dexTick=.5; for(const a of animals) if(!a.baby&&Math.hypot(a.x-pl.x,a.z-pl.z)<7) dexMark(a.type,1);
       if(Math.hypot(dragon.x-pl.x,dragon.z-pl.z,dragon.y-pl.y)<16) dexMark('dragon',1); for(const z of zombies) if(Math.hypot(z.x-pl.x,z.z-pl.z)<10) dexMark(z.king?'king':'zombie',1); } }
   else if(!playing) pl.yaw+=dt*.08;
-  if(sim){ updateSeiryu(dt,time,act); if(act&&seiryu.friend){ seiXpT+=dt; if(seiXpT>40){ seiXpT=0; gainXp(seiryu,1); } } updateBuddies(dt,time,act); if(act){ maouCheck(dt); orochiCheck(dt); } updateVillagers(dt,time,act); updateSky(dt,time,act); updateWeather(dt,time); updateFW(dt,time); updateEvent(dt,time,act); updateRace(dt,time,act); if(act) updateWild(dt); updateAnimals(dt,time,act); updateDragon(dt,time,act); }
+  if(sim){ updateSeiryu(dt,time,act); if(act&&seiryu.friend){ seiXpT+=dt; if(seiXpT>40){ seiXpT=0; gainXp(seiryu,1); } } updateBuddies(dt,time,act); if(act){ maouCheck(dt); orochiCheck(dt); } updateVillagers(dt,time,act); updateSky(dt,time,act); updateWeather(dt,time); updateFW(dt,time); updateSlashes(dt); updateEvent(dt,time,act); updateRace(dt,time,act); if(act) updateWild(dt); updateAnimals(dt,time,act); updateDragon(dt,time,act); }
   updateZombies(dt,time,act,isNight(save.time));
   if(act){ updateProjs(dt); updateTornados(dt); }
   if(act){ updateEProjs(dt); if(save.bosses!==false&&bossCount()<bossMax()){ bossT-=dt*(save.bossFreq||1); if(bossT<=0){ bossT=120; spawnBoss(); } } } updateBossBar();
