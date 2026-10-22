@@ -596,6 +596,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
         <div class="tg"><span>のらの動物の 数<br><span class="note">まわりに 出てくる 動物（なかよくなれる）</span></span><div class="seg" data-set="animalDen" data-num="1"><button data-v="0">なし</button><button data-v="1">すくない</button><button data-v="2">ふつう</button><button data-v="3">おおい</button></div></div>
         <div class="tg"><span>ボスの 同時に 出る数</span><div class="seg" data-set="bossMax" data-num="1"><button data-v="1">1たい</button><button data-v="2">2たい</button><button data-v="3">3たい</button><button data-v="5">5たい</button></div></div>
         <div class="tg"><span>ボスの 出やすさ</span><div class="seg" data-set="bossFreq" data-num="1"><button data-v="0.5">たまに</button><button data-v="1">ふつう</button><button data-v="2">よく出る</button></div></div>
+        <div class="tg"><span>ボスが まちを こわす<br><span class="note">こわれても「しゅうりハンマー」で なおせるよ</span></span><div class="seg" data-set="bossBreak" data-num="1"><button data-v="1">こわす</button><button data-v="0">こわさない</button></div></div>
         <div class="tg"><span>ボス・かいじゅうが 出る</span><div class="seg" data-set="bosses"><button data-v="1">出る</button><button data-v="0">出ない</button></div></div>
         <div class="tg"><span>オンラインで あそぶ（へやばんごうで 友だちと）</span><div class="seg" data-set="online"><button data-v="1">ゆるす</button><button data-v="0">ゆるさない</button></div></div>
         <div class="tg"><span>クリエイティブ（ブロックが へらない）</span><div class="seg" data-set="creative"><button data-v="1">オン</button><button data-v="0">オフ</button></div></div>
@@ -816,7 +817,7 @@ if(save.worldV===7){ if(!isNewPlayer) worldNotice8=true; save.worldV=8; }
 if(save.worldV===8){ if(!isNewPlayer) worldNotice9=true; save.worldV=9; }
 if(save.zmode===undefined) save.zmode=save.zombies===false?0:2;
 if(save.bosses===undefined) save.bosses=true;
-if(typeof save.hard!=='number') save.hard=save.hard?2:1; if(!save.qc) save.qc={boss:0,zombie:0,maou:0,daimaou:0,pboss:0}; if(save.qc.siege==null) save.qc.siege=0; if(save.weather==null) save.weather=0; if(save.evMode==null) save.evMode=0; if(save.fw==null) save.fw=1; if(!save.car) save.car={}; if(!save.gotHammer){ save.gotHammer=1; save.inv=save.inv||{}; save.inv[113]=(save.inv[113]||0)+1; } if(save.qc.orochi==null) save.qc.orochi=0;
+if(typeof save.hard!=='number') save.hard=save.hard?2:1; if(!save.qc) save.qc={boss:0,zombie:0,maou:0,daimaou:0,pboss:0}; if(save.qc.siege==null) save.qc.siege=0; if(save.weather==null) save.weather=0; if(save.bossBreak==null) save.bossBreak=1; if(save.evMode==null) save.evMode=0; if(save.fw==null) save.fw=1; if(!save.car) save.car={}; if(!save.gotHammer){ save.gotHammer=1; save.inv=save.inv||{}; save.inv[113]=(save.inv[113]||0)+1; } if(save.qc.orochi==null) save.qc.orochi=0;
 if(save.zombieDen===undefined) save.zombieDen=1; if(save.bossMax===undefined) save.bossMax=2; if(save.animalDen===undefined) save.animalDen=2; if(save.bossFreq===undefined) save.bossFreq=1;
 if(save.tspeed===undefined) save.tspeed=2;
 let saveTimer=0, saveLock=false, lastSaved=0;
@@ -2829,6 +2830,17 @@ function buildRobo(g,mk){ const bd=mk('#3a4a6a'), ar=mk('#c9d2dc'), ac=mk('#ff8a
   bx(head,.9,.3,.12,dk,0,.45,.8); for(let k=0;k<4;k++) bx(head,.12,.2,.13,ar,(k-1.5)*.2,.45,.86); for(const s of [-1,1]){ const an=bx(head,.18,1.3,.18,ac,s*.95,1.6,-.1); an.rotation.z=-s*.5; bx(head,.3,.6,.9,bd,s*.9,.9,0); }
   bx(head,1.75,.25,1.65,bd,0,1.62,0);
   return {legs,arms,head,core:cr,visor,coreMat:core,flames:fl}; }
+const BURNABLE=new Set([LOG,LEAVES,PLANK,DPLANK,SAKURA,FLOWERBED,SHELF,DOOR,DOORC,DOORO,MUSHR,PINK,YELLOW,SKYB,WHITEB,GREENB,ORANGEB,PURPLEB,CACTUS]);
+let roboHint=false;
+function roboBreak(cx,cz,r,y0,y1,mode){ if(SPACE.on||save.bossBreak===0) return 0; const L=[];
+  for(let x=Math.floor(cx-r);x<=Math.ceil(cx+r);x++) for(let z=Math.floor(cz-r);z<=Math.ceil(cz+r);z++){ if(!inB(x,z)||Math.hypot(x+.5-cx,z+.5-cz)>r||inFort(x+.5,z+.5)) continue;
+    for(let y=Math.max(2,y0);y<=Math.min(H-1,y1);y++){ const id=get(x,y,z); if(id===AIR||id===WATER||id===CHEST||id===WARP) continue; const k=x+','+y+','+z; if(ORIG.has(k)&&ORIG.get(k)===AIR) continue;
+      let nid=AIR;
+      if(mode==='burn'){ if(BURNABLE.has(id)) nid=AIR; else if(id===GRASS||id===DIRT||id===SAND||id===PATH) nid=hash(x*7+y,z)<.6?BLACKB:DIRT; else nid=hash(x+y*3,z*5)<.45?BLACKB:id; if(id===BLACKB) continue; }
+      else if(mode==='stomp'&&y===y0){ if(id===DIRT||id===STONE) continue; nid=DIRT; }
+      if(nid===id) continue; L.push([x,y,z,nid]); } }
+  if(L.length){ setBlocks(L); if(!roboHint){ roboHint=true; setTimeout(()=>toast('まちが こわされた！ たおしたら「しゅうりハンマー」で なおせるよ',3200),600); } } return L.length; }
+function roboFire(b,x,y,z){ (b.fires=b.fires||[]).push({x,y,z,t:3+Math.random()*2}); }
 function setupRobo(b){ b.g.scale.setScalar(ROBO_S); b.drop=2.6; b.gy=b.y; b.y+=46; b.cool=3; b.mi=0; b.marks=[]; b.fx=[]; b.fists=[]; b.step=0; toast('そらから なにかが おりてくる…！',2600); }
 function roboHand(b,i){ const v=new THREE.Vector3(); b.arms[i].userData.fist.getWorldPosition(v); return v; }
 function updateRobo(b,dt,time){ const T=BOSS.robo; b.hitT-=dt; b.frozen=Math.max(0,b.frozen-dt*2.5); const fr=b.frozen>0; b.kx=b.kz=0;
@@ -2840,38 +2852,42 @@ function updateRobo(b,dt,time){ const T=BOSS.robo; b.hitT-=dt; b.frozen=Math.max
   b.trot=Math.atan2(dx,dz); let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); if(!fr&&!b.act) b.rot+=d*Math.min(1,dt*1.4);
   let moving=false; if(!fr&&!b.act&&dp>13){ const sp=(b.ph2?3.6:2.6)*dt; b.x=clamp(b.x+Math.sin(b.rot)*sp,4,W-5); b.z=clamp(b.z+Math.cos(b.rot)*sp,4,D-5); moving=true; }
   b.y+=(gy-b.y)*Math.min(1,dt*4);
-  const ps=b.step; if(moving) b.step+=dt*(b.ph2?2.4:1.8); const sw=moving?Math.sin(b.step)*.45:0; if(moving&&Math.floor(ps/Math.PI)!==Math.floor(b.step/Math.PI)&&dp<60){ shake(Math.max(.1,.45-dp/150),.25); spawnBits(b.x,gy+.3,b.z,[160,150,140],6,1.4); }
+  const ps=b.step; if(moving) b.step+=dt*(b.ph2?2.4:1.8); const sw=moving?Math.sin(b.step)*.45:0; if(moving&&Math.floor(ps/Math.PI)!==Math.floor(b.step/Math.PI)&&dp<70){ const sd=Math.floor(b.step/Math.PI)%2?1:-1, fx=b.x+Math.cos(b.rot)*sd*4+Math.sin(b.rot)*2, fz=b.z-Math.sin(b.rot)*sd*4+Math.cos(b.rot)*2; shake(Math.max(.12,.55-dp/140),.3); spawnBits(fx,gy+.3,fz,[160,150,140],10,1.8); roboBreak(fx,fz,3.4,gy-1,gy+42,'stomp'); if(!dead&&Math.hypot(pl.x-fx,pl.z-fz)<3.8&&pl.y<gy+2) damage(3,fx,fz); }
   if(!b.stomp){ b.legs[0].rotation.x=sw; b.legs[1].rotation.x=-sw; }
   b.cool-=dt;
-  if(!fr&&!dead&&!b.act&&b.cool<=0&&dp<55){ const seq=b.ph2?['punch','missile','beam','stomp','punch','beam']:['punch','beam','stomp','missile'];
+  if(!fr&&!dead&&!b.act&&b.cool<=0&&dp<55){ const seq=b.ph2?['punch','sweep','missile','stomp','punch','beam','sweep']:['punch','beam','stomp','missile','beam'];
     let mv=seq[(b.mi++)%seq.length]; if(mv==='stomp'&&dp>15) mv='beam';
-    if(mv==='punch'){ b.act={k:'punch',t:.8,arm:b.mi%2}; toast('ロケットパンチが くる！ よけて！',1400); }
+    if(mv==='punch'){ b.act={k:'punch',t:b.ph2?.45:.6,arm:b.mi%2,both:!!b.ph2}; toast(b.ph2?'ダブル ロケットパンチ！':'ロケットパンチが くる！ よけて！',1400); }
+    else if(mv==='sweep'){ const ux=dx/(dp||1), uz=dz/(dp||1), px=-uz, pz=ux; b.marks=[]; for(let k=-8;k<=8;k++){ const x=pl.x+px*k*2.2+ux*1.5, z=pl.z+pz*k*2.2+uz*1.5; b.marks.push({x,y:surface(x,z),z,t:1.0+(k+8)*.06}); } b.act={k:'beam',t:2.2}; toast('ギガ ビーム なぎはらい！ ジャンプか はしって にげて！',1800); }
     else if(mv==='beam'){ const ux=dx/(dp||1), uz=dz/(dp||1); b.marks=[]; for(let k=-3;k<=4;k++){ const x=pl.x+ux*k*2.4, z=pl.z+uz*k*2.4; b.marks.push({x,y:surface(x,z),z,t:1.1+(k+3)*.07}); } b.act={k:'beam',t:1.6}; toast('めから ビーム！ ひかる せんから はなれて！',1500); }
     else if(mv==='stomp'){ b.act={k:'stomp',t:1.0}; b.stomp=1; b.sx=b.x+Math.sin(b.rot)*5; b.sz=b.z+Math.cos(b.rot)*5; toast('ふみつけ！ ジャンプで よけて！',1400); }
     else { b.marks=[]; const n=b.ph2?12:8; for(let k=0;k<n;k++){ const a=Math.random()*6.28, r=k===0?0:2+Math.random()*8, x=pl.x+Math.cos(a)*r, z=pl.z+Math.sin(a)*r; b.marks.push({x,y:surface(x,z),z,t:1.4+k*.06,mis:1}); } b.act={k:'missile',t:1.2}; toast('ミサイル はっしゃ！ ひかる ところから にげて！',1600);
       for(let s=0;s<2;s++) for(let k=0;k<4;k++) spawnBits(b.x+(s?1:-1)*9.4*Math.cos(b.rot),b.y+35,b.z-(s?1:-1)*9.4*Math.sin(b.rot),[255,90,60],3,1.2); }
-    b.cool=(b.ph2?2.0:3.0); }
+    b.cool=(b.ph2?1.4:2.2); }
   // action timers
   if(b.act){ const A=b.act; A.t-=dt; const arm=b.arms[A.arm||0];
-    if(A.k==='punch'){ arm.rotation.x=-1.5+Math.sin(time*30)*.05; if(A.t<=0){ const from=roboHand(b,A.arm), to=new THREE.Vector3(pl.x,pl.y+1,pl.z), v=to.sub(from).normalize().multiplyScalar(b.ph2?30:24); const m=new THREE.Group(); m.scale.setScalar(ROBO_S*.9); bx(m,1.4,1.2,1.4,'#1e2430',0,0,0); bx(m,1.45,.3,1.45,'#ff8a1e',0,.45,0); const fl=new THREE.Mesh(new THREE.ConeGeometry(.4,1.4,8),MB('#ff9a2a')); fl.rotation.x=-Math.PI/2; fl.position.z=-1.3; m.add(fl);
+    if(A.k==='punch'){ arm.rotation.x=-1.5+Math.sin(time*30)*.05; if(A.t<=0){ if(A.both&&!A.second){ A.second=1; const o=b.arms[1-(A.arm||0)]; o.rotation.x=-1.5; setTimeout(()=>{ if(!zombies.includes(b)) return; const f2=roboHand(b,1-(A.arm||0)), v2=new THREE.Vector3(pl.x,pl.y+1,pl.z).sub(f2).normalize().multiplyScalar(36); const m2=new THREE.Group(); m2.scale.setScalar(ROBO_S*.9); bx(m2,1.4,1.2,1.4,'#1e2430',0,0,0); bx(m2,1.45,.3,1.45,'#ff8a1e',0,.45,0); m2.position.copy(f2); m2.lookAt(f2.clone().add(v2)); scene.add(m2); b.fx.push(m2); b.fists.push({m:m2,v:v2,life:2.2,hit:false}); o.userData.fist.visible=false; setTimeout(()=>{ o.userData.fist.visible=true; o.rotation.x=0; },2400); },350); }
+        const from=roboHand(b,A.arm), to=new THREE.Vector3(pl.x,pl.y+1,pl.z), v=to.sub(from).normalize().multiplyScalar(b.ph2?38:30); const m=new THREE.Group(); m.scale.setScalar(ROBO_S*.9); bx(m,1.4,1.2,1.4,'#1e2430',0,0,0); bx(m,1.45,.3,1.45,'#ff8a1e',0,.45,0); const fl=new THREE.Mesh(new THREE.ConeGeometry(.4,1.4,8),MB('#ff9a2a')); fl.rotation.x=-Math.PI/2; fl.position.z=-1.3; m.add(fl);
         m.position.copy(from); m.lookAt(from.clone().add(v)); scene.add(m); b.fx.push(m); b.fists.push({m,v,life:2.2,hit:false}); arm.userData.fist.visible=false; b.act=null; setTimeout(()=>{ arm.userData.fist.visible=true; },2600); } }
     else if(A.k==='stomp'){ const lg=b.legs[0]; if(A.t>.35){ lg.rotation.x=-1.0*(1-(A.t-.35)/.65)-.0; if(Math.random()<dt*20){ const a=Math.random()*6.28; spawnBits(b.sx+Math.cos(a)*7,surface(b.sx,b.sz)+.3,b.sz+Math.sin(a)*7,[255,80,60],1,.3); } } else lg.rotation.x=0;
-      if(A.t<=0){ b.stomp=0; const sy=surface(b.sx,b.sz); shake(1,.7); for(let k=0;k<28;k++){ const a=k/28*6.28; spawnBits(b.sx+Math.cos(a)*6.5,sy+.4,b.sz+Math.sin(a)*6.5,[170,160,150],3,2); } if(!dead&&Math.hypot(pl.x-b.sx,pl.z-b.sz)<7.5&&pl.y<sy+1.5) damage(T.dmg,b.sx,b.sz); b.act=null; } }
+      if(A.t<=0){ b.stomp=0; const sy=surface(b.sx,b.sz); shake(1,.7); for(let k=0;k<28;k++){ const a=k/28*6.28; spawnBits(b.sx+Math.cos(a)*6.5,sy+.4,b.sz+Math.sin(a)*6.5,[170,160,150],3,2); } roboBreak(b.sx,b.sz,7.5,sy-1,sy+42,'stomp'); if(!dead&&Math.hypot(pl.x-b.sx,pl.z-b.sz)<8.5&&pl.y<sy+1.5) damage(T.dmg,b.sx,b.sz); b.act=null; } }
     else { b.head.rotation.x=A.k==='beam'?.35:0; if(A.t<=0){ b.head.rotation.x=0; b.act=null; } } }
   else { b.arms[0].rotation.x=moving?-sw*.6:Math.sin(time)*.05; b.arms[1].rotation.x=moving?sw*.6:-Math.sin(time)*.05; }
   // fists
   for(let i=b.fists.length-1;i>=0;i--){ const f=b.fists[i]; f.life-=dt; f.m.position.addScaledVector(f.v,dt); if(Math.random()<dt*30) spawnBits(f.m.position.x,f.m.position.y,f.m.position.z,[255,160,60],1,.4);
     const q=f.m.position, dd=Math.hypot(q.x-pl.x,q.y-(pl.y+1),q.z-pl.z); if(!f.hit&&dd<3.2){ f.hit=true; if(pl.shieldT>0) spawnBits(q.x,q.y,q.z,[127,232,255],10,1.2); else if(!dead) damage(T.dmg,q.x-f.v.x,q.z-f.v.z); f.life=0; }
-    if(f.life<=0||solidAt(Math.floor(q.x),Math.floor(q.y),Math.floor(q.z))){ spawnBits(q.x,q.y,q.z,[255,140,40],16,2); shake(.3,.2); scene.remove(f.m); b.fx.splice(b.fx.indexOf(f.m),1); b.fists.splice(i,1); } }
+    if(f.life<=0||solidAt(Math.floor(q.x),Math.floor(q.y),Math.floor(q.z))){ spawnBits(q.x,q.y,q.z,[255,140,40],16,2); shake(.3,.2); roboBreak(q.x,q.z,2.6,Math.floor(q.y)-2,Math.floor(q.y)+3,'blast'); if(!dead&&!f.hit&&Math.hypot(q.x-pl.x,q.z-pl.z)<3.5&&Math.abs(q.y-pl.y)<4) damage(4,q.x,q.z); scene.remove(f.m); b.fx.splice(b.fx.indexOf(f.m),1); b.fists.splice(i,1); } }
   // beam / missile marks
   for(let i=b.marks.length-1;i>=0;i--){ const m=b.marks[i]; m.t-=dt; if(Math.random()<dt*24) spawnBits(m.x+(Math.random()-.5)*1.6,m.y+.2,m.z+(Math.random()-.5)*1.6,m.mis?[255,90,60]:[95,240,255],1,.3);
     if(m.t<=0){ b.marks.splice(i,1); const hp=new THREE.Vector3(); b.head.getWorldPosition(hp);
       if(!m.mis){ const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([hp,new THREE.Vector3(m.x,m.y,m.z)]),new THREE.LineBasicMaterial({color:b.ph2?0xff5a3a:0x7ff6ff})); scene.add(ln); setTimeout(()=>{ scene.remove(ln); ln.geometry.dispose(); ln.material.dispose(); },140); }
-      spawnBits(m.x,m.y+.5,m.z,m.mis?[255,120,40]:[150,250,255],12,1.8); shake(.25,.15); if(!dead&&Math.hypot(pl.x-m.x,pl.z-m.z)<2.3&&Math.abs(pl.y-m.y)<4) damage(m.mis?3:4,m.x,m.z); } }
+      spawnBits(m.x,m.y+.5,m.z,m.mis?[255,120,40]:[150,250,255],12,1.8); shake(.25,.15); if(!dead&&Math.hypot(pl.x-m.x,pl.z-m.z)<2.5&&Math.abs(pl.y-m.y)<4) damage(m.mis?4:5,m.x,m.z);
+      if(m.mis) roboBreak(m.x,m.z,2.2,m.y-2,m.y+4,'blast'); else { roboBreak(m.x,m.z,2.8,m.y-1,m.y+8,'burn'); roboFire(b,m.x,m.y,m.z); } } }
+  if(b.fires) for(let i=b.fires.length-1;i>=0;i--){ const f=b.fires[i]; f.t-=dt; if(Math.random()<dt*14) spawnBits(f.x+(Math.random()-.5)*3,f.y+.3+Math.random(),f.z+(Math.random()-.5)*3,Math.random()<.5?[255,120,30]:[255,210,80],1,.6); if(f.t<=0) b.fires.splice(i,1); }
   b.core.rotation.y+=dt*2; b.core.scale.setScalar(1+Math.sin(time*6)*.12);
   const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red+(b.ph2?.1:0),fr?.25:0,fr?.5:0); });
   b.g.position.set(b.x,b.y,b.z); b.g.rotation.y=b.rot; }
-const BOSS={robo:{n:'きょだいロボ ギガボルト',hp:2400,sp:2.6,dmg:5,gems:350,shard:45,r:8,cy:20,build:buildRobo},orochi:{n:'ヤマタノオロチ',hp:2800,sp:2.2,dmg:4,gems:500,shard:60,r:9,cy:6,build:buildOrochi},usa:{n:'ウサミミまじん ピョンガ',hp:280,sp:4,dmg:3,gems:35,shard:8,r:1.7,cy:1.8,build:buildUsa},daimaou:{n:'だいまおう イグニス',hp:1200,sp:6,fly:1,dmg:5,gems:200,shard:30,r:4.2,cy:5.5,build:buildDaimaou},maou:{n:'やみの まおう ノクス',hp:600,sp:6,fly:1,dmg:4,gems:100,shard:20,r:2.7,cy:3.4,build:buildMaou},golem:{n:'いわの ゴーレム',hp:120,sp:1.8,reach:3.4,dmg:3,gems:20,shard:6,r:1.9,cy:2.6,build:buildGolem},
+const BOSS={robo:{n:'きょだいロボ ギガボルト',hp:4000,sp:2.6,dmg:7,gems:500,shard:60,r:8,cy:20,build:buildRobo},orochi:{n:'ヤマタノオロチ',hp:2800,sp:2.2,dmg:4,gems:500,shard:60,r:9,cy:6,build:buildOrochi},usa:{n:'ウサミミまじん ピョンガ',hp:280,sp:4,dmg:3,gems:35,shard:8,r:1.7,cy:1.8,build:buildUsa},daimaou:{n:'だいまおう イグニス',hp:1200,sp:6,fly:1,dmg:5,gems:200,shard:30,r:4.2,cy:5.5,build:buildDaimaou},maou:{n:'やみの まおう ノクス',hp:600,sp:6,fly:1,dmg:4,gems:100,shard:20,r:2.7,cy:3.4,build:buildMaou},golem:{n:'いわの ゴーレム',hp:120,sp:1.8,reach:3.4,dmg:3,gems:20,shard:6,r:1.9,cy:2.6,build:buildGolem},
   ghost:{n:'まじょの おばけ',hp:80,sp:2.8,fly:1,dmg:2,gems:20,shard:8,r:1.3,cy:1.7,build:buildGhost},
   ryu:{n:'てんくうりゅう ライカ',hp:220,sp:7,fly:1,dmg:3,gems:40,shard:10,r:1.9,cy:.01,build:buildRyu},
   kaiju:{n:'かいじゅう ガオラ',hp:300,sp:2.3,reach:5.5,dmg:4,beam:1,gems:50,shard:12,r:3.6,cy:5,build:buildKaiju}};
@@ -3871,7 +3887,7 @@ $('waitAll').addEventListener('click',()=>{ allyList().forEach(a=>{ if(a!==ridin
 $('petBtn').addEventListener('click',()=>{ renderPets(); openOv('pets'); });
 
 /* dex */
-const DEX_A=[['robo','きょだいロボ ギガボルト','たかさ 40メートルの きょだいロボ。ロケットパンチ・めからビーム・ミサイル・ふみつけで こうげきしてくる。ときどき そらから おりてくる'],['orochi','ヤマタノオロチ','いちばん つよい ボス。8つの くびと 8つの しっぽを もつ おおへび。オロチじまの いわやに すむ。くびを 1つずつ たおそう'],['daimaou','だいまおう イグニス','とても つよい ボス。ほのおの剣と いんせきに ちゅうい！ まおうを たおすと まおうの城に あらわれる'],['usa','ウサミミまじん ピョンガ','ぴょんぴょん はねて ワープする。にんじんばくだんを なげてくる'],['volca','ほのおドラゴン ボルカ','空とぶ なかま。火をふいて たすけてくれる。せなかに のれる'],['billy','らいじゅう ビリー','くもに のった なかま。かみなりで こうげき'],['maou','やみの まおう ノクス','さいきょうの ボス。まおうの城に すむ。いなずまと ゾンビよびに ちゅうい！'],['seiryu','せいりゅう セイラン','まほう学校の みずうみに すむ りゅう。おやつ3こで なかまに'],['ryu','てんくうりゅう ライカ','空を およぐ 金色の りゅう。かみなりの たまと たいあたりに 気をつけて'],['golem','いわの ゴーレム','岩の かたまり。力いっぱい たたいてくる'],['ghost','まじょの おばけ','空を ふわふわ。まほうの たまを とばす'],['kaiju','かいじゅう ガオラ','島で いちばん 大きい。せなかが 光ると ビーム！'],['cat','ねこ','のんびりや。なでられるのが 大すき'],['rabbit','うさぎ','ぴょんぴょん はねる。耳が長い'],['chick','ひよこ','ちいさくて 元気いっぱい'],['dog','しばいぬ','いっしょに たたかってくれる'],
+const DEX_A=[['robo','きょだいロボ ギガボルト','いちばん つよい ボス。たかさ 40メートルの きょだいロボ。あるくだけで まちを ふみつぶし、ビームで やきはらう。ロケットパンチ・めからビーム・ミサイル・ふみつけで こうげきしてくる。ときどき そらから おりてくる'],['orochi','ヤマタノオロチ','とても つよい ボス。8つの くびと 8つの しっぽを もつ おおへび。オロチじまの いわやに すむ。くびを 1つずつ たおそう'],['daimaou','だいまおう イグニス','とても つよい ボス。ほのおの剣と いんせきに ちゅうい！ まおうを たおすと まおうの城に あらわれる'],['usa','ウサミミまじん ピョンガ','ぴょんぴょん はねて ワープする。にんじんばくだんを なげてくる'],['volca','ほのおドラゴン ボルカ','空とぶ なかま。火をふいて たすけてくれる。せなかに のれる'],['billy','らいじゅう ビリー','くもに のった なかま。かみなりで こうげき'],['maou','やみの まおう ノクス','さいきょうの ボス。まおうの城に すむ。いなずまと ゾンビよびに ちゅうい！'],['seiryu','せいりゅう セイラン','まほう学校の みずうみに すむ りゅう。おやつ3こで なかまに'],['ryu','てんくうりゅう ライカ','空を およぐ 金色の りゅう。かみなりの たまと たいあたりに 気をつけて'],['golem','いわの ゴーレム','岩の かたまり。力いっぱい たたいてくる'],['ghost','まじょの おばけ','空を ふわふわ。まほうの たまを とばす'],['kaiju','かいじゅう ガオラ','島で いちばん 大きい。せなかが 光ると ビーム！'],['cat','ねこ','のんびりや。なでられるのが 大すき'],['rabbit','うさぎ','ぴょんぴょん はねる。耳が長い'],['chick','ひよこ','ちいさくて 元気いっぱい'],['dog','しばいぬ','いっしょに たたかってくれる'],
   ['panda','パンダ','力もち。背中に のせてくれる'],['horse','うま','とっても はやい。くらで のれる'],['pegasus','ペガサス','つばさの ある うま。くらで のると 空を とべる'],['fox','キツネ','ふわふわ しっぽの すばしっこい なかま'],['dragon','ドラゴン','空のぬし。おやつが 大好物'],['zombie','ゾンビ','よるに 出てくる。朝になると きえる'],['king','ゾンビキング','まんげつの よるだけ あらわれる']];
 let dexTab='a';
 function renderDex(){ const G_=$('dexGrid'); G_.innerHTML=''; let got=0,tot=0;
@@ -4093,7 +4109,7 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v38';
+const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v39';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
