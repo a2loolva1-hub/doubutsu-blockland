@@ -98,6 +98,35 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .invconf{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fff1f1;border-radius:10px;padding:6px 8px}
 .slot.more{display:flex;align-items:center;justify-content:center;font-family:var(--f-pix);font-size:11px;color:#fff;background:rgba(255,255,255,.18);line-height:1.1;text-align:center}
 #spacefx{position:fixed;inset:0;z-index:80;background:#05060f}#spacefx canvas{width:100%;height:100%;display:block}#spacetxt{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18%);text-align:center;font-family:var(--f-pix);font-size:40px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
+#atkBtn{display:none}#xhair{display:none}
+#rotHint{position:fixed;inset:0;z-index:90;background:linear-gradient(#5aa9ff,#2f6fd6);display:grid;place-items:center;color:#fff;text-align:center;font-family:var(--f-pix)}
+.rotbox p{margin:14px 0 0;font-size:24px}.rotbox .rsub{font-size:15px;opacity:.9;margin-top:6px}.rotbox .sbtn{margin-top:22px}
+.rotphone{width:64px;height:110px;margin:0 auto;border:5px solid #fff;border-radius:14px;position:relative;animation:rotph 2.2s ease-in-out infinite}.rotphone i{position:absolute;left:50%;bottom:6px;width:14px;height:4px;margin-left:-7px;background:#fff;border-radius:2px}
+@keyframes rotph{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+body.land #atkBtn{display:block;width:92px;height:92px;font-size:16px;background:rgba(255,95,135,.55);order:3}
+body.land #xhair{display:block;position:fixed;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;pointer-events:none;z-index:5;
+  background:linear-gradient(#fff,#fff) center/2px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 2px no-repeat;filter:drop-shadow(0 0 1px #000);opacity:.85}
+body.land.tp #xhair{opacity:.55}
+body.land #hud{gap:6px;padding-block:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-bottom,0px) + 8px)}
+body.land .tbtns{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;max-width:56vw;gap:5px}
+body.land .tbtns .chip{padding:4px 8px;font-size:12px}
+body.land .stats{gap:3px}
+body.land .stats .chip{padding:3px 8px;font-size:12px}
+body.land #mini{width:78px;height:78px}
+body.land .bar i{font-size:12px}
+body.land .rbtns{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 10px);display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:8px;align-items:end;justify-items:center}
+body.land .rcol{grid-column:1;grid-row:1/3;flex-direction:column-reverse}
+body.land #jump{grid-column:2;grid-row:1;width:70px;height:70px}
+body.land #atkBtn{grid-column:2;grid-row:2}
+body.land .row{min-height:0}
+body.land #bname{left:50%;transform:translateX(-50%);bottom:64px;max-width:44vw;text-align:center}
+body.land #hotbar{max-width:min(48vw,560px);padding:4px;gap:4px;border-radius:12px}
+body.land .slot{width:40px;height:40px}
+body.land #bossbar{bottom:calc(env(safe-area-inset-bottom,0px) + 66px);width:min(40vw,300px);padding:4px 8px 6px;font-size:12px}
+body.land #toast{top:calc(env(safe-area-inset-top,0px) + 92px);font-size:14px;padding:6px 12px;max-width:52vw}
+body.land #racebar{top:calc(env(safe-area-inset-top,0px) + 50px)}
+body.land #siegebar{top:calc(env(safe-area-inset-top,0px) + 50px)}
+body.land #badge{top:26%}
 #siegebar{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 118px);transform:translateX(-50%);background:#b0263a;color:#fff;border:2px solid #fff;border-radius:999px;padding:5px 14px;font-family:var(--f-pix);font-size:14px;white-space:nowrap;pointer-events:none}
 #bossbar{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 168px);transform:translateX(-50%);width:min(62%,320px);background:var(--panel);border:2px solid var(--edge);border-radius:12px;padding:6px 10px 8px;font-family:var(--f-pix);font-size:14px;text-align:center;pointer-events:none}
 .brow+.brow{margin-top:6px}
@@ -369,6 +398,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <div class="rbtns">
         <div class="rcol"><button id="flyBtn" class="rb" hidden>とぶ</button><button id="dismount" class="rb" hidden>おりる</button><button id="down" class="rb" hidden>した</button><button id="nitroBtn" class="rb nitro" hidden>ニトロ</button></div>
         <button id="jump" class="rb">ジャンプ</button>
+        <button id="atkBtn" class="rb" aria-label="こうげき・つかう">こうげき</button>
       </div>
     </div>
     <div id="hotbar" role="toolbar" aria-label="もちもの"></div>
@@ -378,6 +408,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div id="hurt"></div>
 <div id="flash"></div>
 <div id="joy" hidden><i></i></div>
+<div id="xhair" aria-hidden="true"></div>
+<div id="rotHint" hidden><div class="rotbox"><div class="rotphone"><i></i></div><p>スマホを よこに してね</p><p class="rsub">よこの ほうが りょうてで うごかしやすいよ</p><button id="rotKeep" class="sbtn light">たての まま あそぶ</button></div></div>
 
 <div id="intro" class="overlay">
   <div class="introWrap">
@@ -587,6 +619,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <section>
         
         <div class="tg"><span>1日に あそべる時間<br><span class="note" id="pPlayed"></span></span><div class="seg" data-set="limit" data-num="1"><button data-v="0">なし</button><button data-v="30">30分</button><button data-v="45">45分</button><button data-v="60">60分</button><button data-v="90">90分</button><button data-v="120">120分</button></div></div>
+        <div class="tg"><span>がめんの むき<br><span class="note">スマホは よこが おすすめ</span></span><div class="seg" data-set="allowPortrait"><button data-v="0">よこ だけ</button><button data-v="1">たても OK</button></div></div>
+        <div class="tg"><span>「こうげき」ボタン<br><span class="note">よこでは いつも 出るよ</span></span><div class="seg" data-set="atkBtn" data-num="1"><button data-v="0">よこの ときだけ</button><button data-v="1">いつも</button></div></div>
         <div class="tg"><span>てんき</span><div class="seg" data-set="weather" data-num="1"><button data-v="0">じどう</button><button data-v="1">はれ</button><button data-v="2">あめ</button><button data-v="3">ゆき</button><button data-v="4">かみなり</button><button data-v="5">にじ</button></div></div>
         <div class="tg"><span>きせつの イベント<br><span class="note">じどう＝カレンダーに あわせて かわるよ</span></span><div class="seg" data-set="evMode" data-num="1"><button data-v="0">じどう</button><button data-v="1">ハロウィン</button><button data-v="2">クリスマス</button><button data-v="3">おしょうがつ</button><button data-v="4">なつまつり</button><button data-v="5">おはなみ</button><button data-v="9">なし</button></div></div>
         <div class="tg"><span>よるの はなびたいかい</span><div class="seg" data-set="fw" data-num="1"><button data-v="1">まいばん</button><button data-v="0">イベントの とき</button><button data-v="2">なし</button></div></div>
@@ -817,7 +851,7 @@ if(save.worldV===7){ if(!isNewPlayer) worldNotice8=true; save.worldV=8; }
 if(save.worldV===8){ if(!isNewPlayer) worldNotice9=true; save.worldV=9; }
 if(save.zmode===undefined) save.zmode=save.zombies===false?0:2;
 if(save.bosses===undefined) save.bosses=true;
-if(typeof save.hard!=='number') save.hard=save.hard?2:1; if(!save.qc) save.qc={boss:0,zombie:0,maou:0,daimaou:0,pboss:0}; if(save.qc.siege==null) save.qc.siege=0; if(save.weather==null) save.weather=0; if(save.bossBreak==null) save.bossBreak=1; if(save.evMode==null) save.evMode=0; if(save.fw==null) save.fw=1; if(!save.car) save.car={}; if(!save.gotHammer){ save.gotHammer=1; save.inv=save.inv||{}; save.inv[113]=(save.inv[113]||0)+1; } if(save.qc.orochi==null) save.qc.orochi=0;
+if(typeof save.hard!=='number') save.hard=save.hard?2:1; if(!save.qc) save.qc={boss:0,zombie:0,maou:0,daimaou:0,pboss:0}; if(save.qc.siege==null) save.qc.siege=0; if(save.weather==null) save.weather=0; if(save.bossBreak==null) save.bossBreak=1; if(save.atkBtn==null) save.atkBtn=0; if(save.evMode==null) save.evMode=0; if(save.fw==null) save.fw=1; if(!save.car) save.car={}; if(!save.gotHammer){ save.gotHammer=1; save.inv=save.inv||{}; save.inv[113]=(save.inv[113]||0)+1; } if(save.qc.orochi==null) save.qc.orochi=0;
 if(save.zombieDen===undefined) save.zombieDen=1; if(save.bossMax===undefined) save.bossMax=2; if(save.animalDen===undefined) save.animalDen=2; if(save.bossFreq===undefined) save.bossFreq=1;
 if(save.tspeed===undefined) save.tspeed=2;
 let saveTimer=0, saveLock=false, lastSaved=0;
@@ -2487,7 +2521,7 @@ function rebuildHero(){ scene.remove(hero.g); hero.g=new THREE.Group(); Object.a
 setCompanion();
 let camMode=Math.max(0,Math.min(2,save.cam|0)), camDist=4.2, heroMove=0, heroSwingT=0, heroPhase=0, heroSparkT=0;
 const CAM_LABEL=['してん：め','してん：うしろ','してん：まえ'];
-function cycleCam(){ camMode=(camMode+1)%3; save.cam=camMode; persist(); $('camBtn').textContent=CAM_LABEL[camMode]; updateHeld(); }
+function cycleCam(){ camMode=(camMode+1)%3; save.cam=camMode; persist(); $('camBtn').textContent=CAM_LABEL[camMode]; updateHeld(); document.body.classList.toggle('tp',camMode!==0); }
 function updateHero(dt,time){
   const show=camMode!==0&&playing; hero.g.visible=show; if(!show) return;
   const R=riding?RIDE[riding.type]:null, fly=flyingNow()&&!riding;
@@ -3744,7 +3778,7 @@ function doAction(cx,cy){
 }
 
 /* ================= overlays ================= */
-const OVS=['spacefx','invov','raceov','garageov','guideov','statov','fortov','settingsov','bosspick','saveov','intro','menu','help','craft','shop','pets','dex','tasks','parent','notice','timeup','dead','mapov','online','stampov','skins'];
+const OVS=['rotHint','spacefx','invov','raceov','garageov','guideov','statov','fortov','settingsov','bosspick','saveov','intro','menu','help','craft','shop','pets','dex','tasks','parent','notice','timeup','dead','mapov','online','stampov','skins'];
 let paused=true, playing=false;
 function anyOpen(){ return OVS.some(o=>!$(o).hidden); }
 function syncPause(){ paused=anyOpen(); if(paused){ ptrs.clear(); joyP=null; joyV.x=joyV.y=0; joyEl.hidden=true; jumpHeld=downHeld=false; jumpPressed=false; } }
@@ -3949,7 +3983,7 @@ $('pItems').addEventListener('click',e=>{ const b=e.target.closest('[data-i]'); 
 document.querySelectorAll('[data-gem]').forEach(b=>b.addEventListener('click',()=>{ const n=+b.dataset.gem; save.gems+=n; gift.gems+=n; updateGems(); persist(); renderParent(); }));
 document.querySelectorAll('#settingsov .seg').forEach(s=>s.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
   save[s.dataset.set]=s.dataset.num?+b.dataset.v:b.dataset.v==='1'; persist();
-  if(s.dataset.set==='zmode'&&!save.zmode) clearZombies(); if(s.dataset.set==='bosses'&&!save.bosses) zombies.filter(z=>z.boss).forEach(z=>removeZombie(z,true)); if(s.dataset.set==='creative') refreshHotbar(); if(s.dataset.set==='limit') warned5=false; renderSettings(); }));
+  if(s.dataset.set==='zmode'&&!save.zmode) clearZombies(); if(s.dataset.set==='bosses'&&!save.bosses) zombies.filter(z=>z.boss).forEach(z=>removeZombie(z,true)); if(s.dataset.set==='creative') refreshHotbar(); if(s.dataset.set==='limit') warned5=false; if(s.dataset.set==='allowPortrait'||s.dataset.set==='atkBtn') setTimeout(layoutCheck,50); renderSettings(); }));
 $('pDay').addEventListener('click',()=>{ save.time=.05; clearZombies(); persist(); $('pDay').textContent='ひるにしました'; setTimeout(()=>$('pDay').textContent='ひるにする',1500); });
 $('pTimeReset').addEventListener('click',()=>{ save.play={date:dayStr(0),sec:0,extra:0}; warned5=false; persist(); renderSettings(); });
 $('tchip').addEventListener('click',()=>toast('きょうの たからばこ が 島の どこかに かくれているよ！<br>やじるしの ほうへ すすむと 見つかる。数字は のこりの きょり（ブロック）だよ',4200));
@@ -4109,7 +4143,7 @@ function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v39';
+const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v40';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
@@ -4302,6 +4336,16 @@ let touchCount=0;
 addEventListener('touchstart',e=>{ touchCount=e.touches.length; },{passive:true,capture:true});
 ['touchend','touchcancel'].forEach(t=>addEventListener(t,e=>{ touchCount=e.touches.length; if(touchCount===0) setTimeout(()=>{ if(touchCount===0) resetPointers(); },80); },{passive:true,capture:true}));
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) resetPointers(); }); cv.addEventListener('contextmenu',e=>e.preventDefault());
+/* ---- landscape layout ---- */
+const isPhone=()=>Math.min(screen.width,screen.height)<600&&matchMedia('(pointer:coarse)').matches;
+function layoutCheck(){ const land=innerWidth>innerHeight&&innerHeight<620; document.body.classList.toggle('land',land||(save.atkBtn===1));
+  document.body.classList.toggle('tp',camMode!==0);
+  const needRot=playing&&isPhone()&&innerHeight>innerWidth&&!save.allowPortrait; const rh=$('rotHint'); if(needRot!==!rh.hidden){ if(needRot) openOv('rotHint'); else closeOv('rotHint'); } }
+addEventListener('resize',()=>setTimeout(layoutCheck,60)); addEventListener('orientationchange',()=>setTimeout(layoutCheck,250)); setInterval(layoutCheck,1000);
+$('rotKeep').addEventListener('click',()=>{ save.allowPortrait=true; persist(); closeOv('rotHint'); toast('「せってい」で いつでも かえられるよ',2400); });
+let atkHold=null;
+$('atkBtn').addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); try{ $('atkBtn').setPointerCapture(e.pointerId); }catch(err){} $('atkBtn').classList.add('on'); if(active()) doAction(innerWidth/2,innerHeight/2); clearInterval(atkHold); atkHold=setInterval(()=>{ if(active()) doAction(innerWidth/2,innerHeight/2); },260); });
+for(const ev of ['pointerup','pointercancel','lostpointercapture']) $('atkBtn').addEventListener(ev,()=>{ clearInterval(atkHold); atkHold=null; $('atkBtn').classList.remove('on'); });
 function holdBtn(el,set){ el.addEventListener('pointerdown',e=>{ e.preventDefault(); set(true); el.classList.add('on'); try{ el.setPointerCapture(e.pointerId); }catch(err){} });
   ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,()=>{ set(false); el.classList.remove('on'); })); }
 holdBtn($('nitroBtn'),v=>nitroHeld=v); $('raceB').addEventListener('click',()=>startRace('b')); $('raceE').addEventListener('click',()=>startRace('e')); $('raceG').addEventListener('click',openGarage);
@@ -4321,7 +4365,7 @@ addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT'||e.target.tagName=
 addEventListener('keyup',e=>{ keys[e.code]=false; if(e.code==='Space') jumpHeld=false; });
 addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; resetPointers(); });
 
-$('play').addEventListener('click',()=>{ closeOv('intro'); hud.hidden=false; playing=true; setTimeout(checkUnlocks,5000); pl.yaw=0; pl.pitch=.05;
+$('play').addEventListener('click',()=>{ closeOv('intro'); hud.hidden=false; playing=true; try{ if(screen.orientation&&screen.orientation.lock&&!save.allowPortrait) screen.orientation.lock('landscape').catch(()=>{}); }catch(e){} setTimeout(layoutCheck,50); setTimeout(checkUnlocks,5000); pl.yaw=0; pl.pitch=.05;
   const coarse=matchMedia('(pointer:coarse)').matches;
   if(!isNewPlayer&&!save.v3){ save.v3=true; [[W_FIRE,1],[W_HEAL,1],[SHARD,6],[BOUNCE,4],[WARP,2],[SEED_H,1]].forEach(p=>addItem(p[0],p[1]));
     notice({title:'アップデートの プレゼント！',lead:'まほう・ペット・たからばこ などが ふえたよ。メニューの「あそびかた」も 見てね。',items:[{icon:W_FIRE,text:'ほのおのつえ ×1'},{icon:W_HEAL,text:'かいふくのつえ ×1'},{icon:SHARD,text:'まほうのかけら ×6'},{icon:BOUNCE,text:'トランポリン ×4'},{icon:WARP,text:'ワープゲート ×2'},{icon:SEED_H,text:'おうちのタネ ×1'}]}); }
