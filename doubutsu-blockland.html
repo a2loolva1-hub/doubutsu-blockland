@@ -4134,16 +4134,20 @@ function updateRemotes(dt,time){ MP.players.forEach(r=>{ const k=Math.min(1,dt*1
   if(r.floatCrown&&r.crown){ r.crown.position.y=.9+Math.sin(time*2.5)*.04; r.crown.rotation.y+=dt*.8; } if(r.pet){ r.pet.position.y=1.8+Math.sin(time*2.4)*.15; const f=Math.sin(time*12)*.6; r.petW[0].rotation.z=-f; r.petW[1].rotation.z=f; }
   if(r.bub){ r.bubT-=dt; if(r.bubT<=0){ r.g.remove(r.bub); r.bub.material.map.dispose(); r.bub.material.dispose(); r.bub=null; } } }); }
 function myState(){ const r2=v=>Math.round(v*100)/100; return [r2(pl.x),r2(pl.y+(riding?RIDE[riding.type].h-.3:0)),r2(pl.z),r2(pl.yaw),r2(Math.min(1,heroMove)),(flyingNow()&&!riding?1:0)|(riding?2:0)|(heroSwingT>0?4:0),riding&&riding.vehicle?VEH_IDX[riding.type]:0]; }
-function mpBroadcast(msg,except){ MP.conns.forEach((c,id)=>{ if(id!==except&&c.open) try{ c.send(msg); }catch(e){} }); }
-function mpSend(msg){ if(MP.host) mpBroadcast(msg); else if(MP.hostConn&&MP.hostConn.open) try{ MP.hostConn.send(msg); }catch(e){} }
+const MP_MAX=12000; // PeerJS JSON channel drops messages over ~16KB
+function splitMsg(msg){ if(!msg||!Array.isArray(msg.l)) return [msg]; const js=JSON.stringify(msg); if(js.length<MP_MAX) return [msg]; const out=[]; let cur=[], len=60;
+  for(const q of msg.l){ const n=JSON.stringify(q).length+1; if(len+n>MP_MAX&&cur.length){ out.push(Object.assign({},msg,{l:cur})); cur=[]; len=60; } cur.push(q); len+=n; } if(cur.length) out.push(Object.assign({},msg,{l:cur})); return out; }
+function safeSend(c,msg){ if(!c||!c.open) return; for(const m of splitMsg(msg)){ try{ c.send(m); }catch(e){} } }
+function mpBroadcast(msg,except){ MP.conns.forEach((c,id)=>{ if(id!==except) safeSend(c,msg); }); }
+function mpSend(msg){ if(MP.host) mpBroadcast(msg); else safeSend(MP.hostConn,msg); }
 function mpSendBlocks(list){ mpSend({t:'blk',l:list}); }
-const sanitize=l=>(Array.isArray(l)?l:[]).slice(0,600).filter(q=>Array.isArray(q)&&q.length===4&&q.every(Number.isInteger)&&inB(q[0],q[2])&&q[1]>=1&&q[1]<H&&q[3]>=0&&q[3]<64);
+const sanitize=l=>(Array.isArray(l)?l:[]).slice(0,1200).filter(q=>Array.isArray(q)&&q.length===4&&q.every(Number.isInteger)&&inB(q[0],q[2])&&q[1]>=1&&q[1]<H&&q[3]>=0&&q[3]<64);
 function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=.1; mpSend({t:'st',id:MP.myId,p:myState()}); }
   if(MP.host){ MP.timeT-=dt; if(MP.timeT<=0){ MP.timeT=3; mpBroadcast({t:'time',v:save.time}); } } }
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=2, GAME_VER='v40';
+const ROOM_PREFIX='dbland4-', PROTO=3, GAME_VER='v41';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
@@ -4155,9 +4159,10 @@ function hostHandle(conn){
     if(d.t==='hello'){ if(d.v!==PROTO){ try{ conn.send({t:'ver'}); }catch(e){} setTimeout(()=>conn.close(),600); return; }
       if(MP.conns.size>=3){ try{ conn.send({t:'full'}); }catch(e){} setTimeout(()=>conn.close(),400); return; }
       const id=conn.peer, name=cleanName(d.name), color=(d.color|0)%8; MP.conns.set(id,conn);
-      const ent=Object.entries(save.edits), CH=2500, n=Math.ceil(ent.length/CH);
-      conn.send({t:'welcome',id,edN:n,time:save.time,pos:[pl.x,pl.y,pl.z],pvp:MP.pvp,score:MP.score,players:[{id:MP.myId,name:myName(),color:myColor()}].concat([...MP.players.values()].map(r=>({id:r.id,name:r.name,color:r.color})))});
-      for(let i=0;i<n;i++) conn.send({t:'ed',i,l:ent.slice(i*CH,(i+1)*CH)});
+      const ent=Object.entries(save.edits), chunks=splitMsg({t:'ed',l:ent}).map(m=>m.l), n=ent.length?chunks.length:0;
+      if(d.gv&&d.gv!==GAME_VER) toast(`${esc(name)}の ゲームは ${esc(String(d.gv))}（あなたは ${GAME_VER}）。ふたりとも さいしんばんに すると あんしんだよ`,4200);
+      safeSend(conn,{t:'welcome',gv:GAME_VER,id,edN:n,time:save.time,pos:[pl.x,pl.y,pl.z],pvp:MP.pvp,score:MP.score,players:[{id:MP.myId,name:myName(),color:myColor()}].concat([...MP.players.values()].map(r=>({id:r.id,name:r.name,color:r.color})))});
+      let ci=0; const pump=()=>{ if(!conn.open||!MP.conns.has(id)) return; for(let k=0;k<4&&ci<n;k++,ci++) safeSend(conn,{t:'ed',i:ci,l:chunks[ci]}); if(ci<n) setTimeout(pump,30); else safeSend(conn,{t:'edEnd'}); }; pump();
       addRemote(id,name,color); mpBroadcast({t:'join',id,name,color},id); toast(`${esc(name)}が へやに はいってきた！`); renderRoom(); return; }
     if(!MP.conns.has(conn.peer)) return;
     if(d.t==='st') { setRemote(conn.peer,d.p); mpBroadcast({t:'st',id:conn.peer,p:d.p},conn.peer); }
@@ -4167,15 +4172,17 @@ function hostHandle(conn){
     else if(d.t==='ko'){ const m={t:'ko',by:String(d.by),id:conn.peer}; onKo(m); mpBroadcast(m,conn.peer); }
     else if(d.t==='quit') drop(); });
   const drop=()=>{ if(!MP.conns.has(conn.peer)) return; const r=MP.players.get(conn.peer); MP.conns.delete(conn.peer); removeRemote(conn.peer); mpBroadcast({t:'leave',id:conn.peer}); if(r) toast(`${esc(r.name)}が へやを でたよ`); renderRoom(); };
-  conn.on('close',drop); conn.on('error',drop); }
+  conn.on('close',drop); conn.on('error',e=>{ console.warn('conn error',e&&e.type); }); }
 let edBuf=null;
+function edWatch(){ setTimeout(()=>{ if(!edBuf) return; if(Date.now()-edBuf.last>15000){ onFail('せかいを うけとれなかったよ。へやを つくった人の がめんを ひらいた まま、もういちど ためしてね'); leaveRoom(true); return; } edWatch(); },2000); }
 function guestHandle(d){ if(!d||typeof d!=='object') return;
   switch(d.t){
     case 'ver': onFail('ゲームの バージョンが ちがうよ。ふたりとも さいしんの ページを ひらきなおしてね'); leaveRoom(true); break;
     case 'full': onFail('へやが いっぱいだよ（4人まで）'); leaveRoom(true); break;
     case 'welcome': clearTimeout(MP.joinTO); MP.on=true; MP.guest=true; MP.myId=d.id; MP.pvp=!!d.pvp; MP.score=(d.score&&typeof d.score==='object')?d.score:{}; if(typeof d.time==='number') save.time=d.time; dismount(); setFly(false);
-      MP.wpos=Array.isArray(d.pos)?d.pos:null; MP.wplayers=d.players||[]; edBuf={n:d.edN|0,got:0,ed:{}}; setMsg('せかいを うけとっています…'); if(!edBuf.n) finishJoin(); break;
-    case 'ed': if(!edBuf) break; (Array.isArray(d.l)?d.l:[]).forEach(q=>{ if(Array.isArray(q)&&/^\d+,\d+,\d+$/.test(q[0])) edBuf.ed[q[0]]=q[1]|0; }); edBuf.got++; setMsg(`せかいを うけとっています… ${Math.round(edBuf.got/edBuf.n*100)}%`); if(edBuf.got>=edBuf.n) finishJoin(); break;
+      MP.wpos=Array.isArray(d.pos)?d.pos:null; MP.wplayers=d.players||[]; edBuf={n:d.edN|0,got:0,ed:{},last:Date.now()}; setMsg('せかいを うけとっています…'); if(d.gv&&d.gv!==GAME_VER) toast(`へやの ゲームは ${esc(String(d.gv))}、あなたは ${GAME_VER}。ふたりとも さいしんばんに すると あんしんだよ`,4200); if(!edBuf.n) finishJoin(); else edWatch(); break;
+    case 'ed': if(!edBuf) break; (Array.isArray(d.l)?d.l:[]).forEach(q=>{ if(Array.isArray(q)&&/^\d+,\d+,\d+$/.test(q[0])) edBuf.ed[q[0]]=q[1]|0; }); edBuf.got++; edBuf.last=Date.now(); setMsg(`せかいを うけとっています… ${Math.min(100,Math.round(edBuf.got/edBuf.n*100))}%`); if(edBuf.got>=edBuf.n) finishJoin(); break;
+    case 'edEnd': if(edBuf) finishJoin(); break;
     case 'join': addRemote(d.id,cleanName(d.name),(d.color|0)%8); toast(`${esc(cleanName(d.name))}が へやに はいってきた！`); renderRoom(); break;
     case 'leave': { const r=MP.players.get(d.id); removeRemote(d.id); if(r) toast(`${esc(r.name)}が へやを でたよ`); renderRoom(); break; }
     case 'st': if(d.id!==MP.myId) setRemote(d.id,d.p); break;
@@ -4214,13 +4221,13 @@ function hostTry(n){ const code=String(1000+Math.floor(Math.random()*9000)); set
   peer.on('disconnected',()=>{ if(MP.on&&!peer.destroyed) setTimeout(()=>{ try{ peer.reconnect(); }catch(_){} },1200); }); }
 function joinRoom(code){ setMsg('サーバーに つないでいます…'); let peer; try{ peer=new Peer(peerOpts()); }catch(e){ onFail(errText(e)); return; } MP.peer=peer; let stage=0;
   const fail=m=>{ clearTimeout(MP.joinTO); if(MP.on) return; onFail(m); cleanupPeer(); };
-  let tries=0; const tryConn=()=>{ tries++; setMsg(`へや ${code} を さがしています…${tries>1?'（'+tries+'/5）':''}`); const conn=peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json'}); MP.hostConn=conn;
-    conn.on('open',()=>{ stage=2; setMsg('つながった！ あいさつ ちゅう…'); conn.send({t:'hello',name:myName(),color:myColor(),v:PROTO}); });
+  let tries=0; const tryConn=()=>{ if(stage>=2||MP.peer!==peer) return; tries++; setMsg(`へや ${code} を さがしています…${tries>1?'（'+tries+'/5）':''}`); if(MP.hostConn&&!MP.hostConn.open){ try{ MP.hostConn.close(); }catch(e){} } const conn=peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json'}); MP.hostConn=conn;
+    conn.on('open',()=>{ if(stage>=2&&MP.hostConn!==conn){ try{ conn.close(); }catch(e){} return; } MP.hostConn=conn; stage=2; setMsg('つながった！ あいさつ ちゅう…'); safeSend(conn,{t:'hello',name:myName(),color:myColor(),v:PROTO,gv:GAME_VER}); });
     conn.on('data',guestHandle); conn.on('error',()=>{});
     conn.on('close',()=>{ if(MP.on){ toast('へやとの つながりが きれたよ',3000); leaveRoom(true); } }); };
   MP.joinTO=setTimeout(()=>fail(stage===0?'サーバーに つながらなかったよ。インターネットを たしかめてね':stage===1?'へやが 見つからないか、つながりにくい みたい。ばんごうを たしかめて もういちど ためしてね（Wi-Fiどうしだと つながりやすいよ）':'へんじが ないよ。もういちど ためしてね'),32000);
   peer.on('open',id=>{ stage=1; MP.myId=id; MP.code=code; tryConn(); });
-  peer.on('error',e=>{ if(MP.on) return; if(e.type==='peer-unavailable'&&tries<5&&stage<2){ setTimeout(()=>{ if(!MP.on&&MP.peer===peer) tryConn(); },3000); return; } fail(errText(e)); });
+  peer.on('error',e=>{ if(MP.on) return; if(stage>=2&&e.type==='peer-unavailable') return; if(e.type==='peer-unavailable'&&tries<5&&stage<2){ setTimeout(()=>{ if(!MP.on&&MP.peer===peer) tryConn(); },3000); return; } fail(errText(e)); });
   peer.on('disconnected',()=>{ if(MP.on&&!peer.destroyed) setTimeout(()=>{ try{ peer.reconnect(); }catch(_){} },1200); }); }
 let wakeL=null; async function keepAwake(on){ try{ if(on&&navigator.wakeLock&&!wakeL){ wakeL=await navigator.wakeLock.request('screen'); wakeL.addEventListener('release',()=>{ wakeL=null; }); } else if(!on&&wakeL){ wakeL.release(); wakeL=null; } }catch(e){} }
 document.addEventListener('visibilitychange',()=>{ if(document.hidden||!MP.on) return; if(MP.host) keepAwake(true); const p=MP.peer; if(p&&p.disconnected&&!p.destroyed){ try{ p.reconnect(); }catch(e){} } });
