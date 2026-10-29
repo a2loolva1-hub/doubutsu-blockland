@@ -377,6 +377,7 @@ body.land #badge{top:26%}
       <div id="hp" class="bar" aria-label="たいりょく"></div>
       <div id="mp" class="bar" aria-label="まほうの ちから"></div>
       <div id="evChip" class="chip evchip" hidden></div>
+      <div id="pvpChip" class="chip" hidden style="background:#b0263a">⚔ たいせん ON</div>
       <button id="tchip" class="chip" hidden aria-label="きょうの たからばこ"><span id="tarrow">▲</span>たからばこ まで <b id="tdist">0</b>m</button>
       <canvas id="mini" width="132" height="132" aria-label="ミニマップ（タップで せかいの ちず）" role="button"></canvas>
     </div>
@@ -2517,7 +2518,7 @@ function moveY(amt){ const old=pl.y; pl.y+=amt; if(!collides()) return;
 function flyingNow(){ return riding===dragon||(riding&&RIDE[riding.type]&&RIDE[riding.type].fly)||(pl.flying&&!riding); }
 const eHP=()=>[.6,1,1.5][save.hard|0]*(1+.015*((save.plv||1)-1)), ePow=()=>[.6,1.3,1.8][save.hard|0]*(1+.006*((save.plv||1)-1));
 function damage(n,sx,sz){
-  if(dead) return; n=n*ePow(); if(pl.shieldT>0){ spawnBits(pl.x,pl.y+1.2,pl.z,[127,232,255],8,1.2); return; } n=Math.max(1,Math.round(n*(abil().def||1)*(fortGuns.barrier&&inFort(pl.x,pl.z)?.5:1))); save.hp=Math.max(0,save.hp-n); pl.hurtT=0; pl.regenT=0;
+  if(dead) return; if(mpBossTarget){ const c=MP.conns.get(mpBossTarget); if(c) safeSend(c,{t:'bdmg',n}); return; } n=n*ePow(); if(pl.shieldT>0){ spawnBits(pl.x,pl.y+1.2,pl.z,[127,232,255],8,1.2); return; } n=Math.max(1,Math.round(n*(abil().def||1)*(fortGuns.barrier&&inFort(pl.x,pl.z)?.5:1))); save.hp=Math.max(0,save.hp-n); pl.hurtT=0; pl.regenT=0;
   const dx=pl.x-sx,dz=pl.z-sz,L=Math.hypot(dx,dz)||1; pl.kx=dx/L*7; pl.kz=dz/L*7; if(!flyingNow()) pl.vy=Math.max(pl.vy,4.5);
   const h=$('hurt'); h.classList.add('on'); setTimeout(()=>h.classList.remove('on'),60); updateHearts(); persist();
   if(save.hp<=0){ dead=true; dismount(); setFly(false); openOv('dead'); }
@@ -2895,7 +2896,8 @@ function updateZombies(dt,time,active,night){
     if(zSpawnT<=0){ const zd=save.zombieDen||1; zSpawnT=(night?3.5:6)/zd; if(zombies.filter(z=>!z.king&&!z.boss).length<Math.max(1,Math.round((night?(save.hard>=2?6:4):(save.hard>=2?3:2))*zd))){ const s=zombieSpot(14,22); if(s) makeZombie(s[0],s[1],s[2],false); } }
     if(night&&fullMoon&&!kingSpawned){ const s=zombieSpot(13,18); if(s){ kingSpawned=true; makeZombie(s[0],s[1],s[2],true); dexMark('king',1); toast('まんげつの よる… ゾンビキングが あらわれた！<br>なかまと いっしょに たたかおう',4200); } } }
   for(let i=zombies.length-1;i>=0;i--){ const zb=zombies[i];
-    if(zb.boss){ updateBoss(zb,dt,time,active); continue; }
+    if(zb.mirror){ updateMirror(zb,dt,time); continue; }
+    if(zb.boss){ if(MP.on&&MP.host&&MP.players.size) bossUpdateMP(zb,dt,time,active); else updateBoss(zb,dt,time,active); continue; }
     if(zb.sea){ updateSeaMob(zb,dt,time,active); continue; }
     const dx=pl.x-zb.x,dz=pl.z-zb.z,dp=Math.hypot(dx,dz);
     if(dp>42&&!zb.king&&!zb.siege){ removeZombie(zb,false); continue; }
@@ -2919,7 +2921,7 @@ function updateZombies(dt,time,active,night){
     zb.mats.forEach(m=>{ if(m.emissive){ if(zb.hitT>0) m.emissive.setRGB(.85,0,0); else if(zb.frozen>0) m.emissive.setRGB(.1,.35,.6); else m.emissive.setRGB(0,0,0); } });
     zb.g.position.set(zb.x,zb.y,zb.z); zb.g.rotation.y=zb.rot; }
 }
-function damageZombie(zb,dmg,o){ if(zombies.indexOf(zb)<0) return; zb.hp-=dmg; zb.hitT=.18; o=o||{}; const kr=zb.boss?.12:zb.king?.25:1;
+function damageZombie(zb,dmg,o){ if(zombies.indexOf(zb)<0) return; if(zb.mirror){ zb.hitT=.18; spawnBits(zb.x,zb.y+Math.min(zb.cy||1.4,6),zb.z,[255,230,90],4); mpSend({t:'bhit',u:zb.uid,d:Math.round(dmg*10)/10,f:(o&&o.freeze)||0}); return; } zb.hp-=dmg; zb.hitT=.18; o=o||{}; const kr=zb.boss?.12:zb.king?.25:1;
   zb.kx=(o.kx||0)*kr; zb.kz=(o.kz||0)*kr; if(o.up&&zb.onGround) zb.vy=o.up*(zb.king?.4:1); if(o.freeze) zb.frozen=zb.king?o.freeze*.4:o.freeze;
   spawnBits(zb.x,zb.y+1.4,zb.z,[255,230,90],4); if(zb.hp<=0) killZombie(zb); }
 function hitZombie(zb){ const dmg=((ITEMS[selId]&&ITEMS[selId].dmg)||1)*(abil().atk||1); swing(); if(SWORDS.includes(selId)) slashFX({col:SLASH_COL[selId],r:selId===SW_STAR?1.45:1.2}); const dx=zb.x-pl.x,dz=zb.z-pl.z,L=Math.hypot(dx,dz)||1; damageZombie(zb,dmg,{kx:dx/L*8,kz:dz/L*8,up:4.5}); }
@@ -3245,7 +3247,7 @@ const eprojs=[]; let bossT=180+Math.random()*120, shakeT=0, shakeA=0;
 function shake(a,t){ shakeA=Math.max(shakeA,a); shakeT=Math.max(shakeT,t); }
 function bossAlive(){ return zombies.find(z=>z.boss); }
 let bossUid=0; const bossCount=()=>zombies.filter(z=>z.boss).length, bossMax=()=>save.bossMax||2;
-function spawnBoss(type,forced,at){ if(bossCount()>=bossMax()){ if(forced) toast(`ボスは いま ${bossMax()}たいまで！<br>さきに たおそう（メニューの「せってい」で ふやせるよ）`,3000); return; }
+function spawnBoss(type,forced,at){ if(MP.on&&MP.guest){ mpSend({t:'bossReq',type:type||null,at:at?[at[0],at[1],at[2]]:null}); if(forced) toast('ボスを よんだよ！ みんなの がめんに あらわれるよ',2000); return; } if(bossCount()>=bossMax()){ if(forced) toast(`ボスは いま ${bossMax()}たいまで！<br>さきに たおそう（メニューの「せってい」で ふやせるよ）`,3000); return; }
   if(!type){ const r=Math.random(); type=r<.03?'daimaou':r<.06?'robo':r<.12?'maou':r<.28?'usa':r<.44?'kaiju':r<.6?'ryu':r<.8?'golem':'ghost'; } const T=BOSS[type];
   let spot=null; for(let t=0;t<30&&!spot;t++){ const a=Math.random()*6.28, d=forced?22:30+Math.random()*8, x=Math.floor(pl.x+Math.cos(a)*d), z=Math.floor(pl.z+Math.sin(a)*d);
     if(x<4||z<4||x>W-5||z>D-5) continue; const y=topY(x,z); if(!T.fly&&get(x,y-1,z)===WATER) continue; spot=[x+.5,T.fly?Math.max(pl.y,y)+(type==='ryu'?10:type==='maou'?7:type==='daimaou'?6:4):y,z+.5]; }
@@ -3294,7 +3296,7 @@ function updateBoss(b,dt,time,active){ const T=BOSS[b.boss], dx=pl.x-b.x, dz=pl.
   b.slam=Math.max(0,(b.slam||0)-dt); b.arms.forEach((a,i)=>a.rotation.x=b.slam>0?-2.2+(.4-b.slam)*5:(moving?(i?-sw:sw)*.6:0));
   const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red,fr?.25:0,fr?.5:0); });
   b.g.position.set(b.x,b.y+(T.fly?Math.sin(time*3)*.2:0),b.z); b.g.rotation.y=b.rot; }
-function bossDefeated(b){ const Q=save.qc; Q.boss++; if(b.boss==='maou') Q.maou++; if(b.boss==='daimaou') Q.daimaou++; if(b.boss==='orochi') Q.orochi=(Q.orochi||0)+1; if((save.heroColor|0)===8) Q.pboss++; qkAdd('boss'); if(['maou','daimaou','ryu'].includes(b.boss)) qkAdd(b.boss); setTimeout(checkUnlocks,1500); addPXP(Math.max(25,Math.round(BOSS[b.boss].hp/4))); const T=BOSS[b.boss]; save.gems+=T.gems; addItem(SHARD,T.shard); addItem(CAKE,1); if(b.boss==='kaiju') addItem(V_PLANE,have(V_PLANE)?0:1);
+function bossDefeated(b){ if(MP.on&&MP.host&&!b.mirror) mpBroadcast({t:'bdead',u:b.uid,type:b.boss}); const Q=save.qc; Q.boss++; if(b.boss==='maou') Q.maou++; if(b.boss==='daimaou') Q.daimaou++; if(b.boss==='orochi') Q.orochi=(Q.orochi||0)+1; if((save.heroColor|0)===8) Q.pboss++; qkAdd('boss'); if(['maou','daimaou','ryu'].includes(b.boss)) qkAdd(b.boss); setTimeout(checkUnlocks,1500); addPXP(Math.max(25,Math.round(BOSS[b.boss].hp/4))); const T=BOSS[b.boss]; save.gems+=T.gems; addItem(SHARD,T.shard); addItem(CAKE,1); if(b.boss==='kaiju') addItem(V_PLANE,have(V_PLANE)?0:1);
   save.stats.bossKinds=Object.assign({},save.stats.bossKinds,{[b.boss]:1}); dexMark(b.boss,2); award('boss1'); if(b.boss==='kaiju') award('kaiju'); if(b.boss==='ryu') award('ryu'); if(b.boss==='maou'){ award('maou'); addItem(CAKE,2); maouCool=240; } if(b.boss==='daimaou'){ award('daimaou'); addItem(CAKE,3); maouCool=300; } if(b.boss==='usa') award('usa'); if(b.boss==='orochi'){ award('orochi'); addItem(CAKE,4); orochiCool=300; } if(b.boss==='robo'){ award('robo'); addItem(CAKE,3); } if(b.boss==='kraken'){ award('kraken'); } if(Object.keys(save.stats.bossKinds).length>=4) award('bossAll');
   spawnBits(b.x,b.y+T.cy,b.z,[255,204,51],30,2); shake(.5,.8); updateGems(); persist(); bossT=240+Math.random()*180;
   const items=[{gem:T.gems,text:'ジェム ×'+T.gems},{icon:SHARD,text:'まほうのかけら ×'+T.shard},{icon:CAKE,text:'ケーキ ×1'}]; if(b.boss==='kaiju'&&have(V_PLANE)===1) items.push({icon:V_PLANE,text:'ひこうき（もっていなかったら）'});
@@ -3850,7 +3852,7 @@ function EQUIP_BONUS(){ const s=save.heroColor|0, o={atk:1,def:1,sp:1}; for(cons
 function canFly(){ return have(CAPE)>0||((save.heroColor|0)===11&&have(EQ_DWING)>0)||((save.heroColor|0)===10&&have(EQ_VWING)>0); }
 let mswNext=0;
 function magicSword(dir,it){ if((save.heroColor|0)!==it.msw){ toast(`${it.n}は ${skinName(it.msw)} せんようだよ！`,2600); return; }
-  const now=performance.now()/1000; if(now<mswNext) return; mswNext=now+.8; swing(); const R=13, col=it.msw===10?[255,120,230]:[170,120,255]; let hit=0; bigSlash(it.msw===10?['#ff7ae6','#ffe6fa']:['#a878ff','#efe6ff'],R,3.6);
+  const now=performance.now()/1000; if(now<mswNext) return; mswNext=now+.8; swing(); const R=13, col=it.msw===10?[255,120,230]:[170,120,255]; let hit=0; bigSlash(it.msw===10?['#ff7ae6','#ffe6fa']:['#a878ff','#efe6ff'],R,3.6); pvpAoe(R,5);
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>8) continue; hit++; damageZombie(zb,25*(abil().atk||1),{kx:dx/d*14,kz:dz/d*14,up:6}); }
   const L=zombies.filter(z=>Math.hypot(z.x-pl.x,z.z-pl.z)<24).sort((a,b)=>Math.hypot(a.x-pl.x,a.z-pl.z)-Math.hypot(b.x-pl.x,b.z-pl.z)).slice(0,6);
   L.forEach((z,i)=>setTimeout(()=>{ if(zombies.includes(z)){ bolt(z.x,z.y,z.z); damageZombie(z,15*(abil().atk||1),{up:3}); } },80*i));
@@ -3984,7 +3986,7 @@ function updateSlashes(dt){ for(let i=slashes.length-1;i>=0;i--){ const s=slashe
 function swordSwing(dir){ const now=performance.now()/1000; if(now<swordNext) return; swordNext=now+.28; swing(); slashFX({col:SLASH_COL[selId]||['#ffffff','#ffffff'],r:selId===SW_STAR?1.45:1.2});
   const L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L, dmg=((ITEMS[selId]&&ITEMS[selId].dmg)||1)*(abil().atk||1); let hit=0;
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>3.4+(zb.r||0)||Math.abs(zb.y-pl.y)>3+(zb.cy||0)) continue; if((dx*fx+dz*fz)/d<.25&&d>1.2) continue; hit++; damageZombie(zb,dmg,{kx:dx/d*8,kz:dz/d*8,up:4.5}); }
-  if(hit) shake(.08,.08); }
+  pvpAoe(3.4,Math.max(1,Math.round(dmg/(abil().atk||1)/3))); if(hit) shake(.08,.08); }
 function bigSlash(col,R,spin){ slashFX({col,r:1.7,th:.6,arc:2.7,dur:.26,grow:.3}); setTimeout(()=>slashFX({col,r:2.4,th:.7,arc:2.4,dur:.38,d:2,fly:Math.max(4,R-3),grow:1.1,tilt:(Math.random()<.5?-1:1)*.25}),60); setTimeout(()=>slashFX({col,r:Math.min(R*.85,12),th:1.8,arc:5.8,dur:.45,flat:true,y:.5,spin:spin||3.2,grow:.15}),40); }
 let repairJob=null;
 function repairArea(cx,cy,cz,R){ if(repairJob){ toast('いま しゅうり ちゅうだよ'); return; } const L=[];
@@ -3996,13 +3998,13 @@ function updateRepair(dt){ const J=repairJob; if(!J) return; J.t-=dt; if(J.t>0) 
   const ok=part.filter(q=>!(q[0]+1>pl.x-.4&&q[0]<pl.x+.4&&q[2]+1>pl.z-.4&&q[2]<pl.z+.4&&q[1]+1>pl.y&&q[1]<pl.y+1.8)); if(ok.length){ setBlocks(ok); for(const q of ok){ const k=q[0]+','+q[1]+','+q[2]; if(save.edits[k]===q[3]) delete save.edits[k]; } }
   for(let k=0;k<Math.min(4,ok.length);k++){ const q=ok[Math.floor(Math.random()*ok.length)]; spawnBits(q[0]+.5,q[1]+.5,q[2]+.5,[255,230,120],3,.8); }
   if(J.i>=J.L.length){ repairJob=null; persist(); award('repair'); toast(`ピカピカに なった！ ${J.n}こ なおしたよ`,2200); heartBurst(4); } }
-function kusanagi(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=14; let hit=0; bigSlash(SLASH_COL[SW_KUSA],R,4);
+function kusanagi(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=14; let hit=0; bigSlash(SLASH_COL[SW_KUSA],R,4); pvpAoe(R,5);
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>8) continue; hit++; damageZombie(zb,20*(abil().atk||1),{kx:dx/d*16,kz:dz/d*16,up:6}); spawnBits(zb.x,zb.y+1.2,zb.z,[170,255,200],8,1.4); }
   const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:0xb8ffd0,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}));
   g.rotation.x=-Math.PI/2; g.position.set(pl.x,pl.y+1.1,pl.z); scene.add(g); fx_.push({o:g,grow:R/1.2,life:.4,max:.4});
   for(let k=0;k<24;k++){ const a=k/24*Math.PI*2; spawnBits(pl.x+Math.cos(a)*R*.85,pl.y+1+Math.sin(a*3)*.4,pl.z+Math.sin(a)*R*.85,k%2?[190,255,210]:[255,255,255],1,.7); }
   if(hit) shake(.18,.15); else toast('くさなぎの つるぎ！',800); }
-function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.65; swing(); const A=ABIL[save.heroColor|0]||{}, R=A.exr||10; bigSlash(SLASH_COL[SW_EX],R); const  L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L; let hit=0;
+function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return; exNext=now+.65; swing(); const A=ABIL[save.heroColor|0]||{}, R=A.exr||10; bigSlash(SLASH_COL[SW_EX],R); pvpAoe(R,4); const  L=Math.hypot(dir.x,dir.z)||1, fx=dir.x/L, fz=dir.z/L; let hit=0;
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>7) continue; if((dx*fx+dz*fz)/d<-.35&&d>2) continue;
     hit++; damageZombie(zb,15*(abil().atk||1),{kx:dx/d*14,kz:dz/d*14,up:6}); spawnBits(zb.x,zb.y+1.2,zb.z,[255,230,120],8,1.4); }
   const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:0xfff2a8,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false}));
@@ -4010,7 +4012,7 @@ function excalibur(dir){ const now=performance.now()/1000; if(now<exNext) return
   for(let k=0;k<18;k++){ const a=Math.atan2(fz,fx)+(k/17-.5)*Math.PI*1.3; spawnBits(pl.x+Math.cos(a)*R*.8,pl.y+1.1,pl.z+Math.sin(a)*R*.8,k%2?[255,240,150]:[150,230,255],2,.6); }
   if(hit){ shake(.15,.15); addPXP(0); } else toast('エクスカリバー！',800); }
 function heartWave(dir){ if((save.heroColor|0)!==8){ toast('ラブリーハートロッドは ハートプリンセス せんようだよ！<br>きせかえで ハートプリンセスに なってね',3000); return; }
-  const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=12; let hit=0; bigSlash(SLASH_COL[SW_HEART],R);
+  const now=performance.now()/1000; if(now<exNext) return; exNext=now+.6; swing(); const R=12; let hit=0; bigSlash(SLASH_COL[SW_HEART],R); pvpAoe(R,4);
   for(const zb of zombies.slice()){ const dx=zb.x-pl.x, dz=zb.z-pl.z, d=Math.hypot(dx,dz)||.01; if(d>R+(zb.r||0)||Math.abs(zb.y-pl.y)>7) continue; hit++; damageZombie(zb,15*(abil().atk||1),{kx:dx/d*12,kz:dz/d*12,up:6}); spawnHeart(zb.x,zb.y+1.6,zb.z); }
   const g=new THREE.Mesh(new THREE.RingGeometry(.7,1.3,48),new THREE.MeshBasicMaterial({color:0xff6fc0,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false})); g.rotation.x=-Math.PI/2; g.position.set(pl.x,pl.y+1.1,pl.z); scene.add(g); fx_.push({o:g,grow:R/1.2,life:.4,max:.4});
   for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; spawnHeart(pl.x+Math.cos(a)*4,pl.y+1.2,pl.z+Math.sin(a)*4); }
@@ -4039,12 +4041,13 @@ function toggleDoor(x,y,z){ const [y0,y1]=doorStack(x,y,z), open=get(x,y,z)===DO
 let breathCool=0;
 function doAction(cx,cy){
   ndc.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1); raycaster.setFromCamera(ndc,camera); const dir=raycaster.ray.direction;
-  const targets=animalMeshes.concat(villMeshes,dragonMeshes,vehMeshes,rideMeshes,seiMeshes,buddyMeshes); zombies.forEach(zb=>[zb.g].concat(zb.segs||[]).forEach(G_=>G_.traverse(o=>{ if(o.isMesh) targets.push(o); })));
+  const targets=animalMeshes.concat((MP.on&&MP.pvp)?[...MP.players.values()].flatMap(r=>{ const a=[]; r.g.traverse(o=>{ if(o.isMesh){ o.userData.remote=r.id; a.push(o); } }); return a; }):[],villMeshes,dragonMeshes,vehMeshes,rideMeshes,seiMeshes,buddyMeshes); zombies.forEach(zb=>[zb.g].concat(zb.segs||[]).forEach(G_=>G_.traverse(o=>{ if(o.isMesh) targets.push(o); })));
   const hits=raycaster.intersectObjects(targets,false).filter(h=>!(riding&&(h.object.userData.animal===riding||h.object.userData.vehicle===riding||(riding===dragon&&h.object.userData.dragon)||(riding===seiryu&&h.object.userData.seiryu)||(riding&&h.object.userData.buddy===riding))));
   const hitE=hits[0], hitB=raycastVoxel(raycaster.ray.origin,dir,7+(camMode?camDist:0)), it=ITEMS[selId];
   const ent=(hitE&&hitE.distance<12&&(!hitB||hitE.distance<hitB.t+.3))?hitE:null, u=ent?ent.object.userData:null;
   if(riding===dragon&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.7; const from=dragonHead(); shoot('dfire',from,dir,dragon); } return; }
   if(riding===seiryu&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.45; shoot('sbolt',new THREE.Vector3(seiryu.x,seiryu.y+.3,seiryu.z).addScaledVector(dir,1),dir,null).mine=true; } return; }
+  if(u&&u.remote&&MP.on&&MP.pvp){ const r=MP.players.get(u.remote); if(r&&ent.distance<6){ swing(); if(SWORDS.includes(selId)) slashFX({col:SLASH_COL[selId]}); const it2=ITEMS[selId]; pvpSendHit(r,Math.max(1,Math.round(((it2&&it2.dmg)||2)/3))); return; } }
   if(u&&u.villager&&ent.distance<10){ villagerTalk(u.villager); return; }
   if(u&&u.seiryu&&ent.distance<14){ seiryuTap(); return; }
   if(riding&&riding.type==='volca'&&selId===0&&!(u&&(u.animal||u.dragon))){ if(breathCool<=0){ breathCool=.55; shoot('dfire',volcaHead(riding),dir,null).mine=true; } return; }
@@ -4390,8 +4393,7 @@ function renderSkins(){ const G_=$('skinGrid'); G_.innerHTML='';
     G_.appendChild(d); } }
 $('skinGrid').addEventListener('click',e=>{ const b=e.target.closest('[data-sk]'); if(!b) return; const i=+b.dataset.sk;
   if(!ownsSkin(i)){ if(i===8){ toast('レジェンドキャラは「だいまおう イグニス」を たおすと もらえるよ！',3200); return; } if(i===9){ toast('ドラゴンキングは キャラ Lv50で まおうを 3かい たおすと もらえるよ！',3200); return; } if(i>=10){ openGuide(); return; } closeOv('skins'); renderShop(); openOv('shop'); toast('レアキャラは ショップで 手に入るよ'); return; }
-  if(MP.on){ toast('へやに いる あいだは かえられないよ'); return; }
-  save.heroColor=i; persist(); rebuildHero(); renderSkins(); toast(`「${skinName(i)}」に きがえた！`); spawnBits(pl.x,pl.y+1.2,pl.z,[255,156,240],16,1.2); });
+  save.heroColor=i; persist(); rebuildHero(); renderSkins(); if(MP.on) mpSend({t:'skin',id:MP.myId,c:i}); toast(`「${skinName(i)}」に きがえた！`); spawnBits(pl.x,pl.y+1.2,pl.z,[255,156,240],16,1.2); });
 $('skinBtn').addEventListener('click',()=>{ closeOv('menu'); openSkins(); });
 /* ================= world map & warp ================= */
 const LANDMARKS=[{n:'おしろの街（スタート）',x:280,z:296},{n:'マイとりで（おうち）',x:226,z:294},{n:'ゆうえんち スパランド',x:432,z:238},{n:'ビルの街',x:355,z:303},{n:'みなとの 大きな像',x:346,z:360},{n:'万里の長城',x:300,z:wallZ(300)},
@@ -4468,12 +4470,37 @@ function mpBroadcast(msg,except){ MP.conns.forEach((c,id)=>{ if(id!==except) saf
 function mpSend(msg){ if(MP.host) mpBroadcast(msg); else safeSend(MP.hostConn,msg); }
 function mpSendBlocks(list){ mpSend({t:'blk',l:list}); }
 const sanitize=l=>(Array.isArray(l)?l:[]).slice(0,1200).filter(q=>Array.isArray(q)&&q.length===4&&q.every(Number.isInteger)&&inB(q[0],q[2])&&q[1]>=1&&q[1]<H&&q[3]>=0&&q[3]<64);
-function mpTick(dt){ if(!MP.on) return; MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=.1; mpSend({t:'st',id:MP.myId,p:myState()}); }
+/* ================= multiplayer: shared bosses & pvp helpers ================= */
+let mpBossTarget=null, mpBstT=0, mpBstHad=false;
+function setRemoteSkin(id,c){ const r=MP.players.get(id); if(!r) return; const keep={x:r.x,y:r.y,z:r.z,tx:r.tx,ty:r.ty,tz:r.tz,yaw:r.yaw,tyaw:r.tyaw,seen:r.seen,flags:r.flags}; const nm=r.name; removeRemote(id); addRemote(id,nm,((c|0)%12+12)%12); Object.assign(MP.players.get(id),keep); toast(`${esc(nm)}が「${skinName(c|0)}」に きがえた！`,2200); renderRoom(); }
+function bossUpdateMP(b,dt,time,active){ let best=null, bd=Math.hypot(pl.x-b.x,pl.z-b.z); MP.players.forEach(r=>{ if(!r.seen) return; const d=Math.hypot(r.x-b.x,r.z-b.z); if(d<bd){ bd=d; best=r; } });
+  if(!best){ updateBoss(b,dt,time,active); return; } const sx=pl.x, sy=pl.y, sz=pl.z; pl.x=best.x; pl.y=best.y; pl.z=best.z; mpBossTarget=best.id;
+  try{ updateBoss(b,dt,time,active); } finally{ pl.x=sx; pl.y=sy; pl.z=sz; mpBossTarget=null; } }
+function mpBossBroadcast(dt){ if(!MP.on||!MP.host||!MP.players.size) return; mpBstT-=dt; if(mpBstT>0) return; mpBstT=.12; const r1=v=>Math.round(v*10)/10;
+  const L=zombies.filter(z=>z.boss&&!z.mirror).map(b=>[b.uid,b.boss,r1(b.x),r1(b.y),r1(b.z),Math.round(b.rot*100)/100,Math.round(b.hp),b.max,b.ph2?1:0]); if(!L.length&&!mpBstHad) return; mpBstHad=L.length>0; mpBroadcast({t:'bst',l:L}); }
+function makeMirror(u,type,x,y,z){ const T=BOSS[type]; if(!T) return null; const g=new THREE.Group(), mats=[]; const mk=c=>{ const m=new THREE.MeshLambertMaterial({color:c}); mats.push(m); return m; }; const parts=T.build(g,mk)||{};
+  const b=Object.assign({boss:type,mirror:true,uid:u,x,y,z,tx:x,ty:y,tz:z,rot:0,trot:0,hp:1,max:1,r:T.r,cy:T.cy,cool:2.5,hitT:0,frozen:0,kx:0,kz:0,onGround:true,g,mats,legs:parts.legs||[],arms:parts.arms||[]},parts);
+  if(type==='orochi'){ g.scale.setScalar(ORO_S); orochiPose(b,0,null,true); } if(type==='robo') g.scale.setScalar(ROBO_S);
+  if(b.segs){ b.trail=[]; b.segs.forEach(sg=>{ sg.traverse(o=>{ o.userData.zombie=b; }); scene.add(sg); }); }
+  g.traverse(o=>{ o.userData.zombie=b; }); g.position.set(x,y,z); scene.add(g); zombies.push(b); dexMark(type,1); toast(`ボス しゅつげん！<br>「${T.n}」が あらわれた！`,3200); return b; }
+function syncMirrors(L){ if(!Array.isArray(L)) return; const seen=new Set();
+  for(const e of L){ if(!Array.isArray(e)) continue; const [u,type,x,y,z,rot,hp,max,ph2]=e; seen.add(u|0); let b=zombies.find(q=>q.mirror&&q.uid===(u|0)); if(!b) b=makeMirror(u|0,String(type),+x,+y,+z); if(!b) continue;
+    b.tx=+x; b.ty=+y; b.tz=+z; b.trot=+rot; b.hp=+hp; b.max=+max||1; b.ph2=!!ph2; }
+  zombies.filter(q=>q.mirror&&!seen.has(q.uid)).forEach(q=>removeZombie(q,true)); }
+function updateMirror(b,dt,time){ const k=Math.min(1,dt*8); b.x+=(b.tx-b.x)*k; b.y+=(b.ty-b.y)*k; b.z+=(b.tz-b.z)*k; let d=b.trot-b.rot; d=Math.atan2(Math.sin(d),Math.cos(d)); b.rot+=d*k; b.hitT-=dt;
+  if(b.boss==='orochi') orochiPose(b,time,null,false);
+  if(b.segs){ const tr=b.trail, last=tr[tr.length-1]; if(!last||last.distanceToSquared(new THREE.Vector3(b.x,b.y,b.z))>.0025) tr.push(new THREE.Vector3(b.x,b.y,b.z)); if(tr.length>900) tr.splice(0,300);
+    let acc=0,kk=0,prev=tr[tr.length-1]; for(let j=tr.length-2;j>=0&&kk<b.segs.length;j--){ const p=tr[j]; acc+=p.distanceTo(prev); prev=p; while(kk<b.segs.length&&acc>=1.5+kk*1.1){ b.segs[kk].position.copy(p); kk++; } } for(;kk<b.segs.length;kk++) b.segs[kk].position.copy(prev); }
+  const dp=Math.hypot(pl.x-b.x,pl.z-b.z); b.cool-=dt; if(b.cool<=0&&!dead&&dp<34&&active()){ b.cool=b.ph2?2:2.8; const T=BOSS[b.boss], from=new THREE.Vector3(b.x,b.y+Math.min(b.cy||2,8)*(b.boss==='robo'?2.5:1),b.z); for(let i=-1;i<=1;i++) shootEnemy(from.clone(),new THREE.Vector3(pl.x+i*1.6,pl.y+1,pl.z),12,Math.max(2,(T.dmg||3)-2),0xc27cff); }
+  const red=b.hitT>0?.8:0; b.mats.forEach(m=>{ if(m.emissive) m.emissive.setRGB(red,0,0); }); if(!b.segs) b.g.position.set(b.x,b.y,b.z); else b.g.position.set(b.x,b.y,b.z); b.g.rotation.y=b.rot; }
+function pvpSendHit(r,d){ spawnBits(r.x,r.y+1.2,r.z,[255,90,120],10,1.2); const m={t:'hit',to:r.id,from:MP.myId,d:clamp(d|0,1,6)}; if(MP.host){ const c=MP.conns.get(r.id); safeSend(c,m); } else mpSend(m); }
+function pvpAoe(R,d){ if(!MP.on||!MP.pvp) return 0; let n=0; MP.players.forEach(r=>{ if(r.seen&&Math.hypot(r.x-pl.x,r.z-pl.z)<R+.6&&Math.abs(r.y-pl.y)<4){ pvpSendHit(r,d); n++; } }); return n; }
+function mpTick(dt){ if(!MP.on) return; mpBossBroadcast(dt); MP.sendT-=dt; if(MP.sendT<=0){ MP.sendT=.1; mpSend({t:'st',id:MP.myId,p:myState()}); }
   if(MP.host){ MP.timeT-=dt; if(MP.timeT<=0){ MP.timeT=3; mpBroadcast({t:'time',v:save.time}); } } }
 function showStamp(id,i){ const txt=STAMPS[i|0]; if(!txt) return; if(id===MP.myId){ toast('あなた：'+txt); return; } const r=MP.players.get(id); if(!r) return;
   if(r.bub){ r.g.remove(r.bub); } r.bub=plainLabel(txt,'#ffd23f'); r.bub.position.y=3.1; r.bub.scale.set(2,.5,1); r.g.add(r.bub); r.bubT=3.5; toast(`${esc(r.name)}：${txt}`); }
 function sendStamp(i){ closeOv('stampov'); if(!MP.on) return; showStamp(MP.myId,i); mpSend({t:'emo',id:MP.myId,i}); }
-const ROOM_PREFIX='dbland4-', PROTO=4, GAME_VER='v43';
+const ROOM_PREFIX='dbland4-', PROTO=5, GAME_VER='v44';
 const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'}],sdpSemantics:'unified-plan'};
 const peerOpts=()=>({config:ICE,debug:0,pingInterval:4000});
 function loadPeer(){ const srcs=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
@@ -4484,7 +4511,7 @@ function hostHandle(conn){
   conn.on('data',d=>{ if(!d||typeof d!=='object') return;
     if(d.t==='hello'){ if(d.v!==PROTO){ try{ conn.send({t:'ver'}); }catch(e){} setTimeout(()=>conn.close(),600); return; }
       if(MP.conns.size>=3){ try{ conn.send({t:'full'}); }catch(e){} setTimeout(()=>conn.close(),400); return; }
-      const id=conn.peer, name=cleanName(d.name), color=(d.color|0)%8; MP.conns.set(id,conn);
+      const id=conn.peer, name=cleanName(d.name), color=(d.color|0)%12; MP.conns.set(id,conn);
       const ent=Object.entries(save.edits), chunks=splitMsg({t:'ed',l:ent}).map(m=>m.l), n=ent.length?chunks.length:0;
       if(d.gv&&d.gv!==GAME_VER) toast(`${esc(name)}の ゲームは ${esc(String(d.gv))}（あなたは ${GAME_VER}）。ふたりとも さいしんばんに すると あんしんだよ`,4200);
       safeSend(conn,{t:'welcome',gv:GAME_VER,id,edN:n,time:save.time,pos:[pl.x,pl.y,pl.z],pvp:MP.pvp,score:MP.score,players:[{id:MP.myId,name:myName(),color:myColor()}].concat([...MP.players.values()].map(r=>({id:r.id,name:r.name,color:r.color})))});
@@ -4496,6 +4523,11 @@ function hostHandle(conn){
     else if(d.t==='emo'){ showStamp(conn.peer,d.i); mpBroadcast({t:'emo',id:conn.peer,i:d.i|0},conn.peer); }
     else if(d.t==='hit'){ const m={t:'hit',to:String(d.to),from:conn.peer,d:clamp(d.d|0,1,6)}; if(m.to===MP.myId) recvHit(m); else { const c=MP.conns.get(m.to); if(c&&c.open) try{ c.send(m); }catch(e){} } }
     else if(d.t==='ko'){ const m={t:'ko',by:String(d.by),id:conn.peer}; onKo(m); mpBroadcast(m,conn.peer); }
+    else if(d.t==='skin'){ setRemoteSkin(conn.peer,d.c|0); mpBroadcast({t:'skin',id:conn.peer,c:d.c|0},conn.peer); }
+    else if(d.t==='bossReq'){ if(save.bosses===false){ safeSend(conn,{t:'note',m:'へやを つくった人の せっていで ボスが 出ないように なっているよ'}); return; } const r=MP.players.get(conn.peer), ty=BOSS[d.type]?d.type:null; let at=Array.isArray(d.at)&&d.at.length===3?d.at.map(Number):null;
+      if(!at&&r){ const a=Math.random()*6.28, x=r.x+Math.cos(a)*22, z=r.z+Math.sin(a)*22; at=[x,(ty&&BOSS[ty].fly)?r.y+6:surface(x,z),z]; } spawnBoss(ty,true,at); }
+    else if(d.t==='bhit'){ const b=zombies.find(z=>z.boss&&!z.mirror&&z.uid===(d.u|0)); if(b) damageZombie(b,clamp(+d.d||0,0,500),{freeze:clamp(+d.f||0,0,6)}); }
+    else if(d.t==='pvpReq'){ MP.pvp=!!d.v; mpBroadcast({t:'pvp',v:MP.pvp}); toast(MP.pvp?'たいせんモード ON！（友だちが ONに したよ）':'たいせんモード OFF',2600); renderRoom(); }
     else if(d.t==='quit') drop(); });
   const drop=()=>{ if(!MP.conns.has(conn.peer)) return; const r=MP.players.get(conn.peer); MP.conns.delete(conn.peer); removeRemote(conn.peer); mpBroadcast({t:'leave',id:conn.peer}); if(r) toast(`${esc(r.name)}が へやを でたよ`); renderRoom(); };
   conn.on('close',drop); conn.on('error',e=>{ console.warn('conn error',e&&e.type); }); }
@@ -4509,17 +4541,22 @@ function guestHandle(d){ if(!d||typeof d!=='object') return;
       MP.wpos=Array.isArray(d.pos)?d.pos:null; MP.wplayers=d.players||[]; edBuf={n:d.edN|0,got:0,ed:{},last:Date.now()}; setMsg('せかいを うけとっています…'); if(d.gv&&d.gv!==GAME_VER) toast(`へやの ゲームは ${esc(String(d.gv))}、あなたは ${GAME_VER}。ふたりとも さいしんばんに すると あんしんだよ`,4200); if(!edBuf.n) finishJoin(); else edWatch(); break;
     case 'ed': if(!edBuf) break; (Array.isArray(d.l)?d.l:[]).forEach(q=>{ if(Array.isArray(q)&&/^\d+,\d+,\d+$/.test(q[0])) edBuf.ed[q[0]]=q[1]|0; }); edBuf.got++; edBuf.last=Date.now(); setMsg(`せかいを うけとっています… ${Math.min(100,Math.round(edBuf.got/edBuf.n*100))}%`); if(edBuf.got>=edBuf.n) finishJoin(); break;
     case 'edEnd': if(edBuf) finishJoin(); break;
-    case 'join': addRemote(d.id,cleanName(d.name),(d.color|0)%8); toast(`${esc(cleanName(d.name))}が へやに はいってきた！`); renderRoom(); break;
+    case 'join': addRemote(d.id,cleanName(d.name),(d.color|0)%12); toast(`${esc(cleanName(d.name))}が へやに はいってきた！`); renderRoom(); break;
     case 'leave': { const r=MP.players.get(d.id); removeRemote(d.id); if(r) toast(`${esc(r.name)}が へやを でたよ`); renderRoom(); break; }
     case 'st': if(d.id!==MP.myId) setRemote(d.id,d.p); break;
     case 'blk': setBlocks(sanitize(d.l),true); break;
     case 'emo': showStamp(d.id,d.i); break;
     case 'time': if(typeof d.v==='number') save.time=d.v; break;
-    case 'pvp': MP.pvp=!!d.v; toast(MP.pvp?'たいせんモード ON！<br>ゆみ・ビーム・まほうが 友だちにも あたるよ':'たいせんモード OFF',3000); renderRoom(); break;
+    case 'pvp': MP.pvp=!!d.v; toast(MP.pvp?'たいせんモード ON！<br>剣・ゆみ・ビーム・まほうが 友だちにも あたるよ':'たいせんモード OFF',3000); renderRoom(); break;
     case 'hit': if(d.to===MP.myId) recvHit(d); break;
     case 'ko': onKo(d); break;
+    case 'skin': if(d.id!==MP.myId) setRemoteSkin(d.id,d.c|0); break;
+    case 'bst': syncMirrors(d.l); break;
+    case 'bdead': { const b=zombies.find(q=>q.mirror&&q.uid===(d.u|0)); if(b){ removeZombie(b,true); bossDefeated(b); } break; }
+    case 'bdmg': damage(clamp(+d.n||1,1,20),pl.x+(Math.random()-.5),pl.z+(Math.random()-.5)); break;
+    case 'note': toast(String(d.m||'').slice(0,80),3000); break;
     case 'bye': toast('へやが とじられたよ',3000); leaveRoom(true); break; } }
-function finishJoin(){ const ed=edBuf?edBuf.ed:{}; edBuf=null; genWorld(ed); disposeAll(); computeMap(); MP.wplayers.forEach(p=>addRemote(p.id,cleanName(p.name),(p.color|0)%8));
+function finishJoin(){ const ed=edBuf?edBuf.ed:{}; edBuf=null; genWorld(ed); disposeAll(); computeMap(); MP.wplayers.forEach(p=>addRemote(p.id,cleanName(p.name),(p.color|0)%12));
   if(MP.wpos) warpTo(MP.wpos[0]+2,MP.wpos[2]+2,''); setMsg(''); afterJoin(); toast('へやに はいったよ！ みんなと いっしょだね',3000); }
 // ---- versus (pvp) ----
 const PVP_DMG={arrow:3,beam:2,star:4,fire:3,water:2,ice:2,sbolt:4};
@@ -4561,14 +4598,14 @@ setInterval(()=>{ const p=MP.peer; if(MP.on&&p&&p.disconnected&&!p.destroyed&&!d
 function cleanupPeer(){ keepAwake(false); try{ MP.peer&&MP.peer.destroy(); }catch(e){} MP.peer=null; MP.hostConn=null; MP.conns.clear(); }
 function leaveRoom(silent){ const wasGuest=MP.guest; clearTimeout(MP.joinTO); edBuf=null;
   if(MP.host) mpBroadcast({t:'bye'}); else if(MP.hostConn&&MP.hostConn.open){ try{ MP.hostConn.send({t:'quit'}); }catch(e){} } setTimeout(cleanupPeer,300);
-  [...MP.players.keys()].forEach(removeRemote); MP.on=MP.host=MP.guest=false; MP.pvp=false; $('stampBtn').hidden=true;
+  [...MP.players.keys()].forEach(removeRemote); zombies.filter(z=>z.mirror).forEach(z=>removeZombie(z,false)); MP.on=MP.host=MP.guest=false; MP.pvp=false; $('stampBtn').hidden=true; $('pvpChip').hidden=true;
   if(wasGuest){ genWorld(); disposeAll(); computeMap(); }
   showSetupView(); if(!silent) toast('へやを でたよ'); }
 function showSetupView(){ $('onSetup').hidden=false; $('onRoom').hidden=true; $('onHost').disabled=$('onJoin').disabled=false; }
 function showRoomView(){ $('onSetup').hidden=true; $('onRoom').hidden=false; renderRoom(); }
 function renderRoom(){ if(!MP.on) return; updateStampBtn(); $('hostTip').hidden=!MP.host||MP.players.size>0;
   $('onStatus').innerHTML=`${MP.host?'あなたの へや':'友だちの へや'}<br>へやばんごう <b class="bigcode">${esc(MP.code||'')}</b>`;
-  $('pvpRow').hidden=false; $('pvpBtn').textContent=MP.pvp?'ON':'OFF'; $('pvpBtn').setAttribute('aria-pressed',String(!!MP.pvp)); $('pvpBtn').disabled=!MP.host; $('pvpNote').textContent=MP.host?'ON にすると ゆみ・ビーム・まほうが 友だちにも あたるよ':'へやを つくった人が きりかえられるよ';
+  $('pvpRow').hidden=false; $('pvpBtn').textContent=MP.pvp?'ON':'OFF'; $('pvpBtn').setAttribute('aria-pressed',String(!!MP.pvp)); $('pvpBtn').disabled=false; $('pvpNote').textContent='ON にすると 剣・ゆみ・ビーム・まほう・でんせつの 剣が 友だちにも あたるよ（だれでも きりかえOK）'; $('pvpChip').hidden=!MP.pvp;
   const L=$('onMembers'); L.innerHTML='';
   [{id:MP.myId,name:myName()+'（あなた）',color:myColor()}].concat([...MP.players.values()]).forEach(p=>{ const d=document.createElement('div'); d.className='irow two'; d.innerHTML=`<span class="mdot" style="--c:${skinColor(p.color)}"></span><div class="nm">${esc(p.name)}${MP.pvp||MP.score[p.id]?` <span class="gem">★${MP.score[p.id]|0}</span>`:''}</div>`; L.appendChild(d); }); }
 /* ================= new version checker (for cached pages, e.g. Safari) ================= */
@@ -4595,10 +4632,10 @@ $('bossBtn').addEventListener('click',()=>{ closeOv('menu'); if(save.bosses===fa
 $('bpGrid').addEventListener('click',e=>{ const b=e.target.closest('[data-bp]'); if(!b) return; closeOv('bosspick'); spawnBoss(b.dataset.bp==='random'?null:b.dataset.bp,true); });
 $('onTest').addEventListener('click',async()=>{ setMsg('テストちゅう…'); try{ await loadPeer(); }catch(e){ setMsg('つなぐ どうぐを よみこめなかったよ（インターネットを たしかめてね）',true); return; } let p; try{ p=new Peer(peerOpts()); }catch(e){ setMsg(errText(e),true); return; } const to=setTimeout(()=>{ setMsg('サーバーから へんじが ないよ。すこし まって もういちど ためしてね',true); try{ p.destroy(); }catch(e){} },12000);
   p.on('open',()=>{ clearTimeout(to); setMsg('サーバーに つながったよ！ オンラインで あそべる じょうたいだよ'); setTimeout(()=>{ try{ p.destroy(); }catch(e){} },300); }); p.on('error',e=>{ clearTimeout(to); setMsg(errText(e),true); try{ p.destroy(); }catch(_){} }); });
-$('pvpBtn').addEventListener('click',()=>{ if(!MP.host) return; MP.pvp=!MP.pvp; mpBroadcast({t:'pvp',v:MP.pvp}); toast(MP.pvp?'たいせんモード ON！':'たいせんモード OFF'); renderRoom(); });
+$('pvpBtn').addEventListener('click',()=>{ if(!MP.host){ mpSend({t:'pvpReq',v:!MP.pvp}); return; } MP.pvp=!MP.pvp; mpBroadcast({t:'pvp',v:MP.pvp}); toast(MP.pvp?'たいせんモード ON！':'たいせんモード OFF'); renderRoom(); });
 $('onCode').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/\D/g,'').slice(0,4); });
 $('onColor').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||MP.on) return; save.heroColor=+b.dataset.v; persist(); rebuildHero(); renderOnColor(); });
-$('onSkinBtn').addEventListener('click',()=>{ if(MP.on){ toast('へやに いる あいだは かえられないよ'); return; } closeOv('online'); openSkins(); });
+$('onSkinBtn').addEventListener('click',()=>{ closeOv('online'); openSkins(); });
 $('onHost').addEventListener('click',()=>startOnline(true));
 $('onJoin').addEventListener('click',()=>startOnline(false));
 $('onLeave').addEventListener('click',()=>leaveRoom(false));
@@ -4800,7 +4837,7 @@ function frame(now){
   if(sim){ updateSeiryu(dt,time,act); if(act&&seiryu.friend){ seiXpT+=dt; if(seiXpT>40){ seiXpT=0; gainXp(seiryu,1); } } updateBuddies(dt,time,act); if(act){ maouCheck(dt); orochiCheck(dt); } updateVillagers(dt,time,act); updateSky(dt,time,act); updateWeather(dt,time); updateFW(dt,time); updateSlashes(dt); updateRepair(dt); updateSpace(dt,time); updateSeaLife(dt,time); updateAngel(dt,time,act); updateEvent(dt,time,act); updateRace(dt,time,act); if(act) updateWild(dt); updateAnimals(dt,time,act); updateDragon(dt,time,act); }
   updateZombies(dt,time,act,isNight(save.time));
   if(act){ updateProjs(dt); updateTornados(dt); }
-  if(act){ updateEProjs(dt); if(save.bosses!==false&&bossCount()<bossMax()&&!inDim()){ bossT-=dt*(save.bossFreq||1); if(bossT<=0){ bossT=120; spawnBoss(); } } } updateBossBar();
+  if(act){ updateEProjs(dt); if(save.bosses!==false&&bossCount()<bossMax()&&!inDim()&&!MP.guest){ bossT-=dt*(save.bossFreq||1); if(bossT<=0){ bossT=120; spawnBoss(); } } } updateBossBar();
   updateFireworks(dt); updateFx(dt); mpTick(dt); updateRemotes(dt,time); updateVehicles(dt,time); updateCompanion(dt,time); updateRides(dt,time); updateFxEx(dt); updateShield(dt,time); bgmPick(); if(save.heroColor===8&&playing&&Math.random()<dt*5) spawnBits(pl.x+(Math.random()-.5)*1.4,pl.y+.4+Math.random()*1.6,pl.z+(Math.random()-.5)*1.4,Math.random()<.5?[255,120,200]:[255,215,90],1,.25); if(act){ updateTurrets(dt); updateFortGuns(dt,time); updateSiege(dt); } updateIsland(dt,time);
   if(playing){ miniT-=dt; if(miniT<=0){ miniT=.15; drawMini(); } }
   for(const c of clouds){ c.position.x+=dt*.6; if(c.position.x-pl.x>160) c.position.x-=320; if(c.position.x-pl.x<-160) c.position.x+=320; if(c.position.z-pl.z>160) c.position.z-=320; if(c.position.z-pl.z<-160) c.position.z+=320; }
